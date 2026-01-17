@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  CircularProgress,
   Button,
   Chip,
   Dialog,
@@ -7,6 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  LinearProgress,
   Stack,
   Switch,
   TextField,
@@ -88,9 +90,16 @@ export function WorkspaceCreateDialog(props: {
   }
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={props.open}
+      onClose={saving ? () => {} : props.onClose}
+      disableEscapeKeyDown={saving}
+      maxWidth="sm"
+      fullWidth
+    >
       <DialogTitle>Create workspace</DialogTitle>
       <DialogContent>
+        {saving ? <LinearProgress /> : null}
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error ? <ErrorAlert message={error} /> : null}
 
@@ -192,7 +201,12 @@ export function WorkspaceCreateDialog(props: {
         <Button onClick={props.onClose} disabled={saving}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={onCreate} disabled={saving || name.trim().length === 0}>
+        <Button
+          variant="contained"
+          onClick={onCreate}
+          disabled={saving || name.trim().length === 0}
+          startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
+        >
           Create
         </Button>
       </DialogActions>
