@@ -69,6 +69,15 @@ The State payments screen uses a dedicated form and submits:
   - `recordType: "STATE_PAYMENT"`
   - `payload` fields: `paymentDate`, `type` (`Modelo303` | `Modelo130` | `SeguridadSocial` | `RentaAnual` | `Other`), `amount`
 
+## Add budget entry (BUDGET)
+
+The Budget screen uses a dedicated form and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "BUDGET"`
+  - `payload` fields: `monthKey` (YYYY-MM), `plannedSpend`, `earned`, optional `description`, `budgetGoal`
+
 Invoice example:
 
 ```json

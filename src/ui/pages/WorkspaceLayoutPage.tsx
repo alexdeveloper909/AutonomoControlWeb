@@ -9,7 +9,7 @@ import { WorkspaceSummariesPage } from './WorkspaceSummariesPage'
 import { WorkspaceIncomeRoutes } from './WorkspaceIncomeRoutes'
 import { WorkspaceExpensesRoutes } from './WorkspaceExpensesRoutes'
 import { WorkspaceStatePaymentsRoutes } from './WorkspaceStatePaymentsRoutes'
-import { WorkspaceBudgetEntriesPage } from './WorkspaceBudgetEntriesPage'
+import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 
 export function WorkspaceLayoutPage() {
@@ -79,7 +79,7 @@ export function WorkspaceLayoutPage() {
         <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="budget" element={<WorkspaceBudgetEntriesPage workspaceId={workspaceId} />} />
+        <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />
         <Route path="*" element={<Navigate to={`${basePath}/income`} replace />} />
