@@ -16,6 +16,7 @@ export function WorkspaceLayoutPage() {
   const location = useLocation()
 
   if (!workspaceId) return <Navigate to="/workspaces" replace />
+  const basePath = `/workspaces/${workspaceId}`
 
   const tabValue = location.pathname.includes('/summaries')
     ? 'summaries'
@@ -39,18 +40,18 @@ export function WorkspaceLayoutPage() {
     >
       <Box sx={{ mb: 2 }}>
         <Tabs value={tabValue}>
-          <Tab label="Records" value="records" component={RouterLink} to="records" />
-          <Tab label="Budget" value="budget" component={RouterLink} to="budget" />
-          <Tab label="Summaries" value="summaries" component={RouterLink} to="summaries" />
+          <Tab label="Records" value="records" component={RouterLink} to={`${basePath}/records`} />
+          <Tab label="Budget" value="budget" component={RouterLink} to={`${basePath}/budget`} />
+          <Tab label="Summaries" value="summaries" component={RouterLink} to={`${basePath}/summaries`} />
         </Tabs>
       </Box>
 
       <Routes>
-        <Route path="/" element={<Navigate to="records" replace />} />
+        <Route index element={<Navigate to={`${basePath}/records`} replace />} />
         <Route path="records" element={<WorkspaceRecordsPage workspaceId={workspaceId} api={api} />} />
         <Route path="budget" element={<WorkspaceBudgetPage workspaceId={workspaceId} api={api} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
-        <Route path="*" element={<Navigate to="records" replace />} />
+        <Route path="*" element={<Navigate to={`${basePath}/records`} replace />} />
       </Routes>
     </AppShell>
   )
