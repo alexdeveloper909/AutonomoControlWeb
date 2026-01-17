@@ -49,7 +49,16 @@ The Income screen uses a dedicated form (not the raw JSON editor) and submits:
 - `POST /workspaces/{workspaceId}/records`
 - Body:
   - `recordType: "INVOICE"`
-  - `payload` fields: `invoiceDate`, `baseExclVat`, `ivaRate`, `retencion`, optional `number`, `client`, `paymentDate`, `amountReceivedOverride`
+  - `payload` fields: `invoiceDate`, `number`, `client`, `baseExclVat`, `ivaRate`, `retencion`, optional `paymentDate`, `amountReceivedOverride`
+
+## Add expense (EXPENSE)
+
+The Expenses screen uses a dedicated form and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "EXPENSE"`
+  - `payload` fields: `documentDate`, `vendor`, `category`, `baseExclVat`, `ivaRate`, `vatRecoverableFlag`, `deductibleShare`, optional `paymentDate`, `amountPaidOverride`
 
 Invoice example:
 

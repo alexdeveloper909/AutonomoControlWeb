@@ -12,8 +12,8 @@ export type TransferOp = 'Inflow' | 'Outflow'
 
 export type InvoicePayload = {
   invoiceDate: string
-  number?: string
-  client?: string
+  number: string
+  client: string
   baseExclVat: number
   ivaRate: IvaRate
   retencion: RetencionRate
@@ -23,8 +23,8 @@ export type InvoicePayload = {
 
 export type ExpensePayload = {
   documentDate: string
-  vendor?: string
-  category?: string
+  vendor: string
+  category: string
   baseExclVat: number
   ivaRate: IvaRate
   vatRecoverableFlag: boolean
