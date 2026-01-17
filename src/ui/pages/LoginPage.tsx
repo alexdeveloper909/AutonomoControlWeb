@@ -1,5 +1,5 @@
 import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/useAuth'
 import { env } from '../../infrastructure/config/env'
 
 export function LoginPage() {

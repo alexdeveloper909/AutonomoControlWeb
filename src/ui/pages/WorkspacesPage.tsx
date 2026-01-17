@@ -13,7 +13,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import type { Workspace } from '../../domain/workspace'
 import { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/useAuth'
 import { AppShell } from '../components/AppShell'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
@@ -21,7 +21,7 @@ import { WorkspaceCreateDialog } from './WorkspacesPage/WorkspaceCreateDialog'
 
 export function WorkspacesPage() {
   const { session } = useAuth()
-  const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens.idToken])
+  const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const navigate = useNavigate()
 
   const [items, setItems] = useState<Workspace[] | null>(null)

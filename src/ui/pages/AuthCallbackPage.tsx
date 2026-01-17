@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../../application/auth/authService'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/useAuth'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 

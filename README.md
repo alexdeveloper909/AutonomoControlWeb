@@ -95,16 +95,31 @@ tsc --noEmit
 
 - `/login` → starts Cognito Hosted UI login (Google if configured)
 - `/workspaces` → list/create workspaces (POST `/workspaces`)
-- `/workspaces/:workspaceId` → create/list records, add budget entries, view month/quarter summaries
+- `/workspaces/:workspaceId` → workspace area with app shell + **left navigation** (services grouped by domain)
+
+### Workspace left navigation (Finance domain)
+
+The workspace area uses an app-shell layout: top bar + persistent **left navigation**. Each left-nav item corresponds to a workspace “service” screen.
+
+- App shell + left navigation container: `src/ui/pages/WorkspaceLayoutPage.tsx`
+  - Layout component used by the app shell: `src/ui/components/AppShell.tsx`
+  - Settings dialog (opened by the top-right settings button): `src/ui/pages/WorkspaceSettingsDialog.tsx`
+
+Screens (Finance):
+
+- Income (`/workspaces/:workspaceId/income`) → `src/ui/pages/WorkspaceIncomePage.tsx`
+- Expenses (`/workspaces/:workspaceId/expenses`) → `src/ui/pages/WorkspaceExpensesPage.tsx`
+- State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx`
+- Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx`
+- Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; JSON output)
 
 For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
 
 ## Common workflows
 
 - Create first workspace: open `/workspaces` → “Create” → fill `settings` (sent to `POST /workspaces`)
-- Add records: open a workspace → “Records” tab → select record type → paste payload JSON → “Create”
-- Add budget entry: open a workspace → “Budget” tab → paste payload JSON → “Create”
-- View summaries: open a workspace → “Summaries” tab → loads settings + calls summaries endpoints
+- Add income/expense/state payment/budget entry: open a workspace → use the “Add …” button (currently a no-op placeholder)
+- View summaries: open a workspace → “Summaries” → Month/Quarter tabs load data from summaries endpoints
 
 ## Development notes
 

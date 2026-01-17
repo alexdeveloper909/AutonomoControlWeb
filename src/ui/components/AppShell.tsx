@@ -1,8 +1,8 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
 import type { PropsWithChildren, ReactNode } from 'react'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/useAuth'
 
-export function AppShell(props: PropsWithChildren<{ title: string; right?: ReactNode }>) {
+export function AppShell(props: PropsWithChildren<{ title: string; right?: ReactNode; nav?: ReactNode }>) {
   const { logout } = useAuth()
 
   return (
@@ -18,7 +18,28 @@ export function AppShell(props: PropsWithChildren<{ title: string; right?: React
           </Button>
         </Toolbar>
       </AppBar>
-      <Container sx={{ py: 3, flex: 1 }}>{props.children}</Container>
+      <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+        {props.nav ? (
+          <Box
+            component="nav"
+            aria-label="Navigation"
+            sx={{
+              width: 280,
+              flexShrink: 0,
+              borderRight: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              overflow: 'auto',
+            }}
+          >
+            {props.nav}
+          </Box>
+        ) : null}
+
+        <Box sx={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+          <Container sx={{ py: 3 }}>{props.children}</Container>
+        </Box>
+      </Box>
     </Box>
   )
 }
