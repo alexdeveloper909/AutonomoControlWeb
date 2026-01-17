@@ -60,6 +60,15 @@ The Expenses screen uses a dedicated form and submits:
   - `recordType: "EXPENSE"`
   - `payload` fields: `documentDate`, `vendor`, `category`, `baseExclVat`, `ivaRate`, `vatRecoverableFlag`, `deductibleShare`, optional `paymentDate`, `amountPaidOverride`
 
+## Add state payment (STATE_PAYMENT)
+
+The State payments screen uses a dedicated form and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "STATE_PAYMENT"`
+  - `payload` fields: `paymentDate`, `type` (`Modelo303` | `Modelo130` | `SeguridadSocial` | `RentaAnual` | `Other`), `amount`
+
 Invoice example:
 
 ```json

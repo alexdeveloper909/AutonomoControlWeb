@@ -1,4 +1,5 @@
 import { Button, Paper, Stack, Typography } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 
 export function WorkspaceStatePaymentsPage(props: { workspaceId: string }) {
@@ -7,7 +8,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string }) {
       <PageHeader
         title="State payments"
         right={
-          <Button variant="contained" onClick={() => undefined}>
+          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>
             Add State Payment
           </Button>
         }
@@ -19,4 +20,3 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string }) {
     </Stack>
   )
 }
-

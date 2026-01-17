@@ -8,7 +8,7 @@ import { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { WorkspaceSummariesPage } from './WorkspaceSummariesPage'
 import { WorkspaceIncomeRoutes } from './WorkspaceIncomeRoutes'
 import { WorkspaceExpensesRoutes } from './WorkspaceExpensesRoutes'
-import { WorkspaceStatePaymentsPage } from './WorkspaceStatePaymentsPage'
+import { WorkspaceStatePaymentsRoutes } from './WorkspaceStatePaymentsRoutes'
 import { WorkspaceBudgetEntriesPage } from './WorkspaceBudgetEntriesPage'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 
@@ -78,7 +78,7 @@ export function WorkspaceLayoutPage() {
         <Route index element={<Navigate to={`${basePath}/income`} replace />} />
         <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="state-payments" element={<WorkspaceStatePaymentsPage workspaceId={workspaceId} />} />
+        <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="budget" element={<WorkspaceBudgetEntriesPage workspaceId={workspaceId} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />

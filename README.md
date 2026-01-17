@@ -112,6 +112,7 @@ Screens (Finance):
 - Expenses (`/workspaces/:workspaceId/expenses`) → `src/ui/pages/WorkspaceExpensesPage.tsx`
   - Add expense (`/workspaces/:workspaceId/expenses/new`) → `src/ui/pages/WorkspaceExpensesCreatePage.tsx` (creates an `EXPENSE` record)
 - State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx`
+  - Add state payment (`/workspaces/:workspaceId/state-payments/new`) → `src/ui/pages/WorkspaceStatePaymentsCreatePage.tsx` (creates a `STATE_PAYMENT` record)
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx`
 - Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; JSON output)
 
@@ -122,7 +123,8 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Create first workspace: open `/workspaces` → “Create” → fill `settings` (sent to `POST /workspaces`)
 - Add income: open a workspace → Income → “Add Income” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=INVOICE`)
 - Add expense: open a workspace → Expenses → “Add Expense” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=EXPENSE`)
-- Add state payment/budget entry: open a workspace → use the “Add …” button (currently a no-op placeholder)
+- Add state payment: open a workspace → State payments → “Add State Payment” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=STATE_PAYMENT`)
+- Add budget entry: open a workspace → use the “Add …” button (currently a no-op placeholder)
 - View summaries: open a workspace → “Summaries” → Month/Quarter tabs load data from summaries endpoints
 
 ## Development notes
