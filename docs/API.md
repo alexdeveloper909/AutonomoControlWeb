@@ -42,6 +42,15 @@ The API record types used in the web client are:
 
 The MVP UI accepts raw JSON payloads. Use the examples from `../AutonomoControlApi/USAGES.md`.
 
+## Add income (INVOICE)
+
+The Income screen uses a dedicated form (not the raw JSON editor) and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "INVOICE"`
+  - `payload` fields: `invoiceDate`, `baseExclVat`, `ivaRate`, `retencion`, optional `number`, `client`, `paymentDate`, `amountReceivedOverride`
+
 Invoice example:
 
 ```json
@@ -72,4 +81,3 @@ BudgetEntry example:
 
 Important for record keys and summaries: the backend derives `eventDate` per record type.
 See `../AutonomoControlApi/USAGES.md`.
-

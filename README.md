@@ -108,6 +108,7 @@ The workspace area uses an app-shell layout: top bar + persistent **left navigat
 Screens (Finance):
 
 - Income (`/workspaces/:workspaceId/income`) → `src/ui/pages/WorkspaceIncomePage.tsx`
+- Add income (`/workspaces/:workspaceId/income/new`) → `src/ui/pages/WorkspaceIncomeCreatePage.tsx` (creates an `INVOICE` record)
 - Expenses (`/workspaces/:workspaceId/expenses`) → `src/ui/pages/WorkspaceExpensesPage.tsx`
 - State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx`
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx`
@@ -118,7 +119,8 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 ## Common workflows
 
 - Create first workspace: open `/workspaces` → “Create” → fill `settings` (sent to `POST /workspaces`)
-- Add income/expense/state payment/budget entry: open a workspace → use the “Add …” button (currently a no-op placeholder)
+- Add income: open a workspace → Income → “Add Income” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=INVOICE`)
+- Add expense/state payment/budget entry: open a workspace → use the “Add …” button (currently a no-op placeholder)
 - View summaries: open a workspace → “Summaries” → Month/Quarter tabs load data from summaries endpoints
 
 ## Development notes

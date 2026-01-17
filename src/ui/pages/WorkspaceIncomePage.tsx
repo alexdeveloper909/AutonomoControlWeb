@@ -1,4 +1,5 @@
 import { Button, Paper, Stack, Typography } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 import { PageHeader } from '../components/PageHeader'
 
 export function WorkspaceIncomePage(props: { workspaceId: string }) {
@@ -7,7 +8,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string }) {
       <PageHeader
         title="Income"
         right={
-          <Button variant="contained" onClick={() => undefined}>
+          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/income/new`}>
             Add Income
           </Button>
         }
@@ -19,4 +20,3 @@ export function WorkspaceIncomePage(props: { workspaceId: string }) {
     </Stack>
   )
 }
-
