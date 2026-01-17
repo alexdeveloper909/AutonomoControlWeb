@@ -1,107 +1,112 @@
-# Web client app for AutonomoControl project
+# AutonomoControlWeb
 
-# React + TypeScript + Vite
+React + TypeScript web client for the AutonomoControl system.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- UI: React + MUI (Material UI): https://mui.com/material-ui/getting-started/
+- Auth: Cognito Hosted UI (Authorization Code + PKCE)
+- API calls: `Authorization: Bearer <id_token>` (see `../AutonomoControlApi/README.md`)
+
+Related overview: `../project_overview.md`
+
+## Documentation map
+
+- Setup + usage: `AutonomoControlWeb/README.md`
+- Architecture: `AutonomoControlWeb/docs/ARCHITECTURE.md`
+- Auth (Hosted UI + PKCE): `AutonomoControlWeb/docs/AUTH.md`
+- API integration (endpoints + payloads): `AutonomoControlWeb/docs/API.md`
+- Dev/prod stacks + web hosting notes: `AutonomoControlWeb/docs/DEPLOYMENT.md`
+- Troubleshooting: `AutonomoControlWeb/docs/TROUBLESHOOTING.md`
+
+## Architecture (layered)
+
+Code is organized by layers under `src/`:
+
+- `src/domain/` — pure TypeScript types (no React)
+- `src/application/` — use-cases (login/logout/callback)
+- `src/infrastructure/` — adapters (Cognito Hosted UI, token storage, HTTP/API client)
+- `src/ui/` — React components and pages
+
+## Prerequisites
+
+- Node.js (use the version you use for other TypeScript projects in this repo)
+- A deployed CDK stack (dev or prod) providing Cognito + API Gateway:
+  - See `../AutonomoControlCDK/README.md`
+
+## Configure dev/prod stacks (AWS)
+
+This app is designed to run against **dev** and **prod** CDK stacks (separate Cognito + API per stage).
+
+1) Copy an example file into a local env file (these are gitignored via `*.local`):
+
+- `cp .env.dev.example .env.dev.local`
+- `cp .env.prod.example .env.prod.local`
+
+2) Fill in values from `AutonomoControlCDK` deployment outputs:
+
+- `VITE_API_BASE_URL` ← `ApiUrl`
+- `VITE_COGNITO_DOMAIN` ← `CognitoDomain` (include `https://`)
+- `VITE_COGNITO_CLIENT_ID` ← `CognitoUserPoolClientId`
+- `VITE_COGNITO_REDIRECT_URI` should match the CDK `OAuthCallbackUrls` (e.g. `http://localhost:5173/auth/callback`)
+- `VITE_COGNITO_LOGOUT_URI` should match the CDK `OAuthLogoutUrls` (e.g. `http://localhost:5173/`)
+- `VITE_COGNITO_IDENTITY_PROVIDER=Google` (optional; omit to show the generic Hosted UI)
+
+If Google IdP isn’t enabled yet, follow `../AutonomoControlCDK/README.md` (“Cognito User Pool + Google IdP”).
+
+### Env var reference
+
+Vite loads env per mode. For example `vite --mode dev` loads, in order:
+
+- `.env`
+- `.env.local`
+- `.env.dev`
+- `.env.dev.local`
+
+This project uses `.env.dev.local` and `.env.prod.local` to keep stage-specific settings out of git.
+
+- `VITE_APP_STAGE`: `dev` | `prod` (informational; used in UI)
+- `VITE_API_BASE_URL`: API Gateway base URL, e.g. `https://xxxx.execute-api.eu-west-1.amazonaws.com`
+- `VITE_COGNITO_DOMAIN`: Cognito domain base, e.g. `https://autonomo-control-dev-<acct>.auth.eu-west-1.amazoncognito.com`
+- `VITE_COGNITO_CLIENT_ID`: Cognito User Pool App Client id
+- `VITE_COGNITO_REDIRECT_URI`: must match `OAuthCallbackUrls` in CDK
+- `VITE_COGNITO_LOGOUT_URI`: must match `OAuthLogoutUrls` in CDK
+- `VITE_COGNITO_IDENTITY_PROVIDER`: optional (set to `Google` to jump straight to Google in Hosted UI)
 
 ## Local development
 
-Install dependencies:
-
 ```sh
 npm install
+npm run dev:dev
 ```
 
-Start the dev server:
+Run against the prod stack locally (still on localhost, just a different Cognito/API):
 
 ```sh
-npm run dev
+npm run dev:prod
 ```
 
-Build for production:
+Type-check (requested MVP gate):
 
 ```sh
-npm run build
+tsc --noEmit
 ```
 
-Preview the production build locally:
+## MVP screens
 
-```sh
-npm run preview
-```
+- `/login` → starts Cognito Hosted UI login (Google if configured)
+- `/workspaces` → list/create workspaces (POST `/workspaces`)
+- `/workspaces/:workspaceId` → create/list records, add budget entries, view month/quarter summaries
 
-Run the linter:
+For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
 
-```sh
-npm run lint
-```
+## Common workflows
 
-Currently, two official plugins are available:
+- Create first workspace: open `/workspaces` → “Create” → fill `settings` (sent to `POST /workspaces`)
+- Add records: open a workspace → “Records” tab → select record type → paste payload JSON → “Create”
+- Add budget entry: open a workspace → “Budget” tab → paste payload JSON → “Create”
+- View summaries: open a workspace → “Summaries” tab → loads settings + calls summaries endpoints
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Development notes
 
-## React Compiler
-
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Routes are defined in `AutonomoControlWeb/src/ui/app/AppRouter.tsx`.
+- Auth logic lives in `AutonomoControlWeb/src/infrastructure/auth/cognitoHostedUi.ts` (PKCE + token exchange).
+- API client lives in `AutonomoControlWeb/src/infrastructure/api/autonomoControlApi.ts`.
