@@ -9,6 +9,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import type { Workspace } from '../../domain/workspace'
 import { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
@@ -32,7 +33,6 @@ export function WorkspacesPage() {
     try {
       const ws = await api.listWorkspaces()
       setItems(ws)
-      if (ws.length === 0) setCreateOpen(true)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -62,8 +62,8 @@ export function WorkspacesPage() {
     <AppShell
       title="Workspaces"
       right={
-        <Button color="inherit" onClick={() => setCreateOpen(true)}>
-          Create
+        <Button color="inherit" onClick={() => setCreateOpen(true)} startIcon={<AddCircleOutlineIcon />}>
+          New
         </Button>
       }
     >
@@ -78,10 +78,38 @@ export function WorkspacesPage() {
       />
 
       {items.length === 0 ? (
-        <Box sx={{ mt: 2 }}>
-          <Typography color="text.secondary">
-            No workspaces yet. Create your first workspace to start tracking records.
-          </Typography>
+        <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Card
+            variant="outlined"
+            sx={{
+              width: 'min(520px, 100%)',
+              borderStyle: 'dashed',
+            }}
+          >
+            <CardActionArea onClick={() => setCreateOpen(true)}>
+              <CardContent>
+                <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: 2 }}>
+                  <AddCircleOutlineIcon sx={{ fontSize: 56 }} color="primary" />
+                  <Box>
+                    <Typography variant="h5">No workspaces yet</Typography>
+                    <Typography color="text.secondary">
+                      Create your first workspace to start tracking records.
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddCircleOutlineIcon />}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCreateOpen(true)
+                    }}
+                  >
+                    Create workspace
+                  </Button>
+                </Stack>
+              </CardContent>
+            </CardActionArea>
+          </Card>
         </Box>
       ) : (
         <Grid container spacing={2}>
