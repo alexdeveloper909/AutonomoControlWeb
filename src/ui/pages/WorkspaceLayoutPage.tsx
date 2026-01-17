@@ -9,6 +9,7 @@ import { WorkspaceSummariesPage } from './WorkspaceSummariesPage'
 import { WorkspaceIncomeRoutes } from './WorkspaceIncomeRoutes'
 import { WorkspaceExpensesRoutes } from './WorkspaceExpensesRoutes'
 import { WorkspaceStatePaymentsRoutes } from './WorkspaceStatePaymentsRoutes'
+import { WorkspaceTransfersRoutes } from './WorkspaceTransfersRoutes'
 import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 
@@ -63,6 +64,9 @@ export function WorkspaceLayoutPage() {
           <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
             <ListItemText primary="State payments" />
           </ListItemButton>
+          <ListItemButton component={RouterLink} to={`${basePath}/transfers`} selected={section === 'transfers'}>
+            <ListItemText primary="Transfers" />
+          </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
             <ListItemText primary="Budget" />
           </ListItemButton>
@@ -79,6 +83,7 @@ export function WorkspaceLayoutPage() {
         <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} />} />
+        <Route path="transfers/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />

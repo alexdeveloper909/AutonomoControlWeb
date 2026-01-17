@@ -78,6 +78,15 @@ The Budget screen uses a dedicated form and submits:
   - `recordType: "BUDGET"`
   - `payload` fields: `monthKey` (YYYY-MM), `plannedSpend`, `earned`, optional `description`, `budgetGoal`
 
+## Add transfer (TRANSFER)
+
+The Transfers screen uses a dedicated form and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "TRANSFER"`
+  - `payload` fields: `date`, `operation` (`Inflow` | `Outflow`), `amount`, optional `note`
+
 Invoice example:
 
 ```json
