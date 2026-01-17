@@ -5,6 +5,7 @@ import { env, requireEnv } from '../config/env'
 import { jsonFetch } from '../http/jsonFetch'
 
 type ListResponse<T> = { items: T[] }
+type WorkspaceSettingsResponse = { workspaceId: string; settings: WorkspaceSettings }
 
 export class AutonomoControlApi {
   private readonly baseUrl: string
@@ -40,17 +41,25 @@ export class AutonomoControlApi {
   }
 
   async getWorkspaceSettings(workspaceId: string): Promise<WorkspaceSettings> {
-    return jsonFetch(new URL(`/workspaces/${workspaceId}/settings`, this.baseUrl).toString(), {
-      headers: this.authHeaders(),
-    })
+    const res = await jsonFetch<WorkspaceSettingsResponse>(
+      new URL(`/workspaces/${workspaceId}/settings`, this.baseUrl).toString(),
+      {
+        headers: this.authHeaders(),
+      },
+    )
+    return res.settings
   }
 
   async putWorkspaceSettings(workspaceId: string, settings: WorkspaceSettings): Promise<WorkspaceSettings> {
-    return jsonFetch(new URL(`/workspaces/${workspaceId}/settings`, this.baseUrl).toString(), {
-      method: 'PUT',
-      headers: this.authHeaders(),
-      body: settings,
-    })
+    const res = await jsonFetch<WorkspaceSettingsResponse>(
+      new URL(`/workspaces/${workspaceId}/settings`, this.baseUrl).toString(),
+      {
+        method: 'PUT',
+        headers: this.authHeaders(),
+        body: settings,
+      },
+    )
+    return res.settings
   }
 
   async listRecordsByMonth(workspaceId: string, monthKey: string, recordType?: RecordType): Promise<RecordResponse[]> {

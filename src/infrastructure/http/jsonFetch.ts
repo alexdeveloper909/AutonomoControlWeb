@@ -26,7 +26,9 @@ export const jsonFetch = async <T>(url: string, options: JsonFetchOptions = {}):
 
   if (!res.ok) {
     const text = await res.text().catch(() => undefined)
-    throw new HttpError(`HTTP ${res.status} for ${url}`, res.status, text)
+    const trimmed = text?.trim()
+    const details = trimmed ? `\n${trimmed.length > 800 ? `${trimmed.slice(0, 800)}…` : trimmed}` : ''
+    throw new HttpError(`HTTP ${res.status} for ${url}${details}`, res.status, text)
   }
 
   // Some endpoints (e.g. 204) might return empty body.
