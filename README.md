@@ -12,6 +12,7 @@ Related overview: `../project_overview.md`
 
 - Setup + usage: `AutonomoControlWeb/README.md`
 - Architecture: `AutonomoControlWeb/docs/ARCHITECTURE.md`
+- UI design + theming guidelines: `AutonomoControlWeb/docs/DESIGN.md`
 - Auth (Hosted UI + PKCE): `AutonomoControlWeb/docs/AUTH.md`
 - API integration (endpoints + payloads): `AutonomoControlWeb/docs/API.md`
 - Dev/prod stacks + web hosting notes: `AutonomoControlWeb/docs/DEPLOYMENT.md`

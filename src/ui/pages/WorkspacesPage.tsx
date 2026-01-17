@@ -114,7 +114,7 @@ export function WorkspacesPage() {
       ) : (
         <Grid container spacing={2}>
           {items.map((w) => (
-            <Grid key={w.workspaceId} item xs={12} sm={6} md={4}>
+            <Grid key={w.workspaceId} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card>
                 <CardActionArea component={RouterLink} to={`/workspaces/${w.workspaceId}`}>
                   <CardContent>
