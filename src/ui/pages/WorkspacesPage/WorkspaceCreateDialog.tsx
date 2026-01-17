@@ -39,8 +39,17 @@ export function WorkspaceCreateDialog(props: {
 }) {
   const [name, setName] = useState('My workspace')
   const [settings, setSettings] = useState<WorkspaceSettings>(() => defaultSettings())
+  const [openingBalanceInput, setOpeningBalanceInput] = useState<string>('0')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  const isValidNumberInput = (value: string) => value === '' || /^-?\d*(\.\d*)?$/.test(value)
+
+  const parseNumberInput = (value: string): number | null => {
+    if (value.trim() === '') return null
+    const n = Number(value)
+    return Number.isFinite(n) ? n : null
+  }
 
   const updateCategory = (i: number, value: string) => {
     setSettings((s) => ({
@@ -61,9 +70,14 @@ export function WorkspaceCreateDialog(props: {
     setError(null)
     setSaving(true)
     try {
+      const openingBalance = parseNumberInput(openingBalanceInput) ?? 0
       const res = await props.api.createWorkspace({
         name: name.trim(),
-        settings: { ...settings, expenseCategories: settings.expenseCategories.map((c) => c.trim()).filter(Boolean) },
+        settings: {
+          ...settings,
+          openingBalance,
+          expenseCategories: settings.expenseCategories.map((c) => c.trim()).filter(Boolean),
+        },
       })
       props.onCreated(res.workspace)
     } catch (e) {
@@ -132,10 +146,28 @@ export function WorkspaceCreateDialog(props: {
 
           <TextField
             label="Opening balance"
-            type="number"
-            inputProps={{ step: '0.01' }}
-            value={settings.openingBalance}
-            onChange={(e) => setSettings((s) => ({ ...s, openingBalance: Number(e.target.value) }))}
+            type="text"
+            inputProps={{ inputMode: 'decimal' }}
+            value={openingBalanceInput}
+            onChange={(e) => {
+              const nextValue = e.target.value
+              if (!isValidNumberInput(nextValue)) return
+              setOpeningBalanceInput(nextValue)
+              const parsed = parseNumberInput(nextValue)
+              if (parsed === null) return
+              setSettings((s) => ({ ...s, openingBalance: parsed }))
+            }}
+            onBlur={() => {
+              const parsed = parseNumberInput(openingBalanceInput)
+              if (parsed === null) {
+                setOpeningBalanceInput('0')
+                setSettings((s) => ({ ...s, openingBalance: 0 }))
+                return
+              }
+
+              setOpeningBalanceInput(String(parsed))
+              setSettings((s) => ({ ...s, openingBalance: parsed }))
+            }}
             fullWidth
           />
 
