@@ -9,11 +9,20 @@ export const jsonFetch = async <T>(url: string, options: JsonFetchOptions = {}):
   if (options.body !== undefined) headers.set('Content-Type', 'application/json')
   headers.set('Accept', 'application/json')
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
-  })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      ...options,
+      headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    })
+  } catch (e) {
+    const msg =
+      e instanceof Error ? e.message : String(e)
+    throw new Error(
+      `Failed to fetch ${url}. This is usually CORS (API must allow origin + Authorization header) or a bad VITE_API_BASE_URL. Original error: ${msg}`,
+    )
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => undefined)

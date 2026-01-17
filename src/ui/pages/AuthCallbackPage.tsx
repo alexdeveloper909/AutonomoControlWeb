@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../../application/auth/authService'
 import { useAuth } from '../auth/AuthProvider'
@@ -9,8 +9,12 @@ export function AuthCallbackPage() {
   const { setSession } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
+  const handledRef = useRef(false)
 
   useEffect(() => {
+    if (handledRef.current) return
+    handledRef.current = true
+
     const run = async () => {
       const url = new URL(window.location.href)
       const code = url.searchParams.get('code')
