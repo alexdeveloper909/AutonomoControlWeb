@@ -113,9 +113,9 @@ Screens (Finance):
   - Add expense (`/workspaces/:workspaceId/expenses/new`) → `src/ui/pages/WorkspaceExpensesCreatePage.tsx` (creates an `EXPENSE` record)
 - State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add state payment (`/workspaces/:workspaceId/state-payments/new`) → `src/ui/pages/WorkspaceStatePaymentsCreatePage.tsx` (creates a `STATE_PAYMENT` record)
-- Transfers (`/workspaces/:workspaceId/transfers`) → `src/ui/pages/WorkspaceTransfersPage.tsx`
+- Transfers (`/workspaces/:workspaceId/transfers`) → `src/ui/pages/WorkspaceTransfersPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add transfer (`/workspaces/:workspaceId/transfers/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)
-- Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx`
+- Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add budget entry (`/workspaces/:workspaceId/budget/new`) → `src/ui/pages/WorkspaceBudgetCreatePage.tsx` (creates a `BUDGET` record)
 - Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; JSON output)
 

@@ -106,6 +106,12 @@ The Budget screen uses a dedicated form and submits:
   - `recordType: "BUDGET"`
   - `payload` fields: `monthKey` (YYYY-MM), `plannedSpend`, `earned`, optional `description`, `budgetGoal`
 
+## List budget entries (BUDGET) with sorting + pagination
+
+The Budget screen lists year-scoped budget records using:
+
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=BUDGET&sort=eventDateDesc&limit=20&nextToken=...`
+
 ## Add transfer (TRANSFER)
 
 The Transfers screen uses a dedicated form and submits:
@@ -114,6 +120,12 @@ The Transfers screen uses a dedicated form and submits:
 - Body:
   - `recordType: "TRANSFER"`
   - `payload` fields: `date`, `operation` (`Inflow` | `Outflow`), `amount`, optional `note`
+
+## List transfers (TRANSFER) with sorting + pagination
+
+The Transfers screen lists year-scoped transfer records using:
+
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=TRANSFER&sort=eventDateDesc&limit=20&nextToken=...`
 
 Invoice example:
 
