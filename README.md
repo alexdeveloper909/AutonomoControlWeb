@@ -117,7 +117,7 @@ Screens (Finance):
   - Add transfer (`/workspaces/:workspaceId/transfers/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add budget entry (`/workspaces/:workspaceId/budget/new`) → `src/ui/pages/WorkspaceBudgetCreatePage.tsx` (creates a `BUDGET` record)
-- Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; JSON output)
+- Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; table view + details dialog; optional raw JSON)
 
 For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
 
@@ -129,7 +129,7 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Add state payment: open a workspace → State payments → “Add State Payment” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=STATE_PAYMENT`)
 - Add transfer: open a workspace → Transfers → “Add Transfer” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=TRANSFER`)
 - Add budget entry: open a workspace → Budget → “Add Budget Entry” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=BUDGET`)
-- View summaries: open a workspace → “Summaries” → Month/Quarter tabs load data from summaries endpoints
+- View summaries: open a workspace → “Summaries” → Month/Quarter tabs show tables; click a row for full details; “Show raw JSON” toggles debug output
 
 ## Development notes
 
