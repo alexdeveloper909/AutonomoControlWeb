@@ -4,6 +4,8 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const monthKeyToday = (): string => {
   const d = new Date()
@@ -29,10 +31,10 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
 
   const validationError = useMemo(() => {
     if (!isMonthKey(monthKey)) return 'Month must be a valid month key (YYYY-MM).'
-    const ps = Number(plannedSpend)
-    if (!Number.isFinite(ps)) return 'Planned spend must be a number.'
-    const e = Number(earned)
-    if (!Number.isFinite(e)) return 'Earned must be a number.'
+    const ps = parseEuroAmount(plannedSpend)
+    if (ps === null) return 'Planned spend must be a number.'
+    const e = parseEuroAmount(earned)
+    if (e === null) return 'Earned must be a number.'
     return null
   }, [earned, monthKey, plannedSpend])
 
@@ -45,12 +47,17 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
 
     setSubmitting(true)
     try {
+      const ps = parseEuroAmount(plannedSpend)
+      const e = parseEuroAmount(earned)
+      if (ps === null) throw new Error('Planned spend must be a number.')
+      if (e === null) throw new Error('Earned must be a number.')
+
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'BUDGET',
         payload: {
           monthKey,
-          plannedSpend: Number(plannedSpend),
-          earned: Number(earned),
+          plannedSpend: ps,
+          earned: e,
           description: description.trim() ? description.trim() : undefined,
           budgetGoal: budgetGoal.trim() ? budgetGoal.trim() : undefined,
         },
@@ -98,21 +105,19 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
+            <EuroTextField
               label="Planned spend"
               value={plannedSpend}
               onChange={(e) => setPlannedSpend(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
-            <TextField
+            <EuroTextField
               label="Earned"
               value={earned}
               onChange={(e) => setEarned(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
           </Stack>
 
@@ -142,4 +147,3 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
     </Stack>
   )
 }
-

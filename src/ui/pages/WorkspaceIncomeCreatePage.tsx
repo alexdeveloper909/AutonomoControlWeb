@@ -16,6 +16,8 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import type { IvaRate, RetencionRate } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -49,10 +51,10 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
     if (paymentDate && !isIsoDate(paymentDate)) return 'Payment date must be a valid ISO date (YYYY-MM-DD).'
     if (!number.trim()) return 'Invoice number is required.'
     if (!client.trim()) return 'Client is required.'
-    const base = Number(baseExclVat)
-    if (!Number.isFinite(base)) return 'Base (excl. VAT) must be a number.'
-    const override = amountReceivedOverride ? Number(amountReceivedOverride) : null
-    if (override !== null && !Number.isFinite(override)) return 'Amount received override must be a number.'
+    const base = parseEuroAmount(baseExclVat)
+    if (base === null) return 'Base (excl. VAT) must be a number.'
+    const override = amountReceivedOverride.trim() ? parseEuroAmount(amountReceivedOverride) : null
+    if (override === null && amountReceivedOverride.trim()) return 'Amount received override must be a number.'
     return null
   }, [amountReceivedOverride, baseExclVat, client, invoiceDate, number, paymentDate])
 
@@ -65,17 +67,22 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
 
     setSubmitting(true)
     try {
+      const base = parseEuroAmount(baseExclVat)
+      const override = amountReceivedOverride.trim() ? parseEuroAmount(amountReceivedOverride) : null
+      if (base === null) throw new Error('Base (excl. VAT) must be a number.')
+      if (override === null && amountReceivedOverride.trim()) throw new Error('Amount received override must be a number.')
+
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'INVOICE',
         payload: {
           invoiceDate,
           number: number.trim(),
           client: client.trim(),
-          baseExclVat: Number(baseExclVat),
+          baseExclVat: base,
           ivaRate,
           retencion,
           paymentDate: paymentDate.trim() ? paymentDate.trim() : undefined,
-          amountReceivedOverride: amountReceivedOverride.trim() ? Number(amountReceivedOverride) : undefined,
+          amountReceivedOverride: override ?? undefined,
         },
       })
 
@@ -138,20 +145,18 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
+            <EuroTextField
               label="Base (excl. VAT)"
               value={baseExclVat}
               onChange={(e) => setBaseExclVat(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
-            <TextField
+            <EuroTextField
               label="Amount received override (optional)"
               value={amountReceivedOverride}
               onChange={(e) => setAmountReceivedOverride(e.target.value)}
               fullWidth
-              inputMode="decimal"
               helperText="Only when received differs from computed total."
             />
           </Stack>

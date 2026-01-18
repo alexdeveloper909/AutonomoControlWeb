@@ -16,6 +16,8 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import type { StatePaymentType } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -41,8 +43,8 @@ export function WorkspaceStatePaymentsCreatePage(props: { workspaceId: string; a
 
   const validationError = useMemo(() => {
     if (!isIsoDate(paymentDate)) return 'Payment date must be a valid ISO date (YYYY-MM-DD).'
-    const a = Number(amount)
-    if (!Number.isFinite(a)) return 'Amount must be a number.'
+    const a = parseEuroAmount(amount)
+    if (a === null) return 'Amount must be a number.'
     if (a < 0) return 'Amount must be >= 0.'
     return null
   }, [amount, paymentDate])
@@ -56,12 +58,15 @@ export function WorkspaceStatePaymentsCreatePage(props: { workspaceId: string; a
 
     setSubmitting(true)
     try {
+      const a = parseEuroAmount(amount)
+      if (a === null) throw new Error('Amount must be a number.')
+
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'STATE_PAYMENT',
         payload: {
           paymentDate,
           type,
-          amount: Number(amount),
+          amount: a,
         },
       })
 
@@ -107,13 +112,12 @@ export function WorkspaceStatePaymentsCreatePage(props: { workspaceId: string; a
               fullWidth
               error={Boolean(paymentDate) && !isIsoDate(paymentDate)}
             />
-            <TextField
+            <EuroTextField
               label="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
           </Stack>
 
@@ -146,4 +150,3 @@ export function WorkspaceStatePaymentsCreatePage(props: { workspaceId: string; a
     </Stack>
   )
 }
-

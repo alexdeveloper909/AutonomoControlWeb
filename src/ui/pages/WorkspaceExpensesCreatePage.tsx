@@ -18,6 +18,8 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import type { IvaRate } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -53,13 +55,13 @@ export function WorkspaceExpensesCreatePage(props: { workspaceId: string; api: A
     if (paymentDate && !isIsoDate(paymentDate)) return 'Payment date must be a valid ISO date (YYYY-MM-DD).'
     if (!vendor.trim()) return 'Vendor is required.'
     if (!category.trim()) return 'Category is required.'
-    const base = Number(baseExclVat)
-    if (!Number.isFinite(base)) return 'Base (excl. VAT) must be a number.'
+    const base = parseEuroAmount(baseExclVat)
+    if (base === null) return 'Base (excl. VAT) must be a number.'
     const share = Number(deductibleShare)
     if (!Number.isFinite(share)) return 'Deductible share must be a number in [0, 1].'
     if (share < 0 || share > 1) return 'Deductible share must be in [0, 1].'
-    const override = amountPaidOverride ? Number(amountPaidOverride) : null
-    if (override !== null && !Number.isFinite(override)) return 'Amount paid override must be a number.'
+    const override = amountPaidOverride.trim() ? parseEuroAmount(amountPaidOverride) : null
+    if (override === null && amountPaidOverride.trim()) return 'Amount paid override must be a number.'
     return null
   }, [amountPaidOverride, baseExclVat, category, deductibleShare, documentDate, paymentDate, vendor])
 
@@ -72,18 +74,23 @@ export function WorkspaceExpensesCreatePage(props: { workspaceId: string; api: A
 
     setSubmitting(true)
     try {
+      const base = parseEuroAmount(baseExclVat)
+      const override = amountPaidOverride.trim() ? parseEuroAmount(amountPaidOverride) : null
+      if (base === null) throw new Error('Base (excl. VAT) must be a number.')
+      if (override === null && amountPaidOverride.trim()) throw new Error('Amount paid override must be a number.')
+
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'EXPENSE',
         payload: {
           documentDate,
           vendor: vendor.trim(),
           category: category.trim(),
-          baseExclVat: Number(baseExclVat),
+          baseExclVat: base,
           ivaRate,
           vatRecoverableFlag,
           deductibleShare: Number(deductibleShare),
           paymentDate: paymentDate.trim() ? paymentDate.trim() : undefined,
-          amountPaidOverride: amountPaidOverride.trim() ? Number(amountPaidOverride) : undefined,
+          amountPaidOverride: override ?? undefined,
         },
       })
 
@@ -146,20 +153,18 @@ export function WorkspaceExpensesCreatePage(props: { workspaceId: string; api: A
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
+            <EuroTextField
               label="Base (excl. VAT)"
               value={baseExclVat}
               onChange={(e) => setBaseExclVat(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
-            <TextField
+            <EuroTextField
               label="Amount paid override (optional)"
               value={amountPaidOverride}
               onChange={(e) => setAmountPaidOverride(e.target.value)}
               fullWidth
-              inputMode="decimal"
               helperText="Only when paid differs from computed total."
             />
           </Stack>

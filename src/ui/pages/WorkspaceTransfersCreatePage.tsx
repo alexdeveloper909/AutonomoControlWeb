@@ -5,6 +5,8 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import type { TransferOp } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -31,8 +33,8 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
 
   const validationError = useMemo(() => {
     if (!isIsoDate(date)) return 'Date must be a valid ISO date (YYYY-MM-DD).'
-    const a = Number(amount)
-    if (!Number.isFinite(a)) return 'Amount must be a number.'
+    const a = parseEuroAmount(amount)
+    if (a === null) return 'Amount must be a number.'
     if (a < 0) return 'Amount must be >= 0.'
     return null
   }, [amount, date])
@@ -46,12 +48,15 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
 
     setSubmitting(true)
     try {
+      const a = parseEuroAmount(amount)
+      if (a === null) throw new Error('Amount must be a number.')
+
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'TRANSFER',
         payload: {
           date,
           operation,
-          amount: Number(amount),
+          amount: a,
           note: note.trim() ? note.trim() : undefined,
         },
       })
@@ -97,13 +102,12 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
               fullWidth
               error={Boolean(date) && !isIsoDate(date)}
             />
-            <TextField
+            <EuroTextField
               label="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               fullWidth
-              inputMode="decimal"
             />
           </Stack>
 
@@ -138,4 +142,3 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
     </Stack>
   )
 }
-
