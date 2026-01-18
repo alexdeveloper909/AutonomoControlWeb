@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
+  FormControl,
   LinearProgress,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
@@ -10,7 +13,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
@@ -112,11 +114,18 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
       })
   }, [currentPageItems])
 
+  const yearOptions = useMemo(() => {
+    const current = Number(currentYear())
+    const years: string[] = []
+    for (let y = current + 1; y >= current - 10; y -= 1) years.push(String(y))
+    return years
+  }, [])
+
   return (
     <Stack spacing={2}>
       <PageHeader
         title="Income"
-        description="INVOICE records for this workspace (month filter)."
+        description="INVOICE records for this workspace (year filter)."
         right={
           <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/income/new`}>
             Add Income
@@ -126,19 +135,27 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <TextField
-            label="Year"
-            value={year}
-            onChange={(e) => {
-              setYear(e.target.value)
-              setPageIndex(0)
-              setPageTokens([null])
-              setPages([])
-            }}
-            InputLabelProps={{ shrink: true }}
-            inputMode="numeric"
-            helperText="Uses GET /workspaces/{workspaceId}/records?year=YYYY&recordType=INVOICE"
-          />
+          <FormControl sx={{ minWidth: 160 }}>
+            <Select
+              value={year}
+              onChange={(e) => {
+                setYear(e.target.value)
+                setPageIndex(0)
+                setPageTokens([null])
+                setPages([])
+              }}
+              size="small"
+            >
+              {yearOptions.map((y) => (
+                <MenuItem key={y} value={y}>
+                  {y}
+                </MenuItem>
+              ))}
+            </Select>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+              Year (uses <code>year=YYYY</code>)
+            </Typography>
+          </FormControl>
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
             <Typography variant="body2" color="text.secondary">
