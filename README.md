@@ -111,7 +111,7 @@ Screens (Finance):
   - Add income (`/workspaces/:workspaceId/income/new`) → `src/ui/pages/WorkspaceIncomeCreatePage.tsx` (creates an `INVOICE` record)
 - Expenses (`/workspaces/:workspaceId/expenses`) → `src/ui/pages/WorkspaceExpensesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add expense (`/workspaces/:workspaceId/expenses/new`) → `src/ui/pages/WorkspaceExpensesCreatePage.tsx` (creates an `EXPENSE` record)
-- State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx`
+- State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add state payment (`/workspaces/:workspaceId/state-payments/new`) → `src/ui/pages/WorkspaceStatePaymentsCreatePage.tsx` (creates a `STATE_PAYMENT` record)
 - Transfers (`/workspaces/:workspaceId/transfers`) → `src/ui/pages/WorkspaceTransfersPage.tsx`
   - Add transfer (`/workspaces/:workspaceId/transfers/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)

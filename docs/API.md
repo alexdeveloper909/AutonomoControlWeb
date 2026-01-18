@@ -91,6 +91,12 @@ The State payments screen uses a dedicated form and submits:
   - `recordType: "STATE_PAYMENT"`
   - `payload` fields: `paymentDate`, `type` (`Modelo303` | `Modelo130` | `SeguridadSocial` | `RentaAnual` | `Other`), `amount`
 
+## List state payments (STATE_PAYMENT) with sorting + pagination
+
+The State payments screen lists year-scoped state payment records using:
+
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=STATE_PAYMENT&sort=eventDateDesc&limit=20&nextToken=...`
+
 ## Add budget entry (BUDGET)
 
 The Budget screen uses a dedicated form and submits:
