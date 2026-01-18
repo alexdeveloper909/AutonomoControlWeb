@@ -70,6 +70,11 @@ export class AutonomoControlApi {
     return res.items
   }
 
+  async listRecordsByYear(workspaceId: string, year: string, recordType?: RecordType): Promise<RecordResponse[]> {
+    const res = await this.listRecordsByYearPaged(workspaceId, year, { recordType })
+    return res.items
+  }
+
   async listRecordsByMonthPaged(
     workspaceId: string,
     monthKey: string,
@@ -77,6 +82,21 @@ export class AutonomoControlApi {
   ): Promise<ListResponse<RecordResponse>> {
     const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
     url.searchParams.set('month', monthKey)
+    if (options?.recordType) url.searchParams.set('recordType', options.recordType)
+    if (options?.sort) url.searchParams.set('sort', options.sort)
+    if (options?.limit != null) url.searchParams.set('limit', String(options.limit))
+    if (options?.nextToken) url.searchParams.set('nextToken', options.nextToken)
+    const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })
+    return { items: res.items, nextToken: res.nextToken ?? null }
+  }
+
+  async listRecordsByYearPaged(
+    workspaceId: string,
+    year: string,
+    options?: { recordType?: RecordType } & RecordsListOptions,
+  ): Promise<ListResponse<RecordResponse>> {
+    const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
+    url.searchParams.set('year', year)
     if (options?.recordType) url.searchParams.set('recordType', options.recordType)
     if (options?.sort) url.searchParams.set('sort', options.sort)
     if (options?.limit != null) url.searchParams.set('limit', String(options.limit))

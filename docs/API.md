@@ -24,6 +24,7 @@ All authenticated requests include:
 - `PUT /workspaces/{workspaceId}/settings`
 - `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `GET /workspaces/{workspaceId}/records?quarter=YYYY-Q1&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `POST /workspaces/{workspaceId}/records`
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
@@ -53,9 +54,9 @@ The Income screen uses a dedicated form (not the raw JSON editor) and submits:
 
 ## List income (INVOICE) with sorting + pagination
 
-The Income screen lists month-scoped invoice records using:
+The Income screen lists year-scoped invoice records using:
 
-- `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=INVOICE&sort=eventDateDesc&limit=20&nextToken=...`
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=INVOICE&sort=eventDateDesc&limit=20&nextToken=...`
 
 Notes:
 

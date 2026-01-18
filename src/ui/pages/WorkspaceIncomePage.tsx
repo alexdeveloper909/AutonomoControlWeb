@@ -21,10 +21,9 @@ import { ErrorAlert } from '../components/ErrorAlert'
 
 const PAGE_SIZE = 20
 
-const monthKeyToday = (): string => {
+const currentYear = (): string => {
   const d = new Date()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  return `${d.getFullYear()}-${m}`
+  return String(d.getFullYear())
 }
 
 const asInvoicePayload = (payload: unknown): InvoicePayload | null => {
@@ -42,7 +41,7 @@ const asInvoicePayload = (payload: unknown): InvoicePayload | null => {
 const money = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoControlApi }) {
-  const [monthKey, setMonthKey] = useState(monthKeyToday())
+  const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
   const [pageTokens, setPageTokens] = useState<(string | null)[]>([null])
   const [pages, setPages] = useState<RecordResponse[][]>([])
@@ -69,7 +68,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
       setError(null)
       setLoading(true)
       try {
-        const res = await props.api.listRecordsByMonthPaged(props.workspaceId, monthKey, {
+        const res = await props.api.listRecordsByYearPaged(props.workspaceId, year, {
           recordType: 'INVOICE',
           sort: 'eventDateDesc',
           limit: PAGE_SIZE,
@@ -101,7 +100,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
     return () => {
       canceled = true
     }
-  }, [currentPageItems, monthKey, pageIndex, props.api, props.workspaceId, startToken])
+  }, [currentPageItems, pageIndex, props.api, props.workspaceId, startToken, year])
 
   const tableRows = useMemo(() => {
     if (!currentPageItems) return null
@@ -128,17 +127,17 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <TextField
-            label="Month"
-            type="month"
-            value={monthKey}
+            label="Year"
+            value={year}
             onChange={(e) => {
-              setMonthKey(e.target.value)
+              setYear(e.target.value)
               setPageIndex(0)
               setPageTokens([null])
               setPages([])
             }}
             InputLabelProps={{ shrink: true }}
-            helperText="Uses GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=INVOICE"
+            inputMode="numeric"
+            helperText="Uses GET /workspaces/{workspaceId}/records?year=YYYY&recordType=INVOICE"
           />
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
@@ -199,7 +198,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
               ) : currentPageItems ? (
                 <TableRow>
                   <TableCell colSpan={6}>
-                    <Typography color="text.secondary">No income records found for {monthKey}.</Typography>
+                    <Typography color="text.secondary">No income records found for {year}.</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
