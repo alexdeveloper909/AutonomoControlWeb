@@ -107,7 +107,7 @@ The workspace area uses an app-shell layout: top bar + persistent **left navigat
 
 Screens (Finance):
 
-- Income (`/workspaces/:workspaceId/income`) → `src/ui/pages/WorkspaceIncomePage.tsx`
+- Income (`/workspaces/:workspaceId/income`) → `src/ui/pages/WorkspaceIncomePage.tsx` (month filter; paginated, sorted by `eventDate` desc)
   - Add income (`/workspaces/:workspaceId/income/new`) → `src/ui/pages/WorkspaceIncomeCreatePage.tsx` (creates an `INVOICE` record)
 - Expenses (`/workspaces/:workspaceId/expenses`) → `src/ui/pages/WorkspaceExpensesPage.tsx`
   - Add expense (`/workspaces/:workspaceId/expenses/new`) → `src/ui/pages/WorkspaceExpensesCreatePage.tsx` (creates an `EXPENSE` record)

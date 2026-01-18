@@ -22,8 +22,8 @@ All authenticated requests include:
 - `POST /workspaces`
 - `GET /workspaces/{workspaceId}/settings`
 - `PUT /workspaces/{workspaceId}/settings`
-- `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=...`
-- `GET /workspaces/{workspaceId}/records?quarter=YYYY-Q1&recordType=...`
+- `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
+- `GET /workspaces/{workspaceId}/records?quarter=YYYY-Q1&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `POST /workspaces/{workspaceId}/records`
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
@@ -50,6 +50,21 @@ The Income screen uses a dedicated form (not the raw JSON editor) and submits:
 - Body:
   - `recordType: "INVOICE"`
   - `payload` fields: `invoiceDate`, `number`, `client`, `baseExclVat`, `ivaRate`, `retencion`, optional `paymentDate`, `amountReceivedOverride`
+
+## List income (INVOICE) with sorting + pagination
+
+The Income screen lists month-scoped invoice records using:
+
+- `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=INVOICE&sort=eventDateDesc&limit=20&nextToken=...`
+
+Notes:
+
+- Sorting: `sort=eventDateDesc` (server-side).
+- Pagination: `limit` controls page size (UI uses `20`). If the response includes `nextToken`, pass it back to fetch the next page (when `nextToken` is provided, `limit` is required).
+- Response shape:
+  ```json
+  { "items": [ /* RecordResponse */ ], "nextToken": "optional-opaque" }
+  ```
 
 ## Add expense (EXPENSE)
 

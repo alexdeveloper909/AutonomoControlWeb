@@ -4,8 +4,11 @@ import type { RecordResponse, RecordType, RecordPayload } from '../../domain/rec
 import { env, requireEnv } from '../config/env'
 import { jsonFetch } from '../http/jsonFetch'
 
-type ListResponse<T> = { items: T[] }
+type ListResponse<T> = { items: T[]; nextToken?: string | null }
 type WorkspaceSettingsResponse = { workspaceId: string; settings: WorkspaceSettings }
+
+export type RecordsSort = 'eventDateDesc'
+export type RecordsListOptions = { sort?: RecordsSort; limit?: number; nextToken?: string | null }
 
 export class AutonomoControlApi {
   private readonly baseUrl: string
@@ -63,11 +66,23 @@ export class AutonomoControlApi {
   }
 
   async listRecordsByMonth(workspaceId: string, monthKey: string, recordType?: RecordType): Promise<RecordResponse[]> {
+    const res = await this.listRecordsByMonthPaged(workspaceId, monthKey, { recordType })
+    return res.items
+  }
+
+  async listRecordsByMonthPaged(
+    workspaceId: string,
+    monthKey: string,
+    options?: { recordType?: RecordType } & RecordsListOptions,
+  ): Promise<ListResponse<RecordResponse>> {
     const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
     url.searchParams.set('month', monthKey)
-    if (recordType) url.searchParams.set('recordType', recordType)
+    if (options?.recordType) url.searchParams.set('recordType', options.recordType)
+    if (options?.sort) url.searchParams.set('sort', options.sort)
+    if (options?.limit != null) url.searchParams.set('limit', String(options.limit))
+    if (options?.nextToken) url.searchParams.set('nextToken', options.nextToken)
     const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })
-    return res.items
+    return { items: res.items, nextToken: res.nextToken ?? null }
   }
 
   async listRecordsByQuarter(
@@ -75,11 +90,23 @@ export class AutonomoControlApi {
     quarterKey: string,
     recordType?: RecordType,
   ): Promise<RecordResponse[]> {
+    const res = await this.listRecordsByQuarterPaged(workspaceId, quarterKey, { recordType })
+    return res.items
+  }
+
+  async listRecordsByQuarterPaged(
+    workspaceId: string,
+    quarterKey: string,
+    options?: { recordType?: RecordType } & RecordsListOptions,
+  ): Promise<ListResponse<RecordResponse>> {
     const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
     url.searchParams.set('quarter', quarterKey)
-    if (recordType) url.searchParams.set('recordType', recordType)
+    if (options?.recordType) url.searchParams.set('recordType', options.recordType)
+    if (options?.sort) url.searchParams.set('sort', options.sort)
+    if (options?.limit != null) url.searchParams.set('limit', String(options.limit))
+    if (options?.nextToken) url.searchParams.set('nextToken', options.nextToken)
     const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })
-    return res.items
+    return { items: res.items, nextToken: res.nextToken ?? null }
   }
 
   async createRecord(workspaceId: string, input: { recordType: RecordType; recordId?: string; payload: RecordPayload }) {
