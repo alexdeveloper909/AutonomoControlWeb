@@ -7,11 +7,10 @@ import { WorkspaceExpensesCreatedPage } from './WorkspaceExpensesCreatedPage'
 export function WorkspaceExpensesRoutes(props: { workspaceId: string; api: AutonomoControlApi }) {
   return (
     <Routes>
-      <Route index element={<WorkspaceExpensesPage workspaceId={props.workspaceId} />} />
+      <Route index element={<WorkspaceExpensesPage workspaceId={props.workspaceId} api={props.api} />} />
       <Route path="new" element={<WorkspaceExpensesCreatePage workspaceId={props.workspaceId} api={props.api} />} />
       <Route path="created" element={<WorkspaceExpensesCreatedPage workspaceId={props.workspaceId} />} />
       <Route path="*" element={<Navigate to={`/workspaces/${props.workspaceId}/expenses`} replace />} />
     </Routes>
   )
 }
-

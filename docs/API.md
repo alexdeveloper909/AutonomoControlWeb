@@ -76,6 +76,12 @@ The Expenses screen uses a dedicated form and submits:
   - `recordType: "EXPENSE"`
   - `payload` fields: `documentDate`, `vendor`, `category`, `baseExclVat`, `ivaRate`, `vatRecoverableFlag`, `deductibleShare`, optional `paymentDate`, `amountPaidOverride`
 
+## List expenses (EXPENSE) with sorting + pagination
+
+The Expenses screen lists year-scoped expense records using:
+
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=EXPENSE&sort=eventDateDesc&limit=20&nextToken=...`
+
 ## Add state payment (STATE_PAYMENT)
 
 The State payments screen uses a dedicated form and submits:
