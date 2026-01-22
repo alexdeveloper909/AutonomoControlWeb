@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { useMemo } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '../auth/AuthProvider'
+import { SessionTimeoutProvider } from '../auth/SessionTimeoutProvider'
 import { AppRouter } from './AppRouter'
 import { createAppTheme } from './theme'
 import { queryClient } from './queryClient'
@@ -23,7 +24,9 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <AppRouter />
+            <SessionTimeoutProvider>
+              <AppRouter />
+            </SessionTimeoutProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

@@ -1,4 +1,5 @@
 import { HttpError } from './httpError'
+import { notifySessionExpired } from '../auth/sessionEvents'
 
 export type JsonFetchOptions = Omit<RequestInit, 'body'> & {
   body?: unknown
@@ -28,6 +29,9 @@ export const jsonFetch = async <T>(url: string, options: JsonFetchOptions = {}):
     const text = await res.text().catch(() => undefined)
     const trimmed = text?.trim()
     const details = trimmed ? `\n${trimmed.length > 800 ? `${trimmed.slice(0, 800)}…` : trimmed}` : ''
+    if (res.status === 401 || res.status === 403) {
+      notifySessionExpired({ source: 'http', status: res.status as 401 | 403, url })
+    }
     throw new HttpError(`HTTP ${res.status} for ${url}${details}`, res.status, text)
   }
 

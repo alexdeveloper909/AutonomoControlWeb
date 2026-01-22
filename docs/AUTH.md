@@ -35,6 +35,23 @@ The web app needs:
 - API calls send `Authorization: Bearer <id_token>` (matches API docs expectations)
 - Tokens are stored in the browser (MVP); treat the app as a public client (no secrets)
 
+## Session expiry UX (no refresh token renewal)
+
+This MVP does **not** implement refresh-token based renewal / sliding sessions. When the `id_token` is expired (or about to expire) the UI prompts the user to sign in again.
+
+Behavior:
+
+- A session is treated as “about to expire” at `exp <= now + 30s` (same threshold as `authService.getSession()`).
+- When that threshold is reached, a modal dialog is shown: “Session expired” with an **OK** button.
+- The same modal is also shown when any API call returns `401` or `403`.
+- Clicking **OK** clears stored tokens and redirects to `/login`.
+
+Code reference:
+
+- Timer + dialog + redirect: `src/ui/auth/SessionTimeoutProvider.tsx`
+- Emitting “session expired” on HTTP 401/403: `src/infrastructure/http/jsonFetch.ts`
+- Event bus: `src/infrastructure/auth/sessionEvents.ts`
+
 ## Logout
 
 Logout clears local tokens and redirects to:
@@ -58,4 +75,3 @@ Usually one of:
 - `VITE_COGNITO_DOMAIN` is wrong (missing `https://` or wrong stage domain)
 - `VITE_COGNITO_CLIENT_ID` does not match the stage’s app client
 - `VITE_COGNITO_REDIRECT_URI` is not in the app client callback URLs
-

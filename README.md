@@ -135,6 +135,7 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 
 - Routes are defined in `AutonomoControlWeb/src/ui/app/AppRouter.tsx`.
 - Auth logic lives in `AutonomoControlWeb/src/infrastructure/auth/cognitoHostedUi.ts` (PKCE + token exchange).
+- Session expiry UX (no refresh token renewal) is handled by `AutonomoControlWeb/src/ui/auth/SessionTimeoutProvider.tsx`.
 - API client lives in `AutonomoControlWeb/src/infrastructure/api/autonomoControlApi.ts`.
 
 ## Client-side caching (TanStack Query)
