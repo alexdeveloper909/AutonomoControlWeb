@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Paper, Stack, TextField, Typography } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
+import { queryKeys } from '../queries/queryKeys'
 
 const monthKeyToday = (): string => {
   const d = new Date()
@@ -17,6 +19,7 @@ const isMonthKey = (s: string): boolean => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
 
 export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [monthKey, setMonthKey] = useState(monthKeyToday())
   const [plannedSpend, setPlannedSpend] = useState('2000')
@@ -62,6 +65,8 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
           budgetGoal: budgetGoal.trim() ? budgetGoal.trim() : undefined,
         },
       })
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'BUDGET') })
 
       navigate(`/workspaces/${props.workspaceId}/budget/created`, { replace: true, state: { record: res } })
     } catch (e) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
@@ -16,11 +16,13 @@ import {
   Typography,
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { RecordResponse, TransferPayload } from '../../domain/records'
 import type { WorkspaceSettings } from '../../domain/settings'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { queryKeys } from '../queries/queryKeys'
 
 const currentYear = (): string => {
   const d = new Date()
@@ -52,81 +54,50 @@ const sortDesc = (a: RecordResponse, b: RecordResponse): number => {
 
 export function WorkspaceTransfersPage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const [year, setYear] = useState(currentYear())
-  const [settings, setSettings] = useState<WorkspaceSettings | null>(null)
-  const [items, setItems] = useState<RecordResponse[] | null>(null)
+  const queryClient = useQueryClient()
 
-  const [loadingSettings, setLoadingSettings] = useState(false)
-  const [loadingItems, setLoadingItems] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const loading = loadingSettings || loadingItems
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.workspaceSettings(props.workspaceId),
+    queryFn: () => props.api.getWorkspaceSettings(props.workspaceId),
+  })
+
+  const transfersQueryKey = queryKeys.recordsByYear(props.workspaceId, 'TRANSFER', year)
+  const transfersQuery = useQuery({
+    queryKey: transfersQueryKey,
+    queryFn: async () => {
+      const loaded: RecordResponse[] = []
+      let nextToken: string | null = null
+      do {
+        const res = await props.api.listRecordsByYearPaged(props.workspaceId, year, {
+          recordType: 'TRANSFER',
+          sort: 'eventDateDesc',
+          limit: 200,
+          nextToken,
+        })
+        loaded.push(...res.items)
+        nextToken = res.nextToken ?? null
+      } while (nextToken)
+      return loaded
+    },
+  })
+
+  const settings = (settingsQuery.data ?? null) as WorkspaceSettings | null
+  const items = transfersQuery.data ?? null
+  const loading = settingsQuery.isFetching || transfersQuery.isFetching
+  const error =
+    settingsQuery.error instanceof Error
+      ? settingsQuery.error.message
+      : transfersQuery.error instanceof Error
+        ? transfersQuery.error.message
+        : settingsQuery.error
+          ? String(settingsQuery.error)
+          : transfersQuery.error
+            ? String(transfersQuery.error)
+            : null
 
   const refresh = () => {
-    setError(null)
-    setItems(null)
+    queryClient.removeQueries({ queryKey: transfersQueryKey })
   }
-
-  useEffect(() => {
-    let canceled = false
-
-    const load = async () => {
-      setLoadingSettings(true)
-      setError(null)
-      try {
-        const res = await props.api.getWorkspaceSettings(props.workspaceId)
-
-        if (canceled) return
-
-        setSettings(res)
-      } catch (e) {
-        if (canceled) return
-        setError(e instanceof Error ? e.message : String(e))
-      } finally {
-        if (!canceled) setLoadingSettings(false)
-      }
-    }
-
-    void load()
-    return () => {
-      canceled = true
-    }
-  }, [props.api, props.workspaceId])
-
-  useEffect(() => {
-    let canceled = false
-
-    const load = async () => {
-      if (items) return
-      setLoadingItems(true)
-      setError(null)
-      try {
-        const loaded: RecordResponse[] = []
-        let nextToken: string | null = null
-        do {
-          const res = await props.api.listRecordsByYearPaged(props.workspaceId, year, {
-            recordType: 'TRANSFER',
-            sort: 'eventDateDesc',
-            limit: 200,
-            nextToken,
-          })
-          loaded.push(...res.items)
-          nextToken = res.nextToken ?? null
-        } while (nextToken)
-
-        if (canceled) return
-        setItems(loaded)
-      } catch (e) {
-        if (canceled) return
-        setError(e instanceof Error ? e.message : String(e))
-      } finally {
-        if (!canceled) setLoadingItems(false)
-      }
-    }
-
-    void load()
-    return () => {
-      canceled = true
-    }
-  }, [items, props.api, props.workspaceId, year])
 
   const yearOptions = useMemo(() => {
     const current = Number(currentYear())
@@ -204,7 +175,6 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
               value={year}
               onChange={(e) => {
                 setYear(e.target.value)
-                setItems(null)
               }}
               size="small"
             >

@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { TransferOp } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
+import { queryKeys } from '../queries/queryKeys'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -20,6 +22,7 @@ const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [date, setDate] = useState(todayIso())
   const [operation, setOperation] = useState<TransferOp>('Inflow')
@@ -60,6 +63,8 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
           note: note.trim() ? note.trim() : undefined,
         },
       })
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'TRANSFER') })
 
       navigate(`/workspaces/${props.workspaceId}/transfers/created`, { replace: true, state: { record: res } })
     } catch (e) {

@@ -2,9 +2,11 @@ import { CssBaseline, useMediaQuery } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { BrowserRouter } from 'react-router-dom'
 import { useMemo } from 'react'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '../auth/AuthProvider'
 import { AppRouter } from './AppRouter'
 import { createAppTheme } from './theme'
+import { queryClient } from './queryClient'
 
 export function App() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)', {
@@ -18,11 +20,13 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRouter />
-        </AuthProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRouter />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }

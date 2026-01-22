@@ -57,6 +57,14 @@ All MUI + React Router UI code:
 - Auth context: `src/ui/auth/*`
 - Pages: `src/ui/pages/*`
 
+Data fetching + caching:
+
+- The app uses TanStack Query (React Query) to cache API responses and make left-nav tab switches instant.
+- Query client setup: `src/ui/app/queryClient.ts`
+- Query keys: `src/ui/queries/queryKeys.ts`
+- Default policy: `staleTime=Infinity` (no auto-refetch on tab switch); “Refresh” buttons clear cache for that view.
+- Invalidation rules on record creation are documented in `AutonomoControlWeb/README.md` (“Client-side caching”).
+
 ## Routing
 
 - Router definition: `src/ui/app/AppRouter.tsx`
@@ -77,4 +85,3 @@ uses a JSON editor to:
 - avoid committing to forms before schemas stabilize
 
 The next iteration should replace JSON editors with typed forms per record type.
-

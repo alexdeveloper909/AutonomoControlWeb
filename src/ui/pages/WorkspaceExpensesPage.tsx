@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
@@ -16,10 +16,12 @@ import {
   Typography,
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { ExpensePayload, RecordResponse } from '../../domain/records'
+import type { ExpensePayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { queryKeys } from '../queries/queryKeys'
 
 const PAGE_SIZE = 20
 
@@ -46,64 +48,30 @@ const money = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximum
 export function WorkspaceExpensesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
-  const [pageTokens, setPageTokens] = useState<(string | null)[]>([null])
-  const [pages, setPages] = useState<RecordResponse[][]>([])
+  const queryClient = useQueryClient()
+  const queryKey = queryKeys.recordsByYear(props.workspaceId, 'EXPENSE', year)
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
+    queryKey,
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) =>
+      props.api.listRecordsByYearPaged(props.workspaceId, year, {
+        recordType: 'EXPENSE',
+        sort: 'eventDateDesc',
+        limit: PAGE_SIZE,
+        nextToken: pageParam,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextToken ?? undefined,
+  })
 
-  const currentPageItems = pages[pageIndex] ?? null
-  const startToken = pageTokens[pageIndex] ?? null
-  const nextToken = pageTokens[pageIndex + 1]
+  const currentPageItems = data?.pages[pageIndex]?.items ?? null
+  const nextToken = data?.pages[pageIndex]?.nextToken ?? null
+  const nextPageLoaded = Boolean(data?.pages[pageIndex + 1])
 
   const refresh = () => {
-    setError(null)
     setPageIndex(0)
-    setPageTokens([null])
-    setPages([])
+    queryClient.removeQueries({ queryKey })
   }
-
-  useEffect(() => {
-    let canceled = false
-
-    const load = async () => {
-      if (currentPageItems) return
-      setError(null)
-      setLoading(true)
-      try {
-        const res = await props.api.listRecordsByYearPaged(props.workspaceId, year, {
-          recordType: 'EXPENSE',
-          sort: 'eventDateDesc',
-          limit: PAGE_SIZE,
-          nextToken: startToken,
-        })
-
-        if (canceled) return
-
-        setPages((prev) => {
-          const next = prev.slice()
-          next[pageIndex] = res.items
-          return next
-        })
-        setPageTokens((prev) => {
-          const next = prev.slice()
-          while (next.length < pageIndex + 2) next.push(null)
-          next[pageIndex + 1] = res.nextToken ?? null
-          return next
-        })
-      } catch (e) {
-        if (canceled) return
-        setError(e instanceof Error ? e.message : String(e))
-      } finally {
-        if (!canceled) setLoading(false)
-      }
-    }
-
-    void load()
-    return () => {
-      canceled = true
-    }
-  }, [currentPageItems, pageIndex, props.api, props.workspaceId, startToken, year])
 
   const yearOptions = useMemo(() => {
     const current = Number(currentYear())
@@ -142,8 +110,6 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
               onChange={(e) => {
                 setYear(e.target.value)
                 setPageIndex(0)
-                setPageTokens([null])
-                setPages([])
               }}
               size="small"
             >
@@ -162,18 +128,28 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
             <Typography variant="body2" color="text.secondary">
               Page {pageIndex + 1} · {PAGE_SIZE} per page · sort: eventDate desc
             </Typography>
-            <Button variant="text" onClick={refresh} disabled={loading}>
+            <Button variant="text" onClick={refresh} disabled={isFetching}>
               Refresh
             </Button>
-            <Button variant="outlined" onClick={() => setPageIndex((p) => Math.max(0, p - 1))} disabled={loading || pageIndex === 0}>
+            <Button
+              variant="outlined"
+              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+              disabled={isFetching || pageIndex === 0}
+            >
               Prev
             </Button>
             <Button
               variant="outlined"
-              onClick={() => {
-                if (nextToken) setPageIndex((p) => p + 1)
+              onClick={async () => {
+                if (nextPageLoaded) {
+                  setPageIndex((p) => p + 1)
+                  return
+                }
+                if (!nextToken) return
+                await fetchNextPage()
+                setPageIndex((p) => p + 1)
               }}
-              disabled={loading || !nextToken}
+              disabled={isFetching || (!nextPageLoaded && !nextToken)}
             >
               Next
             </Button>
@@ -181,8 +157,8 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
         </Stack>
       </Paper>
 
-      {loading ? <LinearProgress /> : null}
-      {error ? <ErrorAlert message={error} /> : null}
+      {isFetching ? <LinearProgress /> : null}
+      {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
 
       <Paper variant="outlined">
         <TableContainer>
@@ -225,13 +201,13 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
                     <Typography color="text.secondary">No expense records found for {year}.</Typography>
                   </TableCell>
                 </TableRow>
-              ) : (
+              ) : isPending ? (
                 <TableRow>
                   <TableCell colSpan={7}>
                     <Typography color="text.secondary">Loading…</Typography>
                   </TableCell>
                 </TableRow>
-              )}
+              ) : null}
             </TableBody>
           </Table>
         </TableContainer>
@@ -239,4 +215,3 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
     </Stack>
   )
 }
-

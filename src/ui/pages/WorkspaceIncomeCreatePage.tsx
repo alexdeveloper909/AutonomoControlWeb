@@ -12,12 +12,14 @@ import {
   Typography,
 } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { IvaRate, RetencionRate } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
+import { queryKeys } from '../queries/queryKeys'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -31,6 +33,7 @@ const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [invoiceDate, setInvoiceDate] = useState(todayIso())
   const [number, setNumber] = useState('')
@@ -85,6 +88,9 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
           amountReceivedOverride: override ?? undefined,
         },
       })
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'INVOICE') })
+      queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
 
       navigate(`/workspaces/${props.workspaceId}/income/created`, { replace: true, state: { record: res } })
     } catch (e) {

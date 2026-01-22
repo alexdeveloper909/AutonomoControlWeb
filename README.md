@@ -136,3 +136,26 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Routes are defined in `AutonomoControlWeb/src/ui/app/AppRouter.tsx`.
 - Auth logic lives in `AutonomoControlWeb/src/infrastructure/auth/cognitoHostedUi.ts` (PKCE + token exchange).
 - API client lives in `AutonomoControlWeb/src/infrastructure/api/autonomoControlApi.ts`.
+
+## Client-side caching (TanStack Query)
+
+The Finance left-navigation tabs (Income, Expenses, State payments, Transfers, Budget, Summaries) use TanStack Query
+to cache API responses and avoid refetching when switching between tabs.
+
+- Query client setup: `src/ui/app/queryClient.ts`
+- Query keys: `src/ui/queries/queryKeys.ts`
+
+Caching behavior:
+
+- Record lists are cached per `workspaceId` + `recordType` + `year`.
+- Summaries are cached per `workspaceId`.
+- Queries default to `staleTime=Infinity` (no automatic refetch on tab switch); the UI “Refresh” buttons clear cache for the current view.
+
+Cache invalidation on create:
+
+- After creating `INVOICE`, `EXPENSE`, or `STATE_PAYMENT`:
+  - Invalidate that record list cache.
+  - Invalidate `Summaries` cache.
+- After creating `TRANSFER` or `BUDGET`:
+  - Invalidate that record list cache.
+  - Do **not** invalidate `Summaries` cache (these features do not affect summaries).

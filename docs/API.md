@@ -67,6 +67,18 @@ Notes:
   { "items": [ /* RecordResponse */ ], "nextToken": "optional-opaque" }
   ```
 
+## Client-side caching and invalidation
+
+The web client caches list/summaries responses using TanStack Query to avoid refetching when switching tabs.
+
+- Record lists are cached per `workspaceId` + `recordType` + `year`.
+- Summaries are cached per `workspaceId`.
+
+When creating records, the UI invalidates caches so the next navigation refetches fresh data:
+
+- `INVOICE` / `EXPENSE` / `STATE_PAYMENT`: invalidate the matching record list cache and `Summaries`.
+- `TRANSFER` / `BUDGET`: invalidate the matching record list cache; do **not** invalidate `Summaries`.
+
 ## Add expense (EXPENSE)
 
 The Expenses screen uses a dedicated form and submits:

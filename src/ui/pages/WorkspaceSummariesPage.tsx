@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Alert,
   Button,
@@ -24,9 +24,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { useQuery } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { PageHeader } from '../components/PageHeader'
+import { queryKeys } from '../queries/queryKeys'
 
 type MonthSummary = {
   monthKey: string
@@ -232,7 +234,7 @@ function SummaryDetailsDialog(props: {
       <DialogContent dividers>
         <Grid container spacing={2}>
           {props.fields.map((f) => (
-            <Grid key={f.label} item xs={12} sm={6}>
+            <Grid key={f.label} size={{ xs: 12, sm: 6 }}>
               <TextField label={f.label} value={f.value} size="small" fullWidth InputProps={{ readOnly: true }} />
             </Grid>
           ))}
@@ -261,43 +263,35 @@ function SummaryDetailsDialog(props: {
 }
 
 export function WorkspaceSummariesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
-  const [monthSummaries, setMonthSummaries] = useState<unknown[] | null>(null)
-  const [quarterSummaries, setQuarterSummaries] = useState<unknown[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<'month' | 'quarter'>('month')
 
-  const [loading, setLoading] = useState(false)
   const [showRaw, setShowRaw] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
+
+  const { data, error, isFetching, refetch } = useQuery({
+    queryKey: queryKeys.summaries(props.workspaceId),
+    queryFn: async () => {
+      const settings = await props.api.getWorkspaceSettings(props.workspaceId)
+      const [m, q] = await Promise.all([
+        props.api.monthSummaries(props.workspaceId, settings),
+        props.api.quarterSummaries(props.workspaceId, settings),
+      ])
+      return { month: m.items, quarter: q.items }
+    },
+  })
+
+  const monthSummaries = data?.month ?? null
+  const quarterSummaries = data?.quarter ?? null
 
   const monthParsed = useMemo(() => parseList(monthSummaries, asMonthSummary), [monthSummaries])
   const quarterParsed = useMemo(() => parseList(quarterSummaries, asQuarterSummary), [quarterSummaries])
 
   const refresh = async () => {
-    setError(null)
-    setLoading(true)
     setSelectedMonth(null)
     setSelectedQuarter(null)
-    try {
-      const s = await props.api.getWorkspaceSettings(props.workspaceId)
-      const [m, q] = await Promise.all([
-        props.api.monthSummaries(props.workspaceId, s),
-        props.api.quarterSummaries(props.workspaceId, s),
-      ])
-      setMonthSummaries(m.items)
-      setQuarterSummaries(q.items)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setLoading(false)
-    }
+    await refetch()
   }
-
-  useEffect(() => {
-    void refresh()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <Stack spacing={2}>
@@ -311,7 +305,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         }
       />
 
-      {error ? <ErrorAlert message={error} /> : null}
+      {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
 
       <Paper variant="outlined" sx={{ px: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
@@ -327,7 +321,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         </Stack>
       </Paper>
 
-      {loading ? <LinearProgress /> : null}
+      {isFetching ? <LinearProgress /> : null}
 
       {tab === 'month' ? (
         <Stack spacing={2}>
