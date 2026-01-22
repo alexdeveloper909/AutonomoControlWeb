@@ -330,8 +330,8 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
           ) : null}
 
           <Paper variant="outlined">
-            <TableContainer>
-              <Table size="small">
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 950 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Month</TableCell>
@@ -342,12 +342,13 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                     <TableCell align="right">Profit</TableCell>
                     <TableCell align="right">Tax reserve</TableCell>
                     <TableCell align="right">Can spend</TableCell>
+                    <TableCell align="right">Can spend (no expenses)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {monthParsed.items.length === 0 && monthSummaries ? (
                     <TableRow>
-                      <TableCell colSpan={8}>
+                      <TableCell colSpan={9}>
                         <Typography variant="body2" color="text.secondary">
                           No month summaries returned.
                         </Typography>
@@ -377,6 +378,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                       <TableCell align="right">{money.format(m.profitForIrpf)}</TableCell>
                       <TableCell align="right">{money.format(m.recommendedTaxReserve)}</TableCell>
                       <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
+                      <TableCell align="right">{money.format(m.canSpendIgnoringExpenses)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
