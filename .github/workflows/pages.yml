@@ -1,0 +1,115 @@
+name: Deploy to GitHub Pages (prod + dev)
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build prod + dev
+        shell: bash
+        env:
+          PROD_VITE_API_BASE_URL: ${{ vars.PROD_VITE_API_BASE_URL }}
+          PROD_VITE_COGNITO_DOMAIN: ${{ vars.PROD_VITE_COGNITO_DOMAIN }}
+          PROD_VITE_COGNITO_CLIENT_ID: ${{ vars.PROD_VITE_COGNITO_CLIENT_ID }}
+          PROD_VITE_COGNITO_REDIRECT_URI: ${{ vars.PROD_VITE_COGNITO_REDIRECT_URI }}
+          PROD_VITE_COGNITO_LOGOUT_URI: ${{ vars.PROD_VITE_COGNITO_LOGOUT_URI }}
+          PROD_VITE_COGNITO_IDENTITY_PROVIDER: ${{ vars.PROD_VITE_COGNITO_IDENTITY_PROVIDER }}
+          DEV_VITE_API_BASE_URL: ${{ vars.DEV_VITE_API_BASE_URL }}
+          DEV_VITE_COGNITO_DOMAIN: ${{ vars.DEV_VITE_COGNITO_DOMAIN }}
+          DEV_VITE_COGNITO_CLIENT_ID: ${{ vars.DEV_VITE_COGNITO_CLIENT_ID }}
+          DEV_VITE_COGNITO_REDIRECT_URI: ${{ vars.DEV_VITE_COGNITO_REDIRECT_URI }}
+          DEV_VITE_COGNITO_LOGOUT_URI: ${{ vars.DEV_VITE_COGNITO_LOGOUT_URI }}
+          DEV_VITE_COGNITO_IDENTITY_PROVIDER: ${{ vars.DEV_VITE_COGNITO_IDENTITY_PROVIDER }}
+        run: |
+          set -euo pipefail
+
+          require_non_empty() {
+            local name="$1"
+            local value="${2:-}"
+            if [[ -z "$value" ]]; then
+              echo "Missing required GitHub Actions variable: $name"
+              exit 1
+            fi
+          }
+
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          BASE="/${REPO_NAME}/"
+
+          rm -rf out
+          mkdir -p out/dev
+
+          require_non_empty "PROD_VITE_API_BASE_URL" "${PROD_VITE_API_BASE_URL:-}"
+          require_non_empty "PROD_VITE_COGNITO_DOMAIN" "${PROD_VITE_COGNITO_DOMAIN:-}"
+          require_non_empty "PROD_VITE_COGNITO_CLIENT_ID" "${PROD_VITE_COGNITO_CLIENT_ID:-}"
+          require_non_empty "PROD_VITE_COGNITO_REDIRECT_URI" "${PROD_VITE_COGNITO_REDIRECT_URI:-}"
+          require_non_empty "PROD_VITE_COGNITO_LOGOUT_URI" "${PROD_VITE_COGNITO_LOGOUT_URI:-}"
+
+          VITE_APP_STAGE="prod" \
+            VITE_API_BASE_URL="${PROD_VITE_API_BASE_URL}" \
+            VITE_COGNITO_DOMAIN="${PROD_VITE_COGNITO_DOMAIN}" \
+            VITE_COGNITO_CLIENT_ID="${PROD_VITE_COGNITO_CLIENT_ID}" \
+            VITE_COGNITO_REDIRECT_URI="${PROD_VITE_COGNITO_REDIRECT_URI}" \
+            VITE_COGNITO_LOGOUT_URI="${PROD_VITE_COGNITO_LOGOUT_URI}" \
+            VITE_COGNITO_IDENTITY_PROVIDER="${PROD_VITE_COGNITO_IDENTITY_PROVIDER:-}" \
+            npm run build:prod -- --base="${BASE}"
+          cp -R dist/* out/
+
+          require_non_empty "DEV_VITE_API_BASE_URL" "${DEV_VITE_API_BASE_URL:-}"
+          require_non_empty "DEV_VITE_COGNITO_DOMAIN" "${DEV_VITE_COGNITO_DOMAIN:-}"
+          require_non_empty "DEV_VITE_COGNITO_CLIENT_ID" "${DEV_VITE_COGNITO_CLIENT_ID:-}"
+          require_non_empty "DEV_VITE_COGNITO_REDIRECT_URI" "${DEV_VITE_COGNITO_REDIRECT_URI:-}"
+          require_non_empty "DEV_VITE_COGNITO_LOGOUT_URI" "${DEV_VITE_COGNITO_LOGOUT_URI:-}"
+
+          VITE_APP_STAGE="dev" \
+            VITE_API_BASE_URL="${DEV_VITE_API_BASE_URL}" \
+            VITE_COGNITO_DOMAIN="${DEV_VITE_COGNITO_DOMAIN}" \
+            VITE_COGNITO_CLIENT_ID="${DEV_VITE_COGNITO_CLIENT_ID}" \
+            VITE_COGNITO_REDIRECT_URI="${DEV_VITE_COGNITO_REDIRECT_URI}" \
+            VITE_COGNITO_LOGOUT_URI="${DEV_VITE_COGNITO_LOGOUT_URI}" \
+            VITE_COGNITO_IDENTITY_PROVIDER="${DEV_VITE_COGNITO_IDENTITY_PROVIDER:-}" \
+            npm run build:dev -- --base="${BASE}dev/"
+          cp -R dist/* out/dev/
+
+          # GitHub Pages: disable Jekyll processing.
+          touch out/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

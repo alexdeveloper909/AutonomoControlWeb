@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>autonomocontrolweb</title>
+    <script type="module">
+      ;(() => {
+        const params = new URLSearchParams(window.location.search)
+        const redirect = params.get('redirect')
+        if (!redirect) return
+
+        const base = import.meta.env.BASE_URL || '/'
+        const target = base.replace(/\/$/, '') + redirect
+        window.history.replaceState(null, '', target)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

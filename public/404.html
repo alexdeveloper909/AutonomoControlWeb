@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>AutonomoControlWeb</title>
+    <script>
+      ;(() => {
+        const appRootSegments = new Set(['dev', 'login', 'auth', 'workspaces'])
+        const segments = window.location.pathname.split('/').filter(Boolean)
+
+        const hasRepoSegment = segments.length > 0 && !appRootSegments.has(segments[0])
+        const repo = hasRepoSegment ? segments[0] : null
+        const idx = hasRepoSegment ? 1 : 0
+
+        const stage = segments[idx] === 'dev' ? 'dev' : 'prod'
+        const base = (hasRepoSegment ? `/${repo}/` : '/') + (stage === 'dev' ? 'dev/' : '')
+
+        const rest = segments.slice(idx + (stage === 'dev' ? 1 : 0))
+        const internalPath = `/${rest.join('/')}`
+        const redirect = `${internalPath}${window.location.search}${window.location.hash}`
+
+        window.location.replace(`${base}?redirect=${encodeURIComponent(redirect)}`)
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>
+
