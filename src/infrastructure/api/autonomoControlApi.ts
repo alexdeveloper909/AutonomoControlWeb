@@ -17,6 +17,8 @@ type UserMeResponse = {
   preferredLanguage?: string | null
 }
 
+type WorkspaceShareResponse = { workspaceId: string; emailLower: string; role: string; status: string }
+
 export type RecordsSort = 'eventDateDesc'
 export type RecordsListOptions = { sort?: RecordsSort; limit?: number; nextToken?: string | null }
 
@@ -75,6 +77,14 @@ export class AutonomoControlApi {
     settings: WorkspaceSettings
   }> {
     return jsonFetch(new URL('/workspaces', this.baseUrl).toString(), {
+      method: 'POST',
+      headers: this.authHeaders(),
+      body: input,
+    })
+  }
+
+  async shareWorkspaceReadOnly(workspaceId: string, input: { email: string }): Promise<WorkspaceShareResponse> {
+    return jsonFetch<WorkspaceShareResponse>(new URL(`/workspaces/${workspaceId}/share`, this.baseUrl).toString(), {
       method: 'POST',
       headers: this.authHeaders(),
       body: input,

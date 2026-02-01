@@ -44,7 +44,7 @@ const asInvoicePayload = (payload: unknown): InvoicePayload | null => {
   return p as InvoicePayload
 }
 
-export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
@@ -97,9 +97,11 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
         title={t('income.title')}
         description={t('income.description')}
         right={
-          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/income/new`}>
-            {t('income.add')}
-          </Button>
+          props.readOnly ? null : (
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/income/new`}>
+              {t('income.add')}
+            </Button>
+          )
         }
       />
 

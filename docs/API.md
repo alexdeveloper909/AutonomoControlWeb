@@ -20,6 +20,7 @@ All authenticated requests include:
 - `GET /health`
 - `GET /workspaces`
 - `POST /workspaces`
+- `POST /workspaces/{workspaceId}/share` (share workspace read-only by email)
 - `GET /workspaces/{workspaceId}/settings`
 - `PUT /workspaces/{workspaceId}/settings`
 - `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
@@ -28,6 +29,13 @@ All authenticated requests include:
 - `POST /workspaces/{workspaceId}/records`
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
+
+## Read-only shared workspaces
+
+When a workspace is shared with a user, the UI switches to read-only mode:
+
+- Hide “Add …” buttons and block navigation to `.../new` routes.
+- The API enforces read-only as well (write attempts return `403`).
 
 ## Record types
 

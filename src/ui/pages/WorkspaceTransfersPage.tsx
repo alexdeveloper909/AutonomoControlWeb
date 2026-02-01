@@ -52,7 +52,7 @@ const sortDesc = (a: RecordResponse, b: RecordResponse): number => {
   return a.recordKey > b.recordKey ? -1 : a.recordKey < b.recordKey ? 1 : 0
 }
 
-export function WorkspaceTransfersPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceTransfersPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const currency = useMemo(() => euroCurrencyFormatter(i18n.language), [i18n.language])
@@ -165,9 +165,11 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
         title={t('transfers.title')}
         description={t('transfers.description')}
         right={
-          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
-            {t('transfers.add')}
-          </Button>
+          props.readOnly ? null : (
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
+              {t('transfers.add')}
+            </Button>
+          )
         }
       />
 

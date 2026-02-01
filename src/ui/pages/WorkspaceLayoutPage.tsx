@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, Stack, Typography, IconButton } from '@mui/material'
+import { Button, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, Stack, Typography, IconButton, Chip } from '@mui/material'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../auth/useAuth'
@@ -13,6 +13,9 @@ import { WorkspaceTransfersRoutes } from './WorkspaceTransfersRoutes'
 import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 import { useTranslation } from 'react-i18next'
+import type { Workspace } from '../../domain/workspace'
+import { ErrorAlert } from '../components/ErrorAlert'
+import { LoadingScreen } from '../components/LoadingScreen'
 
 export function WorkspaceLayoutPage() {
   const params = useParams()
@@ -21,10 +24,59 @@ export function WorkspaceLayoutPage() {
   const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const location = useLocation()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [workspace, setWorkspace] = useState<Workspace | null | undefined>(undefined)
+  const [error, setError] = useState<string | null>(null)
   const { t } = useTranslation()
 
   if (!workspaceId) return <Navigate to="/workspaces" replace />
   const basePath = `/workspaces/${workspaceId}`
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setError(null)
+      setWorkspace(undefined)
+      try {
+        const all = await api.listWorkspaces()
+        const found = all.find((w) => w.workspaceId === workspaceId) ?? null
+        if (!cancelled) setWorkspace(found)
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [api, workspaceId])
+
+  if (error) {
+    return (
+      <AppShell title={t('workspace.title')}>
+        <Stack spacing={2}>
+          <ErrorAlert message={error} />
+          <Button variant="contained" component={RouterLink} to="/workspaces">
+            {t('common.back')}
+          </Button>
+        </Stack>
+      </AppShell>
+    )
+  }
+
+  if (workspace === undefined) return <LoadingScreen />
+  if (workspace === null) {
+    return (
+      <AppShell title={t('workspace.title')}>
+        <Stack spacing={2}>
+          <ErrorAlert message={t('workspace.notFound')} />
+          <Button variant="contained" component={RouterLink} to="/workspaces">
+            {t('common.back')}
+          </Button>
+        </Stack>
+      </AppShell>
+    )
+  }
+  const readOnly = workspace.accessMode === 'READ_ONLY'
 
   const section = (() => {
     const rest = location.pathname.startsWith(basePath) ? location.pathname.slice(basePath.length) : location.pathname
@@ -34,9 +86,10 @@ export function WorkspaceLayoutPage() {
 
   return (
     <AppShell
-      title={t('workspace.title')}
+      title={workspace.name || t('workspace.title')}
       right={
         <Stack direction="row" spacing={2} alignItems="center">
+          {readOnly ? <Chip size="small" color="default" label={t('workspaceDetails.readOnly')} /> : null}
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             {workspaceId}
           </Typography>
@@ -82,11 +135,11 @@ export function WorkspaceLayoutPage() {
 
       <Routes>
         <Route index element={<Navigate to={`${basePath}/income`} replace />} />
-        <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="transfers/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} />} />
-        <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} />} />
+        <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="transfers/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />
         <Route path="*" element={<Navigate to={`${basePath}/income`} replace />} />

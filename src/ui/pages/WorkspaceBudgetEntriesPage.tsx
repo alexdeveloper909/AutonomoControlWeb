@@ -43,7 +43,7 @@ const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | null => {
   return p as BudgetEntryPayload
 }
 
-export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
@@ -96,9 +96,11 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
         title={t('budget.title')}
         description={t('budget.description')}
         right={
-          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/budget/new`}>
-            {t('budget.add')}
-          </Button>
+          props.readOnly ? null : (
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/budget/new`}>
+              {t('budget.add')}
+            </Button>
+          )
         }
       />
 

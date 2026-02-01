@@ -4,11 +4,20 @@ import { WorkspaceIncomePage } from './WorkspaceIncomePage'
 import { WorkspaceIncomeCreatePage } from './WorkspaceIncomeCreatePage'
 import { WorkspaceIncomeCreatedPage } from './WorkspaceIncomeCreatedPage'
 
-export function WorkspaceIncomeRoutes(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceIncomeRoutes(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   return (
     <Routes>
-      <Route index element={<WorkspaceIncomePage workspaceId={props.workspaceId} api={props.api} />} />
-      <Route path="new" element={<WorkspaceIncomeCreatePage workspaceId={props.workspaceId} api={props.api} />} />
+      <Route index element={<WorkspaceIncomePage workspaceId={props.workspaceId} api={props.api} readOnly={props.readOnly} />} />
+      <Route
+        path="new"
+        element={
+          props.readOnly ? (
+            <Navigate to={`/workspaces/${props.workspaceId}/income`} replace />
+          ) : (
+            <WorkspaceIncomeCreatePage workspaceId={props.workspaceId} api={props.api} />
+          )
+        }
+      />
       <Route path="created" element={<WorkspaceIncomeCreatedPage workspaceId={props.workspaceId} />} />
       <Route path="*" element={<Navigate to={`/workspaces/${props.workspaceId}/income`} replace />} />
     </Routes>

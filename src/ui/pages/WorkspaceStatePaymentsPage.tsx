@@ -41,7 +41,7 @@ const asStatePaymentPayload = (payload: unknown): StatePaymentPayload | null => 
   return p as StatePaymentPayload
 }
 
-export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
@@ -101,9 +101,11 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
         title={t('statePayments.title')}
         description={t('statePayments.description')}
         right={
-          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>
-            {t('statePayments.add')}
-          </Button>
+          props.readOnly ? null : (
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>
+              {t('statePayments.add')}
+            </Button>
+          )
         }
       />
 

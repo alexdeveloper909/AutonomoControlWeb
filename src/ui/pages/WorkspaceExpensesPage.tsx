@@ -45,7 +45,7 @@ const asExpensePayload = (payload: unknown): ExpensePayload | null => {
   return p as ExpensePayload
 }
 
-export function WorkspaceExpensesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+export function WorkspaceExpensesPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
@@ -98,9 +98,11 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
         title={t('expenses.title')}
         description={t('expenses.description')}
         right={
-          <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/expenses/new`}>
-            {t('expenses.add')}
-          </Button>
+          props.readOnly ? null : (
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/expenses/new`}>
+              {t('expenses.add')}
+            </Button>
+          )
         }
       />
 

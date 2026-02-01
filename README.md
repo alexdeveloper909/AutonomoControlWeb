@@ -125,6 +125,11 @@ And set matching runtime release (example):
 - `/workspaces` → list/create workspaces (POST `/workspaces`)
 - `/workspaces/:workspaceId` → workspace area with app shell + **left navigation** (services grouped by domain)
 
+## Workspace sharing (read-only)
+
+- Owners can share a workspace from `/workspaces` by clicking the workspace card settings icon → “Share (read-only)” (POST `/workspaces/{workspaceId}/share`).
+- Shared users see the workspace in `/workspaces` marked as shared and enter it in **read-only** mode (create actions are hidden and `.../new` routes are blocked).
+
 ## Internationalization (i18n) + language preference
 
 The web app supports UI translations and persists a per-user language preference.

@@ -5,11 +5,14 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Chip,
   Grid,
+  IconButton,
   Stack,
   Typography,
 } from '@mui/material'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import type { Workspace } from '../../domain/workspace'
 import { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
@@ -18,6 +21,7 @@ import { AppShell } from '../components/AppShell'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { WorkspaceCreateDialog } from './WorkspacesPage/WorkspaceCreateDialog'
+import { WorkspaceDetailsDialog } from './WorkspacesPage/WorkspaceDetailsDialog'
 import { useTranslation } from 'react-i18next'
 
 export function WorkspacesPage() {
@@ -29,14 +33,17 @@ export function WorkspacesPage() {
   const [items, setItems] = useState<Workspace[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [detailsWorkspaceId, setDetailsWorkspaceId] = useState<string | null>(null)
 
-  const refresh = async () => {
+  const refresh = async (): Promise<Workspace[] | null> => {
     setError(null)
     try {
       const ws = await api.listWorkspaces()
       setItems(ws)
+      return ws
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+      return null
     }
   }
 
@@ -60,6 +67,8 @@ export function WorkspacesPage() {
 
   if (!items) return <LoadingScreen />
 
+  const detailsWorkspace = detailsWorkspaceId ? items.find((w) => w.workspaceId === detailsWorkspaceId) ?? null : null
+
   return (
     <AppShell
       title={t('workspaces.title')}
@@ -78,6 +87,20 @@ export function WorkspacesPage() {
           navigate(`/workspaces/${workspace.workspaceId}`)
         }}
       />
+
+      {detailsWorkspace ? (
+        <WorkspaceDetailsDialog
+          open
+          workspace={detailsWorkspace}
+          api={api}
+          onClose={() => setDetailsWorkspaceId(null)}
+          onShared={async () => {
+            const next = await refresh()
+            const updated = next?.find((w) => w.workspaceId === detailsWorkspace.workspaceId)
+            setDetailsWorkspaceId(updated?.workspaceId ?? detailsWorkspace.workspaceId)
+          }}
+        />
+      ) : null}
 
       {items.length === 0 ? (
         <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -120,12 +143,33 @@ export function WorkspacesPage() {
               <Card>
                 <CardActionArea component={RouterLink} to={`/workspaces/${w.workspaceId}`}>
                   <CardContent>
-                    <Typography variant="h6">{w.name}</Typography>
+                    <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-between">
+                      <Stack spacing={0.5} sx={{ minWidth: 0 }}>
+                        <Typography variant="h6" sx={{ wordBreak: 'break-word' }}>
+                          {w.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {w.workspaceId}
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                          {w.sharedByMe ? <Chip size="small" label={t('workspaces.shared')} /> : null}
+                          {w.sharedWithMe ? <Chip size="small" label={t('workspaces.sharedReadOnly')} /> : null}
+                        </Stack>
+                      </Stack>
+                      <IconButton
+                        size="small"
+                        aria-label={t('workspaces.details')}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setDetailsWorkspaceId(w.workspaceId)
+                        }}
+                      >
+                        <SettingsOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
                     <Typography variant="body2" color="text.secondary">
-                      {w.workspaceId}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {w.role ?? ''} {w.status ?? ''}
+                      {w.role ?? ''} {w.status ?? ''} {w.accessMode ?? ''}
                     </Typography>
                   </CardContent>
                 </CardActionArea>
