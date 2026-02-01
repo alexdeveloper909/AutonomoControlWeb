@@ -9,10 +9,11 @@ export default defineConfig(() => {
   const enableSentrySourcemaps = Boolean(
     process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT,
   )
+  const buildSourcemap: false | 'hidden' = enableSentrySourcemaps ? 'hidden' : false
 
   return {
     build: {
-      sourcemap: enableSentrySourcemaps ? 'hidden' : false,
+      sourcemap: buildSourcemap,
     },
     plugins: [
       react(),
