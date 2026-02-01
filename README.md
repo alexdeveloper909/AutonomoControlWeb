@@ -72,6 +72,13 @@ This project uses `.env.dev.local` and `.env.prod.local` to keep stage-specific 
 - `VITE_COGNITO_LOGOUT_URI`: must match `OAuthLogoutUrls` in CDK
 - `VITE_COGNITO_IDENTITY_PROVIDER`: optional (set to `Google` to jump straight to Google in Hosted UI)
 
+- `VITE_SENTRY_DSN`: optional; enables Sentry (errors, tracing, logs, metrics)
+- `VITE_SENTRY_ENVIRONMENT`: optional; defaults to `VITE_APP_STAGE`
+- `VITE_SENTRY_RELEASE`: optional; set by CI for sourcemaps + release tracking
+- `VITE_SENTRY_TRACES_SAMPLE_RATE`: optional; `0..1` (defaults to `1.0` for dev, `0.2` for prod when Sentry is enabled)
+- `VITE_SENTRY_ENABLE_LOGS`: optional; `true|false` (defaults to `true` when Sentry is enabled)
+- `VITE_SENTRY_ENABLE_METRICS`: optional; `true|false` (defaults to `true` when Sentry is enabled)
+
 ## Local development
 
 ```sh
@@ -90,6 +97,27 @@ Type-check (requested MVP gate):
 ```sh
 tsc --noEmit
 ```
+
+## Sentry (error monitoring + logs + metrics + tracing)
+
+Sentry is optional and is enabled only when `VITE_SENTRY_DSN` is set.
+
+- SDK init: `src/infrastructure/sentry.ts` (React Router tracing integration + logs + metrics config)
+- React render error capture: `src/main.tsx` (global `Sentry.ErrorBoundary`)
+- API call metrics/logs: `src/infrastructure/http/jsonFetch.ts`
+
+### CI sourcemaps (Vite)
+
+Source maps are only generated/uploaded when Sentry build credentials are present (to avoid publishing `*.map` files).
+To enable sourcemap uploads in CI, configure:
+
+- `SENTRY_AUTH_TOKEN` (GitHub Actions secret)
+- `SENTRY_ORG`, `SENTRY_PROJECT` (GitHub Actions variables)
+
+And set matching runtime release (example):
+
+- `VITE_SENTRY_RELEASE=${GITHUB_SHA}-prod` (prod build)
+- `VITE_SENTRY_RELEASE=${GITHUB_SHA}-dev` (dev build)
 
 ## MVP screens
 

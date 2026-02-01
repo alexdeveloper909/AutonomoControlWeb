@@ -1,13 +1,16 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import * as Sentry from '@sentry/react'
 import { AuthCallbackPage } from '../pages/AuthCallbackPage'
 import { LoginPage } from '../pages/LoginPage'
 import { WorkspacesPage } from '../pages/WorkspacesPage'
 import { RequireAuth } from '../auth/RequireAuth'
 import { WorkspaceLayoutPage } from '../pages/WorkspaceLayoutPage'
 
+const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
+
 export function AppRouter() {
   return (
-    <Routes>
+    <SentryRoutes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route element={<RequireAuth />}>
@@ -16,6 +19,6 @@ export function AppRouter() {
       </Route>
       <Route path="/" element={<Navigate to="/workspaces" replace />} />
       <Route path="*" element={<Navigate to="/workspaces" replace />} />
-    </Routes>
+    </SentryRoutes>
   )
 }

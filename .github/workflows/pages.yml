@@ -33,18 +33,27 @@ jobs:
       - name: Build prod + dev
         shell: bash
         env:
+          # Sentry build-time (optional; enables sourcemap upload via @sentry/vite-plugin)
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+
           PROD_VITE_API_BASE_URL: ${{ vars.PROD_VITE_API_BASE_URL }}
           PROD_VITE_COGNITO_DOMAIN: ${{ vars.PROD_VITE_COGNITO_DOMAIN }}
           PROD_VITE_COGNITO_CLIENT_ID: ${{ vars.PROD_VITE_COGNITO_CLIENT_ID }}
           PROD_VITE_COGNITO_REDIRECT_URI: ${{ vars.PROD_VITE_COGNITO_REDIRECT_URI }}
           PROD_VITE_COGNITO_LOGOUT_URI: ${{ vars.PROD_VITE_COGNITO_LOGOUT_URI }}
           PROD_VITE_COGNITO_IDENTITY_PROVIDER: ${{ vars.PROD_VITE_COGNITO_IDENTITY_PROVIDER }}
+          PROD_VITE_SENTRY_DSN: ${{ vars.PROD_VITE_SENTRY_DSN }}
+          PROD_VITE_SENTRY_TRACES_SAMPLE_RATE: ${{ vars.PROD_VITE_SENTRY_TRACES_SAMPLE_RATE }}
           DEV_VITE_API_BASE_URL: ${{ vars.DEV_VITE_API_BASE_URL }}
           DEV_VITE_COGNITO_DOMAIN: ${{ vars.DEV_VITE_COGNITO_DOMAIN }}
           DEV_VITE_COGNITO_CLIENT_ID: ${{ vars.DEV_VITE_COGNITO_CLIENT_ID }}
           DEV_VITE_COGNITO_REDIRECT_URI: ${{ vars.DEV_VITE_COGNITO_REDIRECT_URI }}
           DEV_VITE_COGNITO_LOGOUT_URI: ${{ vars.DEV_VITE_COGNITO_LOGOUT_URI }}
           DEV_VITE_COGNITO_IDENTITY_PROVIDER: ${{ vars.DEV_VITE_COGNITO_IDENTITY_PROVIDER }}
+          DEV_VITE_SENTRY_DSN: ${{ vars.DEV_VITE_SENTRY_DSN }}
+          DEV_VITE_SENTRY_TRACES_SAMPLE_RATE: ${{ vars.DEV_VITE_SENTRY_TRACES_SAMPLE_RATE }}
         run: |
           set -euo pipefail
 
@@ -69,6 +78,7 @@ jobs:
           require_non_empty "PROD_VITE_COGNITO_REDIRECT_URI" "${PROD_VITE_COGNITO_REDIRECT_URI:-}"
           require_non_empty "PROD_VITE_COGNITO_LOGOUT_URI" "${PROD_VITE_COGNITO_LOGOUT_URI:-}"
 
+          SENTRY_RELEASE="${GITHUB_SHA}-prod" \
           VITE_APP_STAGE="prod" \
             VITE_API_BASE_URL="${PROD_VITE_API_BASE_URL}" \
             VITE_COGNITO_DOMAIN="${PROD_VITE_COGNITO_DOMAIN}" \
@@ -76,6 +86,10 @@ jobs:
             VITE_COGNITO_REDIRECT_URI="${PROD_VITE_COGNITO_REDIRECT_URI}" \
             VITE_COGNITO_LOGOUT_URI="${PROD_VITE_COGNITO_LOGOUT_URI}" \
             VITE_COGNITO_IDENTITY_PROVIDER="${PROD_VITE_COGNITO_IDENTITY_PROVIDER:-}" \
+            VITE_SENTRY_DSN="${PROD_VITE_SENTRY_DSN:-}" \
+            VITE_SENTRY_ENVIRONMENT="prod" \
+            VITE_SENTRY_RELEASE="${GITHUB_SHA}-prod" \
+            VITE_SENTRY_TRACES_SAMPLE_RATE="${PROD_VITE_SENTRY_TRACES_SAMPLE_RATE:-}" \
             npm run build:prod -- --base="${BASE}"
           cp -R dist/* out/
 
@@ -85,6 +99,7 @@ jobs:
           require_non_empty "DEV_VITE_COGNITO_REDIRECT_URI" "${DEV_VITE_COGNITO_REDIRECT_URI:-}"
           require_non_empty "DEV_VITE_COGNITO_LOGOUT_URI" "${DEV_VITE_COGNITO_LOGOUT_URI:-}"
 
+          SENTRY_RELEASE="${GITHUB_SHA}-dev" \
           VITE_APP_STAGE="dev" \
             VITE_API_BASE_URL="${DEV_VITE_API_BASE_URL}" \
             VITE_COGNITO_DOMAIN="${DEV_VITE_COGNITO_DOMAIN}" \
@@ -92,6 +107,10 @@ jobs:
             VITE_COGNITO_REDIRECT_URI="${DEV_VITE_COGNITO_REDIRECT_URI}" \
             VITE_COGNITO_LOGOUT_URI="${DEV_VITE_COGNITO_LOGOUT_URI}" \
             VITE_COGNITO_IDENTITY_PROVIDER="${DEV_VITE_COGNITO_IDENTITY_PROVIDER:-}" \
+            VITE_SENTRY_DSN="${DEV_VITE_SENTRY_DSN:-}" \
+            VITE_SENTRY_ENVIRONMENT="dev" \
+            VITE_SENTRY_RELEASE="${GITHUB_SHA}-dev" \
+            VITE_SENTRY_TRACES_SAMPLE_RATE="${DEV_VITE_SENTRY_TRACES_SAMPLE_RATE:-}" \
             npm run build:dev -- --base="${BASE}dev/"
           cp -R dist/* out/dev/
 

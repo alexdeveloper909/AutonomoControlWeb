@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { AutonomoControlApi as Api } from '../../infrastructure/api/autonomoControlApi'
+import { HttpError } from '../../infrastructure/http/httpError'
 import { useAuth } from '../auth/useAuth'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
@@ -12,6 +13,7 @@ import { UserSettingsContext } from './userSettingsContext'
 import { UserSettingsDialog } from './UserSettingsDialog'
 import { LanguageConfirmDialog } from './LanguageConfirmDialog'
 import { useTranslation } from 'react-i18next'
+import { captureException, setSentryUser } from '../../infrastructure/sentry'
 
 const resolveInitialPromptLanguage = (current: AppLanguage): AppLanguage => detectBrowserLanguage() ?? current
 
@@ -50,6 +52,11 @@ export function UserSettingsProvider(props: PropsWithChildren) {
     try {
       const me = await api.getUserMe()
       setUser(me)
+      setSentryUser({
+        id: me.userId,
+        email: me.email ?? null,
+        username: me.givenName ?? null,
+      })
 
       if (me.preferredLanguage) {
         if (me.preferredLanguage !== currentLang) {
@@ -64,6 +71,9 @@ export function UserSettingsProvider(props: PropsWithChildren) {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+      if (!(e instanceof HttpError && (e.status === 401 || e.status === 403))) {
+        captureException(e, { tags: { area: 'UserSettingsProvider.refreshUser' } })
+      }
     } finally {
       setLoading(false)
     }
