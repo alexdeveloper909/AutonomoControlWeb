@@ -120,6 +120,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # Avoid "Multiple artifacts named github-pages" when re-running only the build job.
+          name: pages-${{ github.run_id }}-${{ github.run_attempt }}
           path: out
 
   deploy:
@@ -132,3 +134,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pages-${{ github.run_id }}-${{ github.run_attempt }}
