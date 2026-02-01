@@ -15,15 +15,17 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { StatePaymentPayload } from '../../domain/records'
+import type { RecordResponse, StatePaymentPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
+import { MoreActionsMenu } from '../components/MoreActionsMenu'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 
 const PAGE_SIZE = 20
 
@@ -44,10 +46,14 @@ const asStatePaymentPayload = (payload: unknown): StatePaymentPayload | null => 
 export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
+  const navigate = useNavigate()
   const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
   const queryClient = useQueryClient()
   const queryKey = queryKeys.recordsByYear(props.workspaceId, 'STATE_PAYMENT', year)
+  const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
     queryKey,
@@ -93,6 +99,29 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
     const key = `statePaymentsCreate.types.${raw}`
     const translated = t(key)
     return translated === key ? raw : translated
+  }
+
+  const colSpan = props.readOnly ? 4 : 5
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteError(null)
+    setDeleteSubmitting(true)
+    try {
+      await props.api.deleteRecord(
+        props.workspaceId,
+        'STATE_PAYMENT',
+        deleteTarget.record.eventDate,
+        deleteTarget.record.recordId,
+      )
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'STATE_PAYMENT') })
+      queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      setDeleteTarget(null)
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDeleteSubmitting(false)
+    }
   }
 
   return (
@@ -170,6 +199,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
 
       {isFetching ? <LinearProgress /> : null}
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
+      {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
       <Paper variant="outlined">
         <TableContainer>
@@ -180,6 +210,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
                 <TableCell>{t('records.paymentDate')}</TableCell>
                 <TableCell>{t('records.type')}</TableCell>
                 <TableCell align="right">{t('records.amount')}</TableCell>
+                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -192,17 +223,32 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       {payload ? money.format(payload.amount) : t('common.na')}
                     </TableCell>
+                    {props.readOnly ? null : (
+                      <TableCell align="right" padding="checkbox">
+                        <MoreActionsMenu
+                          onEdit={() =>
+                            navigate(`/workspaces/${props.workspaceId}/state-payments/${record.eventDate}/${record.recordId}/edit`)
+                          }
+                          onDelete={() =>
+                            setDeleteTarget({
+                              record,
+                              label: `${t('recordTypes.STATE_PAYMENT')} ${payload?.type ?? record.recordId}`,
+                            })
+                          }
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : currentPageItems ? (
                 <TableRow>
-                  <TableCell colSpan={4}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('statePayments.empty', { year })}</Typography>
                   </TableCell>
                 </TableRow>
               ) : isPending ? (
                 <TableRow>
-                  <TableCell colSpan={4}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('common.loading')}</Typography>
                   </TableCell>
                 </TableRow>
@@ -211,6 +257,16 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
           </Table>
         </TableContainer>
       </Paper>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t('records.deleteConfirmTitle', { record: deleteTarget?.label ?? '' })}
+        description={t('records.deleteConfirmBody')}
+        confirmColor="error"
+        loading={deleteSubmitting}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </Stack>
   )
 }

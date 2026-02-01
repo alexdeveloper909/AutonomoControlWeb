@@ -3,6 +3,7 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import { WorkspaceIncomePage } from './WorkspaceIncomePage'
 import { WorkspaceIncomeCreatePage } from './WorkspaceIncomeCreatePage'
 import { WorkspaceIncomeCreatedPage } from './WorkspaceIncomeCreatedPage'
+import { WorkspaceIncomeEditPage } from './WorkspaceIncomeEditPage'
 
 export function WorkspaceIncomeRoutes(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   return (
@@ -15,6 +16,16 @@ export function WorkspaceIncomeRoutes(props: { workspaceId: string; api: Autonom
             <Navigate to={`/workspaces/${props.workspaceId}/income`} replace />
           ) : (
             <WorkspaceIncomeCreatePage workspaceId={props.workspaceId} api={props.api} />
+          )
+        }
+      />
+      <Route
+        path=":eventDate/:recordId/edit"
+        element={
+          props.readOnly ? (
+            <Navigate to={`/workspaces/${props.workspaceId}/income`} replace />
+          ) : (
+            <WorkspaceIncomeEditPage workspaceId={props.workspaceId} api={props.api} />
           )
         }
       />

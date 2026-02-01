@@ -8,6 +8,8 @@ export const queryKeys = {
   recordsByYearRecordType: (workspaceId: string, recordType: RecordType) =>
     ['workspaces', workspaceId, 'recordsByYear', recordType] as const,
 
+  record: (workspaceId: string, recordType: RecordType, eventDate: string, recordId: string) =>
+    ['workspaces', workspaceId, 'record', recordType, eventDate, recordId] as const,
+
   summaries: (workspaceId: string) => ['workspaces', workspaceId, 'summaries'] as const,
 } as const
-

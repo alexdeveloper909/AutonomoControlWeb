@@ -15,7 +15,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { RecordResponse, TransferPayload } from '../../domain/records'
@@ -25,6 +25,8 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter, euroCurrencyFormatter } from '../lib/intl'
+import { MoreActionsMenu } from '../components/MoreActionsMenu'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 
 const currentYear = (): string => {
   const d = new Date()
@@ -56,8 +58,12 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const currency = useMemo(() => euroCurrencyFormatter(i18n.language), [i18n.language])
+  const navigate = useNavigate()
   const [year, setYear] = useState(currentYear())
   const queryClient = useQueryClient()
+  const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const settingsQuery = useQuery({
     queryKey: queryKeys.workspaceSettings(props.workspaceId),
@@ -100,6 +106,23 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
 
   const refresh = () => {
     queryClient.removeQueries({ queryKey: transfersQueryKey })
+  }
+
+  const colSpan = props.readOnly ? 6 : 7
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteError(null)
+    setDeleteSubmitting(true)
+    try {
+      await props.api.deleteRecord(props.workspaceId, 'TRANSFER', deleteTarget.record.eventDate, deleteTarget.record.recordId)
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'TRANSFER') })
+      setDeleteTarget(null)
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDeleteSubmitting(false)
+    }
   }
 
   const yearOptions = useMemo(() => {
@@ -233,6 +256,7 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
 
       {loading ? <LinearProgress /> : null}
       {error ? <ErrorAlert message={error} /> : null}
+      {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
       <Paper variant="outlined">
         <TableContainer>
@@ -245,6 +269,7 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                 <TableCell align="right">{t('records.amount')}</TableCell>
                 <TableCell>{t('records.note')}</TableCell>
                 <TableCell align="right">{t('records.balance')}</TableCell>
+                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -265,17 +290,32 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       {balance == null ? t('common.na') : money.format(balance)}
                     </TableCell>
+                    {props.readOnly ? null : (
+                      <TableCell align="right" padding="checkbox">
+                        <MoreActionsMenu
+                          onEdit={() =>
+                            navigate(`/workspaces/${props.workspaceId}/transfers/${record.eventDate}/${record.recordId}/edit`)
+                          }
+                          onDelete={() =>
+                            setDeleteTarget({
+                              record,
+                              label: `${t('recordTypes.TRANSFER')} ${payload?.date ?? record.recordId}`,
+                            })
+                          }
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : items ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('transfers.empty', { year })}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('common.loading')}</Typography>
                   </TableCell>
                 </TableRow>
@@ -284,6 +324,16 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
           </Table>
         </TableContainer>
       </Paper>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t('records.deleteConfirmTitle', { record: deleteTarget?.label ?? '' })}
+        description={t('records.deleteConfirmBody')}
+        confirmColor="error"
+        loading={deleteSubmitting}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </Stack>
   )
 }

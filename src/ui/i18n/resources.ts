@@ -6,10 +6,14 @@ export const resources = {
         back: 'Back',
         cancel: 'Cancel',
         close: 'Close',
+        confirm: 'Confirm',
         continue: 'Continue',
         create: 'Create',
         creating: 'Creating…',
+        delete: 'Delete',
+        edit: 'Edit',
         loading: 'Loading…',
+        more: 'More',
         new: 'New',
         next: 'Next',
         ok: 'OK',
@@ -18,6 +22,7 @@ export const resources = {
         refresh: 'Refresh',
         retry: 'Retry',
         save: 'Save',
+        saving: 'Saving…',
         settings: 'Settings',
         userSettings: 'User settings',
         language: 'Language',
@@ -112,6 +117,17 @@ export const resources = {
         pageSummary: 'Page {{page}} · {{pageSize}} per page · sort: {{sort}}',
         sortEventDateDesc: 'eventDate desc',
         yearHint: 'Year (uses {{hint}})',
+        actions: 'Actions',
+        deleteConfirmTitle: 'Delete {{record}}?',
+        deleteConfirmBody: "This can't be undone.",
+        invalidPayload: 'Loaded record payload is invalid or unsupported.',
+      },
+      recordTypes: {
+        INVOICE: 'invoice',
+        EXPENSE: 'expense',
+        STATE_PAYMENT: 'state payment',
+        TRANSFER: 'transfer',
+        BUDGET: 'budget entry',
       },
       rates: {
         iva: {
@@ -156,6 +172,10 @@ export const resources = {
           amountReceivedOverrideNumber: 'Amount received override must be a number.',
         },
       },
+      incomeEdit: {
+        title: 'Edit income',
+        description: 'Updates an INVOICE record in this workspace.',
+      },
       incomeCreated: {
         title: 'Income created',
         success: 'Income record created successfully.',
@@ -197,6 +217,10 @@ export const resources = {
           amountPaidOverrideNumber: 'Amount paid override must be a number.',
         },
       },
+      expensesEdit: {
+        title: 'Edit expense',
+        description: 'Updates an EXPENSE record in this workspace.',
+      },
       expensesCreated: {
         title: 'Expense created',
         success: 'Expense record created successfully.',
@@ -232,6 +256,10 @@ export const resources = {
           RentaAnual: 'Annual income tax',
           Other: 'Other',
         },
+      },
+      statePaymentsEdit: {
+        title: 'Edit state payment',
+        description: 'Updates a STATE_PAYMENT record in this workspace.',
       },
       statePaymentsCreated: {
         title: 'State payment created',
@@ -271,6 +299,10 @@ export const resources = {
           Outflow: 'Outflow',
         },
       },
+      transfersEdit: {
+        title: 'Edit transfer',
+        description: 'Updates a TRANSFER record in this workspace.',
+      },
       transfersCreated: {
         title: 'Transfer created',
         success: 'Transfer record created successfully.',
@@ -301,6 +333,10 @@ export const resources = {
           plannedSpendNumber: 'Planned spend must be a number.',
           earnedNumber: 'Earned must be a number.',
         },
+      },
+      budgetEdit: {
+        title: 'Edit budget entry',
+        description: 'Updates a BUDGET record in this workspace.',
       },
       budgetCreated: {
         title: 'Budget entry created',
@@ -385,10 +421,14 @@ export const resources = {
         back: 'Atrás',
         cancel: 'Cancelar',
         close: 'Cerrar',
+        confirm: 'Confirmar',
         continue: 'Continuar',
         create: 'Crear',
         creating: 'Creando…',
+        delete: 'Eliminar',
+        edit: 'Editar',
         loading: 'Cargando…',
+        more: 'Más',
         new: 'Nuevo',
         next: 'Siguiente',
         ok: 'OK',
@@ -397,6 +437,7 @@ export const resources = {
         refresh: 'Actualizar',
         retry: 'Reintentar',
         save: 'Guardar',
+        saving: 'Guardando…',
         settings: 'Ajustes',
         userSettings: 'Ajustes de usuario',
         language: 'Idioma',
@@ -491,6 +532,17 @@ export const resources = {
         pageSummary: 'Página {{page}} · {{pageSize}} por página · orden: {{sort}}',
         sortEventDateDesc: 'fecha evento desc',
         yearHint: 'Año (usa {{hint}})',
+        actions: 'Acciones',
+        deleteConfirmTitle: '¿Eliminar {{record}}?',
+        deleteConfirmBody: 'Esto no se puede deshacer.',
+        invalidPayload: 'El contenido del registro cargado no es válido o no es compatible.',
+      },
+      recordTypes: {
+        INVOICE: 'factura',
+        EXPENSE: 'gasto',
+        STATE_PAYMENT: 'pago al Estado',
+        TRANSFER: 'transferencia',
+        BUDGET: 'entrada de presupuesto',
       },
       rates: {
         iva: {
@@ -535,6 +587,10 @@ export const resources = {
           amountReceivedOverrideNumber: 'El importe recibido debe ser un número.',
         },
       },
+      incomeEdit: {
+        title: 'Editar ingreso',
+        description: 'Actualiza un registro INVOICE en este espacio de trabajo.',
+      },
       incomeCreated: {
         title: 'Ingreso creado',
         success: 'El ingreso se ha creado correctamente.',
@@ -576,6 +632,10 @@ export const resources = {
           amountPaidOverrideNumber: 'El importe pagado debe ser un número.',
         },
       },
+      expensesEdit: {
+        title: 'Editar gasto',
+        description: 'Actualiza un registro EXPENSE en este espacio de trabajo.',
+      },
       expensesCreated: {
         title: 'Gasto creado',
         success: 'El gasto se ha creado correctamente.',
@@ -611,6 +671,10 @@ export const resources = {
           RentaAnual: 'IRPF anual',
           Other: 'Otro',
         },
+      },
+      statePaymentsEdit: {
+        title: 'Editar pago al Estado',
+        description: 'Actualiza un registro STATE_PAYMENT en este espacio de trabajo.',
       },
       statePaymentsCreated: {
         title: 'Pago al Estado creado',
@@ -650,6 +714,10 @@ export const resources = {
           Outflow: 'Salida',
         },
       },
+      transfersEdit: {
+        title: 'Editar transferencia',
+        description: 'Actualiza un registro TRANSFER en este espacio de trabajo.',
+      },
       transfersCreated: {
         title: 'Transferencia creada',
         success: 'La transferencia se ha creado correctamente.',
@@ -680,6 +748,10 @@ export const resources = {
           plannedSpendNumber: 'El gasto planificado debe ser un número.',
           earnedNumber: 'Ingresado debe ser un número.',
         },
+      },
+      budgetEdit: {
+        title: 'Editar entrada de presupuesto',
+        description: 'Actualiza un registro BUDGET en este espacio de trabajo.',
       },
       budgetCreated: {
         title: 'Entrada de presupuesto creada',
@@ -764,10 +836,14 @@ export const resources = {
         back: 'Назад',
         cancel: 'Скасувати',
         close: 'Закрити',
+        confirm: 'Підтвердити',
         continue: 'Продовжити',
         create: 'Створити',
         creating: 'Створення…',
+        delete: 'Видалити',
+        edit: 'Редагувати',
         loading: 'Завантаження…',
+        more: 'Ще',
         new: 'Новий',
         next: 'Далі',
         ok: 'OK',
@@ -776,6 +852,7 @@ export const resources = {
         refresh: 'Оновити',
         retry: 'Спробувати ще раз',
         save: 'Зберегти',
+        saving: 'Збереження…',
         settings: 'Налаштування',
         userSettings: 'Налаштування користувача',
         language: 'Мова',
@@ -870,6 +947,17 @@ export const resources = {
         pageSummary: 'Сторінка {{page}} · {{pageSize}} на сторінці · сортування: {{sort}}',
         sortEventDateDesc: 'дата події за спаданням',
         yearHint: 'Рік (використовує {{hint}})',
+        actions: 'Дії',
+        deleteConfirmTitle: 'Видалити {{record}}?',
+        deleteConfirmBody: 'Це неможливо скасувати.',
+        invalidPayload: 'Дані запису некоректні або не підтримуються.',
+      },
+      recordTypes: {
+        INVOICE: 'рахунок',
+        EXPENSE: 'витрата',
+        STATE_PAYMENT: 'платіж державі',
+        TRANSFER: 'переказ',
+        BUDGET: 'запис бюджету',
       },
       rates: {
         iva: {
@@ -914,6 +1002,10 @@ export const resources = {
           amountReceivedOverrideNumber: 'Отримана сума має бути числом.',
         },
       },
+      incomeEdit: {
+        title: 'Редагувати дохід',
+        description: 'Оновлює запис INVOICE у цьому робочому просторі.',
+      },
       incomeCreated: {
         title: 'Дохід створено',
         success: 'Запис доходу успішно створено.',
@@ -955,6 +1047,10 @@ export const resources = {
           amountPaidOverrideNumber: 'Сплачена сума має бути числом.',
         },
       },
+      expensesEdit: {
+        title: 'Редагувати витрату',
+        description: 'Оновлює запис EXPENSE у цьому робочому просторі.',
+      },
       expensesCreated: {
         title: 'Витрату створено',
         success: 'Запис витрати успішно створено.',
@@ -990,6 +1086,10 @@ export const resources = {
           RentaAnual: 'Річний податок',
           Other: 'Інше',
         },
+      },
+      statePaymentsEdit: {
+        title: 'Редагувати платіж державі',
+        description: 'Оновлює запис STATE_PAYMENT у цьому робочому просторі.',
       },
       statePaymentsCreated: {
         title: 'Платіж створено',
@@ -1029,6 +1129,10 @@ export const resources = {
           Outflow: 'Витрата',
         },
       },
+      transfersEdit: {
+        title: 'Редагувати переказ',
+        description: 'Оновлює запис TRANSFER у цьому робочому просторі.',
+      },
       transfersCreated: {
         title: 'Переказ створено',
         success: 'Запис переказу успішно створено.',
@@ -1059,6 +1163,10 @@ export const resources = {
           plannedSpendNumber: 'Заплановані витрати мають бути числом.',
           earnedNumber: 'Зароблено має бути числом.',
         },
+      },
+      budgetEdit: {
+        title: 'Редагувати запис бюджету',
+        description: 'Оновлює запис BUDGET у цьому робочому просторі.',
       },
       budgetCreated: {
         title: 'Запис бюджету створено',
@@ -1143,10 +1251,14 @@ export const resources = {
         back: 'رجوع',
         cancel: 'إلغاء',
         close: 'إغلاق',
+        confirm: 'تأكيد',
         continue: 'متابعة',
         create: 'إنشاء',
         creating: 'جارٍ الإنشاء…',
+        delete: 'حذف',
+        edit: 'تعديل',
         loading: 'جارٍ التحميل…',
+        more: 'المزيد',
         new: 'جديد',
         next: 'التالي',
         ok: 'حسنًا',
@@ -1155,6 +1267,7 @@ export const resources = {
         refresh: 'تحديث',
         retry: 'إعادة المحاولة',
         save: 'حفظ',
+        saving: 'جارٍ الحفظ…',
         settings: 'الإعدادات',
         userSettings: 'إعدادات المستخدم',
         language: 'اللغة',
@@ -1249,6 +1362,17 @@ export const resources = {
         pageSummary: 'الصفحة {{page}} · {{pageSize}} لكل صفحة · الترتيب: {{sort}}',
         sortEventDateDesc: 'تاريخ الحدث تنازليًا',
         yearHint: 'السنة (تستخدم {{hint}})',
+        actions: 'إجراءات',
+        deleteConfirmTitle: 'حذف {{record}}؟',
+        deleteConfirmBody: 'لا يمكن التراجع عن ذلك.',
+        invalidPayload: 'بيانات السجل غير صالحة أو غير مدعومة.',
+      },
+      recordTypes: {
+        INVOICE: 'فاتورة',
+        EXPENSE: 'مصروف',
+        STATE_PAYMENT: 'دفعة للدولة',
+        TRANSFER: 'تحويل',
+        BUDGET: 'إدخال ميزانية',
       },
       rates: {
         iva: {
@@ -1293,6 +1417,10 @@ export const resources = {
           amountReceivedOverrideNumber: 'يجب أن يكون المبلغ المستلم رقمًا.',
         },
       },
+      incomeEdit: {
+        title: 'تعديل الدخل',
+        description: 'يحدّث سجل INVOICE في مساحة العمل هذه.',
+      },
       incomeCreated: {
         title: 'تم إنشاء الدخل',
         success: 'تم إنشاء سجل الدخل بنجاح.',
@@ -1334,6 +1462,10 @@ export const resources = {
           amountPaidOverrideNumber: 'يجب أن يكون المبلغ المدفوع رقمًا.',
         },
       },
+      expensesEdit: {
+        title: 'تعديل المصروف',
+        description: 'يحدّث سجل EXPENSE في مساحة العمل هذه.',
+      },
       expensesCreated: {
         title: 'تم إنشاء المصروف',
         success: 'تم إنشاء سجل المصروف بنجاح.',
@@ -1369,6 +1501,10 @@ export const resources = {
           RentaAnual: 'ضريبة سنوية',
           Other: 'أخرى',
         },
+      },
+      statePaymentsEdit: {
+        title: 'تعديل مدفوعات الدولة',
+        description: 'يحدّث سجل STATE_PAYMENT في مساحة العمل هذه.',
       },
       statePaymentsCreated: {
         title: 'تم إنشاء دفعة للدولة',
@@ -1408,6 +1544,10 @@ export const resources = {
           Outflow: 'سحب',
         },
       },
+      transfersEdit: {
+        title: 'تعديل التحويل',
+        description: 'يحدّث سجل TRANSFER في مساحة العمل هذه.',
+      },
       transfersCreated: {
         title: 'تم إنشاء التحويل',
         success: 'تم إنشاء سجل التحويل بنجاح.',
@@ -1438,6 +1578,10 @@ export const resources = {
           plannedSpendNumber: 'يجب أن يكون الإنفاق المخطط رقمًا.',
           earnedNumber: 'يجب أن يكون المكتسب رقمًا.',
         },
+      },
+      budgetEdit: {
+        title: 'تعديل إدخال الميزانية',
+        description: 'يحدّث سجل BUDGET في مساحة العمل هذه.',
       },
       budgetCreated: {
         title: 'تم إنشاء إدخال الميزانية',
@@ -1522,10 +1666,14 @@ export const resources = {
         back: 'Înapoi',
         cancel: 'Anulează',
         close: 'Închide',
+        confirm: 'Confirmă',
         continue: 'Continuă',
         create: 'Creează',
         creating: 'Se creează…',
+        delete: 'Șterge',
+        edit: 'Editează',
         loading: 'Se încarcă…',
+        more: 'Mai multe',
         new: 'Nou',
         next: 'Următor',
         ok: 'OK',
@@ -1534,6 +1682,7 @@ export const resources = {
         refresh: 'Reîmprospătează',
         retry: 'Reîncearcă',
         save: 'Salvează',
+        saving: 'Se salvează…',
         settings: 'Setări',
         userSettings: 'Setările utilizatorului',
         language: 'Limbă',
@@ -1628,6 +1777,17 @@ export const resources = {
         pageSummary: 'Pagina {{page}} · {{pageSize}} pe pagină · sortare: {{sort}}',
         sortEventDateDesc: 'data evenimentului desc',
         yearHint: 'An (folosește {{hint}})',
+        actions: 'Acțiuni',
+        deleteConfirmTitle: 'Șterge {{record}}?',
+        deleteConfirmBody: 'Nu poate fi anulată.',
+        invalidPayload: 'Conținutul înregistrării încărcate este invalid sau nesuportat.',
+      },
+      recordTypes: {
+        INVOICE: 'factură',
+        EXPENSE: 'cheltuială',
+        STATE_PAYMENT: 'plată către stat',
+        TRANSFER: 'transfer',
+        BUDGET: 'intrare buget',
       },
       rates: {
         iva: {
@@ -1672,6 +1832,10 @@ export const resources = {
           amountReceivedOverrideNumber: 'Suma încasată trebuie să fie un număr.',
         },
       },
+      incomeEdit: {
+        title: 'Editează venit',
+        description: 'Actualizează o înregistrare INVOICE în acest spațiu.',
+      },
       incomeCreated: {
         title: 'Venit creat',
         success: 'Înregistrarea de venit a fost creată cu succes.',
@@ -1713,6 +1877,10 @@ export const resources = {
           amountPaidOverrideNumber: 'Suma plătită trebuie să fie un număr.',
         },
       },
+      expensesEdit: {
+        title: 'Editează cheltuială',
+        description: 'Actualizează o înregistrare EXPENSE în acest spațiu.',
+      },
       expensesCreated: {
         title: 'Cheltuială creată',
         success: 'Înregistrarea de cheltuială a fost creată cu succes.',
@@ -1748,6 +1916,10 @@ export const resources = {
           RentaAnual: 'Impozit anual',
           Other: 'Altele',
         },
+      },
+      statePaymentsEdit: {
+        title: 'Editează plăți către stat',
+        description: 'Actualizează o înregistrare STATE_PAYMENT în acest spațiu.',
       },
       statePaymentsCreated: {
         title: 'Plată către stat creată',
@@ -1787,6 +1959,10 @@ export const resources = {
           Outflow: 'Ieșire',
         },
       },
+      transfersEdit: {
+        title: 'Editează transfer',
+        description: 'Actualizează o înregistrare TRANSFER în acest spațiu.',
+      },
       transfersCreated: {
         title: 'Transfer creat',
         success: 'Înregistrarea transferului a fost creată cu succes.',
@@ -1817,6 +1993,10 @@ export const resources = {
           plannedSpendNumber: 'Cheltuielile planificate trebuie să fie un număr.',
           earnedNumber: 'Câștigat trebuie să fie un număr.',
         },
+      },
+      budgetEdit: {
+        title: 'Editează intrare buget',
+        description: 'Actualizează o înregistrare BUDGET în acest spațiu.',
       },
       budgetCreated: {
         title: 'Intrare buget creată',

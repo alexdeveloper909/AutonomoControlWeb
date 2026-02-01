@@ -3,6 +3,7 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import { WorkspaceStatePaymentsPage } from './WorkspaceStatePaymentsPage'
 import { WorkspaceStatePaymentsCreatePage } from './WorkspaceStatePaymentsCreatePage'
 import { WorkspaceStatePaymentsCreatedPage } from './WorkspaceStatePaymentsCreatedPage'
+import { WorkspaceStatePaymentsEditPage } from './WorkspaceStatePaymentsEditPage'
 
 export function WorkspaceStatePaymentsRoutes(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   return (
@@ -18,6 +19,16 @@ export function WorkspaceStatePaymentsRoutes(props: { workspaceId: string; api: 
             <Navigate to={`/workspaces/${props.workspaceId}/state-payments`} replace />
           ) : (
             <WorkspaceStatePaymentsCreatePage workspaceId={props.workspaceId} api={props.api} />
+          )
+        }
+      />
+      <Route
+        path=":eventDate/:recordId/edit"
+        element={
+          props.readOnly ? (
+            <Navigate to={`/workspaces/${props.workspaceId}/state-payments`} replace />
+          ) : (
+            <WorkspaceStatePaymentsEditPage workspaceId={props.workspaceId} api={props.api} />
           )
         }
       />

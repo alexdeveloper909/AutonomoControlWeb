@@ -3,6 +3,7 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import { WorkspaceExpensesPage } from './WorkspaceExpensesPage'
 import { WorkspaceExpensesCreatePage } from './WorkspaceExpensesCreatePage'
 import { WorkspaceExpensesCreatedPage } from './WorkspaceExpensesCreatedPage'
+import { WorkspaceExpensesEditPage } from './WorkspaceExpensesEditPage'
 
 export function WorkspaceExpensesRoutes(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   return (
@@ -15,6 +16,16 @@ export function WorkspaceExpensesRoutes(props: { workspaceId: string; api: Auton
             <Navigate to={`/workspaces/${props.workspaceId}/expenses`} replace />
           ) : (
             <WorkspaceExpensesCreatePage workspaceId={props.workspaceId} api={props.api} />
+          )
+        }
+      />
+      <Route
+        path=":eventDate/:recordId/edit"
+        element={
+          props.readOnly ? (
+            <Navigate to={`/workspaces/${props.workspaceId}/expenses`} replace />
+          ) : (
+            <WorkspaceExpensesEditPage workspaceId={props.workspaceId} api={props.api} />
           )
         }
       />

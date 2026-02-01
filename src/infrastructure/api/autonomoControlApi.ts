@@ -185,6 +185,37 @@ export class AutonomoControlApi {
     })
   }
 
+  async getRecord(workspaceId: string, recordType: RecordType, eventDate: string, recordId: string): Promise<RecordResponse> {
+    return jsonFetch<RecordResponse>(
+      new URL(`/workspaces/${workspaceId}/records/${recordType}/${eventDate}/${recordId}`, this.baseUrl).toString(),
+      { headers: this.authHeaders() },
+    )
+  }
+
+  async updateRecord(
+    workspaceId: string,
+    recordType: RecordType,
+    eventDate: string,
+    recordId: string,
+    input: { recordType: RecordType; payload: RecordPayload },
+  ): Promise<RecordResponse> {
+    return jsonFetch<RecordResponse>(
+      new URL(`/workspaces/${workspaceId}/records/${recordType}/${eventDate}/${recordId}`, this.baseUrl).toString(),
+      {
+        method: 'PUT',
+        headers: this.authHeaders(),
+        body: input,
+      },
+    )
+  }
+
+  async deleteRecord(workspaceId: string, recordType: RecordType, eventDate: string, recordId: string): Promise<void> {
+    await jsonFetch<void>(new URL(`/workspaces/${workspaceId}/records/${recordType}/${eventDate}/${recordId}`, this.baseUrl).toString(), {
+      method: 'DELETE',
+      headers: this.authHeaders(),
+    })
+  }
+
   async monthSummaries(workspaceId: string, settings: WorkspaceSettings): Promise<{ settings: WorkspaceSettings; items: unknown[] }> {
     return jsonFetch(new URL(`/workspaces/${workspaceId}/summaries/months`, this.baseUrl).toString(), {
       method: 'POST',

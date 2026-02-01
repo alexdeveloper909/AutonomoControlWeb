@@ -3,6 +3,7 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import { WorkspaceTransfersPage } from './WorkspaceTransfersPage'
 import { WorkspaceTransfersCreatePage } from './WorkspaceTransfersCreatePage'
 import { WorkspaceTransfersCreatedPage } from './WorkspaceTransfersCreatedPage'
+import { WorkspaceTransfersEditPage } from './WorkspaceTransfersEditPage'
 
 export function WorkspaceTransfersRoutes(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   return (
@@ -15,6 +16,16 @@ export function WorkspaceTransfersRoutes(props: { workspaceId: string; api: Auto
             <Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />
           ) : (
             <WorkspaceTransfersCreatePage workspaceId={props.workspaceId} api={props.api} />
+          )
+        }
+      />
+      <Route
+        path=":eventDate/:recordId/edit"
+        element={
+          props.readOnly ? (
+            <Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />
+          ) : (
+            <WorkspaceTransfersEditPage workspaceId={props.workspaceId} api={props.api} />
           )
         }
       />

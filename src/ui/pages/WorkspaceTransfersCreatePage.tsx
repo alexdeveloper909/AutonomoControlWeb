@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
-import { Alert, Button, FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
+import { useEffect, useMemo, useState } from 'react'
+import { Alert, Button, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { TransferOp } from '../../domain/records'
+import type { TransferOp, TransferPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -21,10 +21,37 @@ const todayIso = (): string => {
 
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
-export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
+const asTransferPayload = (payload: unknown): TransferPayload | null => {
+  if (!payload || typeof payload !== 'object') return null
+  const p = payload as Partial<TransferPayload>
+  if (typeof p.date !== 'string') return null
+  if (typeof p.operation !== 'string') return null
+  if (typeof p.amount !== 'number') return null
+  if (p.note != null && typeof p.note !== 'string') return null
+  return p as TransferPayload
+}
+
+export function WorkspaceTransfersCreatePage(props: {
+  workspaceId: string
+  api: AutonomoControlApi
+  mode?: 'create' | 'edit'
+  eventDate?: string
+  recordId?: string
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const mode = props.mode ?? 'create'
+  const editing = mode === 'edit'
+
+  const recordQuery = useQuery({
+    queryKey:
+      editing && props.eventDate && props.recordId
+        ? queryKeys.record(props.workspaceId, 'TRANSFER', props.eventDate, props.recordId)
+        : ['workspaces', props.workspaceId, 'record', 'TRANSFER', props.eventDate ?? '', props.recordId ?? ''],
+    queryFn: () => props.api.getRecord(props.workspaceId, 'TRANSFER', props.eventDate!, props.recordId!),
+    enabled: editing && Boolean(props.eventDate && props.recordId),
+  })
 
   const [date, setDate] = useState(todayIso())
   const [operation, setOperation] = useState<TransferOp>('Inflow')
@@ -33,10 +60,29 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [initializedFromRecord, setInitializedFromRecord] = useState(false)
 
   const backToPath = `/workspaces/${props.workspaceId}/transfers`
 
+  useEffect(() => {
+    if (!editing) return
+    const record = recordQuery.data ?? null
+    if (!record || initializedFromRecord) return
+    const payload = asTransferPayload(record.payload)
+    if (!payload) {
+      setError(t('records.invalidPayload'))
+      setInitializedFromRecord(true)
+      return
+    }
+    setDate(payload.date)
+    setOperation(payload.operation)
+    setAmount(String(payload.amount))
+    setNote(payload.note ?? '')
+    setInitializedFromRecord(true)
+  }, [editing, initializedFromRecord, recordQuery.data, t])
+
   const validationError = useMemo(() => {
+    if (editing && !initializedFromRecord) return null
     if (!isIsoDate(date)) return t('transfersCreate.validation.date')
     const a = parseEuroAmount(amount)
     if (a === null) return t('transfersCreate.validation.amountNumber')
@@ -46,6 +92,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
 
   const submit = async () => {
     setError(null)
+    if (editing && !initializedFromRecord) return
     if (validationError) {
       setError(validationError)
       return
@@ -56,19 +103,30 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
       const a = parseEuroAmount(amount)
       if (a === null) throw new Error(t('transfersCreate.validation.amountNumber'))
 
-      const res = await props.api.createRecord(props.workspaceId, {
-        recordType: 'TRANSFER',
-        payload: {
-          date,
-          operation,
-          amount: a,
-          note: note.trim() ? note.trim() : undefined,
-        },
-      })
+      const payload: TransferPayload = {
+        date,
+        operation,
+        amount: a,
+        note: note.trim() ? note.trim() : undefined,
+      }
+
+      const res = editing
+        ? await props.api.updateRecord(props.workspaceId, 'TRANSFER', props.eventDate!, props.recordId!, {
+            recordType: 'TRANSFER',
+            payload,
+          })
+        : await props.api.createRecord(props.workspaceId, { recordType: 'TRANSFER', payload })
 
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'TRANSFER') })
 
-      navigate(`/workspaces/${props.workspaceId}/transfers/created`, { replace: true, state: { record: res } })
+      if (editing) {
+        if (props.eventDate && props.recordId) {
+          queryClient.removeQueries({ queryKey: queryKeys.record(props.workspaceId, 'TRANSFER', props.eventDate, props.recordId) })
+        }
+        navigate(backToPath, { replace: true })
+      } else {
+        navigate(`/workspaces/${props.workspaceId}/transfers/created`, { replace: true, state: { record: res } })
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -76,11 +134,13 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
     }
   }
 
+  const inputsDisabled = submitting || (editing && !initializedFromRecord) || recordQuery.isFetching
+
   return (
     <Stack spacing={2}>
       <PageHeader
-        title={t('transfersCreate.title')}
-        description={t('transfersCreate.description')}
+        title={editing ? t('transfersEdit.title') : t('transfersCreate.title')}
+        description={editing ? t('transfersEdit.description') : t('transfersCreate.description')}
         right={
           <Button component={RouterLink} to={backToPath} variant="text">
             {t('common.cancel')}
@@ -89,17 +149,24 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
       />
 
       {error ? <ErrorAlert message={error} /> : null}
+      {recordQuery.error ? (
+        <ErrorAlert message={recordQuery.error instanceof Error ? recordQuery.error.message : String(recordQuery.error)} />
+      ) : null}
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Alert severity="info">
             <Typography variant="body2">
               {t('transfersCreate.info', {
-                path: 'POST /workspaces/{workspaceId}/records',
+                path: editing
+                  ? 'PUT /workspaces/{workspaceId}/records/{recordType}/{eventDate}/{recordId}'
+                  : 'POST /workspaces/{workspaceId}/records',
                 recordType: 'recordType=TRANSFER',
               })}
             </Typography>
           </Alert>
+
+          {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
@@ -111,6 +178,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
               required
               fullWidth
               error={Boolean(date) && !isIsoDate(date)}
+              disabled={inputsDisabled}
             />
             <EuroTextField
               label={t('transfersCreate.amount')}
@@ -118,6 +186,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
               onChange={(e) => setAmount(e.target.value)}
               required
               fullWidth
+              disabled={inputsDisabled}
             />
           </Stack>
 
@@ -128,6 +197,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
               label={t('transfersCreate.operation')}
               value={operation}
               onChange={(e) => setOperation(e.target.value as TransferOp)}
+              disabled={inputsDisabled}
             >
               {(['Inflow', 'Outflow'] as const).map((op) => (
                 <MenuItem key={op} value={op}>
@@ -137,14 +207,22 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
             </Select>
           </FormControl>
 
-          <TextField label={t('transfersCreate.noteOptional')} value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField
+            label={t('transfersCreate.noteOptional')}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            fullWidth
+            multiline
+            minRows={2}
+            disabled={inputsDisabled}
+          />
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>
               {t('common.back')}
             </Button>
-            <Button variant="contained" onClick={submit} disabled={submitting}>
-              {submitting ? t('common.creating') : t('transfersCreate.create')}
+            <Button variant="contained" onClick={submit} disabled={inputsDisabled}>
+              {editing ? (submitting ? t('common.saving') : t('common.save')) : submitting ? t('common.creating') : t('transfersCreate.create')}
             </Button>
           </Stack>
         </Stack>

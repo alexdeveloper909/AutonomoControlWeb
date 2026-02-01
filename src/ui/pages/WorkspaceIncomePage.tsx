@@ -15,15 +15,17 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { InvoicePayload } from '../../domain/records'
+import type { InvoicePayload, RecordResponse } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
+import { MoreActionsMenu } from '../components/MoreActionsMenu'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 
 const PAGE_SIZE = 20
 
@@ -47,10 +49,14 @@ const asInvoicePayload = (payload: unknown): InvoicePayload | null => {
 export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
+  const navigate = useNavigate()
   const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
   const queryClient = useQueryClient()
   const queryKey = queryKeys.recordsByYear(props.workspaceId, 'INVOICE', year)
+  const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
     queryKey,
@@ -90,6 +96,24 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
     for (let y = current + 1; y >= current - 10; y -= 1) years.push(String(y))
     return years
   }, [])
+
+  const colSpan = props.readOnly ? 6 : 7
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteError(null)
+    setDeleteSubmitting(true)
+    try {
+      await props.api.deleteRecord(props.workspaceId, 'INVOICE', deleteTarget.record.eventDate, deleteTarget.record.recordId)
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'INVOICE') })
+      queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      setDeleteTarget(null)
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }
 
   return (
     <Stack spacing={2}>
@@ -166,6 +190,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
 
       {isFetching ? <LinearProgress /> : null}
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
+      {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
       <Paper variant="outlined">
         <TableContainer>
@@ -178,6 +203,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
                 <TableCell>{t('records.invoiceNumber')}</TableCell>
                 <TableCell>{t('records.client')}</TableCell>
                 <TableCell align="right">{t('records.baseExclVat')}</TableCell>
+                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -194,17 +220,32 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       {payload ? money.format(payload.baseExclVat) : t('common.na')}
                     </TableCell>
+                    {props.readOnly ? null : (
+                      <TableCell align="right" padding="checkbox">
+                        <MoreActionsMenu
+                          onEdit={() =>
+                            navigate(`/workspaces/${props.workspaceId}/income/${record.eventDate}/${record.recordId}/edit`)
+                          }
+                          onDelete={() =>
+                            setDeleteTarget({
+                              record,
+                              label: `${t('recordTypes.INVOICE')} ${payload?.number ?? record.recordId}`,
+                            })
+                          }
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : currentPageItems ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('income.empty', { year })}</Typography>
                   </TableCell>
                 </TableRow>
               ) : isPending ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={colSpan}>
                     <Typography color="text.secondary">{t('common.loading')}</Typography>
                   </TableCell>
                 </TableRow>
@@ -213,6 +254,16 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
           </Table>
         </TableContainer>
       </Paper>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t('records.deleteConfirmTitle', { record: deleteTarget?.label ?? '' })}
+        description={t('records.deleteConfirmBody')}
+        confirmColor="error"
+        loading={deleteSubmitting}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </Stack>
   )
 }
