@@ -23,6 +23,8 @@ import type { WorkspaceSettings } from '../../domain/settings'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
+import { useTranslation } from 'react-i18next'
+import { decimalFormatter, euroCurrencyFormatter } from '../lib/intl'
 
 const currentYear = (): string => {
   const d = new Date()
@@ -38,8 +40,6 @@ const asTransferPayload = (payload: unknown): TransferPayload | null => {
   return p as TransferPayload
 }
 
-const money = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 const signedAmount = (p: TransferPayload): number => (p.operation === 'Inflow' ? p.amount : -p.amount)
 
 const sortAsc = (a: RecordResponse, b: RecordResponse): number => {
@@ -53,6 +53,9 @@ const sortDesc = (a: RecordResponse, b: RecordResponse): number => {
 }
 
 export function WorkspaceTransfersPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t, i18n } = useTranslation()
+  const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
+  const currency = useMemo(() => euroCurrencyFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
   const queryClient = useQueryClient()
 
@@ -159,11 +162,11 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
   return (
     <Stack spacing={2}>
       <PageHeader
-        title="Transfers"
-        description="TRANSFER records for this workspace (year filter)."
+        title={t('transfers.title')}
+        description={t('transfers.description')}
         right={
           <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
-            Add Transfer
+            {t('transfers.add')}
           </Button>
         }
       />
@@ -185,13 +188,13 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
               ))}
             </Select>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              Year (uses <code>year=YYYY</code>)
+              {t('records.yearHint', { hint: 'year=YYYY' })}
             </Typography>
           </FormControl>
 
           <Stack sx={{ flex: 1, textAlign: { xs: 'left', sm: 'center' } }} spacing={0.25}>
             <Typography variant="caption" color="text.secondary">
-              Current balance
+              {t('transfers.currentBalance')}
             </Typography>
             <Typography
               variant="h5"
@@ -200,24 +203,28 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
-              {currentBalance == null ? '—' : `€${money.format(currentBalance)}`}
+              {currentBalance == null ? t('common.na') : currency.format(currentBalance)}
             </Typography>
           </Stack>
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
             <Button variant="text" onClick={refresh} disabled={loading}>
-              Refresh
+              {t('common.refresh')}
             </Button>
           </Stack>
         </Stack>
 
         {settings && String(settings.year) !== year ? (
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Note: this workspace is configured for {settings.year}; the running balance uses an opening balance of €{money.format(0)} for {year}.
+            {t('transfers.noteYearMismatch', {
+              settingsYear: settings.year,
+              year,
+              zero: currency.format(0),
+            })}
           </Typography>
         ) : openingBalance != null ? (
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Opening balance: €{money.format(openingBalance)}
+            {t('transfers.openingBalance', { value: currency.format(openingBalance) })}
           </Typography>
         ) : null}
       </Paper>
@@ -230,12 +237,12 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Event date</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Operation</TableCell>
-                <TableCell align="right">Amount</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell align="right">Balance</TableCell>
+                <TableCell>{t('records.eventDate')}</TableCell>
+                <TableCell>{t('records.date')}</TableCell>
+                <TableCell>{t('records.operation')}</TableCell>
+                <TableCell align="right">{t('records.amount')}</TableCell>
+                <TableCell>{t('records.note')}</TableCell>
+                <TableCell align="right">{t('records.balance')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -243,29 +250,31 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                 tableRows.map(({ record, payload, balance }) => (
                   <TableRow key={record.recordKey} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.date ?? '—'}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.operation ?? '—'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.date ?? t('common.na')}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      {payload?.operation ? t(`transfersCreate.operations.${payload.operation}`) : t('common.na')}
+                    </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.amount) : '—'}
+                      {payload ? money.format(payload.amount) : t('common.na')}
                     </TableCell>
                     <TableCell sx={{ maxWidth: 320 }} title={payload?.note}>
-                      {payload?.note ?? '—'}
+                      {payload?.note ?? t('common.na')}
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {balance == null ? '—' : money.format(balance)}
+                      {balance == null ? t('common.na') : money.format(balance)}
                     </TableCell>
                   </TableRow>
                 ))
               ) : items ? (
                 <TableRow>
                   <TableCell colSpan={6}>
-                    <Typography color="text.secondary">No transfer records found for {year}.</Typography>
+                    <Typography color="text.secondary">{t('transfers.empty', { year })}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 <TableRow>
                   <TableCell colSpan={6}>
-                    <Typography color="text.secondary">Loading…</Typography>
+                    <Typography color="text.secondary">{t('common.loading')}</Typography>
                   </TableCell>
                 </TableRow>
               )}

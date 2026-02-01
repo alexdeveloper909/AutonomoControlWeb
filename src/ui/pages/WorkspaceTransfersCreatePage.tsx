@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
+import { useTranslation } from 'react-i18next'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -21,6 +22,7 @@ const todayIso = (): string => {
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -35,12 +37,12 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
   const backToPath = `/workspaces/${props.workspaceId}/transfers`
 
   const validationError = useMemo(() => {
-    if (!isIsoDate(date)) return 'Date must be a valid ISO date (YYYY-MM-DD).'
+    if (!isIsoDate(date)) return t('transfersCreate.validation.date')
     const a = parseEuroAmount(amount)
-    if (a === null) return 'Amount must be a number.'
-    if (a < 0) return 'Amount must be >= 0.'
+    if (a === null) return t('transfersCreate.validation.amountNumber')
+    if (a < 0) return t('transfersCreate.validation.amountNonNegative')
     return null
-  }, [amount, date])
+  }, [amount, date, t])
 
   const submit = async () => {
     setError(null)
@@ -52,7 +54,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
     setSubmitting(true)
     try {
       const a = parseEuroAmount(amount)
-      if (a === null) throw new Error('Amount must be a number.')
+      if (a === null) throw new Error(t('transfersCreate.validation.amountNumber'))
 
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'TRANSFER',
@@ -77,11 +79,11 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
   return (
     <Stack spacing={2}>
       <PageHeader
-        title="Add transfer"
-        description="Creates a TRANSFER record in this workspace."
+        title={t('transfersCreate.title')}
+        description={t('transfersCreate.description')}
         right={
           <Button component={RouterLink} to={backToPath} variant="text">
-            Cancel
+            {t('common.cancel')}
           </Button>
         }
       />
@@ -92,13 +94,16 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
         <Stack spacing={2}>
           <Alert severity="info">
             <Typography variant="body2">
-              This form submits to <code>POST /workspaces/{'{workspaceId}'}/records</code> with <code>recordType=TRANSFER</code>.
+              {t('transfersCreate.info', {
+                path: 'POST /workspaces/{workspaceId}/records',
+                recordType: 'recordType=TRANSFER',
+              })}
             </Typography>
           </Alert>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Date"
+              label={t('transfersCreate.date')}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -108,7 +113,7 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
               error={Boolean(date) && !isIsoDate(date)}
             />
             <EuroTextField
-              label="Amount"
+              label={t('transfersCreate.amount')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
@@ -117,29 +122,29 @@ export function WorkspaceTransfersCreatePage(props: { workspaceId: string; api: 
           </Stack>
 
           <FormControl fullWidth>
-            <InputLabel id="transfer-operation-label">Operation</InputLabel>
+            <InputLabel id="transfer-operation-label">{t('transfersCreate.operation')}</InputLabel>
             <Select
               labelId="transfer-operation-label"
-              label="Operation"
+              label={t('transfersCreate.operation')}
               value={operation}
               onChange={(e) => setOperation(e.target.value as TransferOp)}
             >
               {(['Inflow', 'Outflow'] as const).map((op) => (
                 <MenuItem key={op} value={op}>
-                  {op}
+                  {t(`transfersCreate.operations.${op}`)}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <TextField label="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField label={t('transfersCreate.noteOptional')} value={note} onChange={(e) => setNote(e.target.value)} fullWidth multiline minRows={2} />
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>
-              Back
+              {t('common.back')}
             </Button>
             <Button variant="contained" onClick={submit} disabled={submitting}>
-              {submitting ? 'Creating…' : 'Create transfer'}
+              {submitting ? t('common.creating') : t('transfersCreate.create')}
             </Button>
           </Stack>
         </Stack>

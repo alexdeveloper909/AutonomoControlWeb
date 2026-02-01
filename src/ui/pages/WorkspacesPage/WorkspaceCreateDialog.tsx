@@ -18,6 +18,7 @@ import type { Workspace } from '../../../domain/workspace'
 import type { WorkspaceSettings } from '../../../domain/settings'
 import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../../components/ErrorAlert'
+import { useTranslation } from 'react-i18next'
 
 const defaultSettings = (): WorkspaceSettings => {
   const now = new Date()
@@ -39,7 +40,8 @@ export function WorkspaceCreateDialog(props: {
   api: AutonomoControlApi
   onCreated: (workspace: Workspace) => void
 }) {
-  const [name, setName] = useState('My workspace')
+  const { t } = useTranslation()
+  const [name, setName] = useState(() => t('workspaceCreate.defaultName'))
   const [settings, setSettings] = useState<WorkspaceSettings>(() => defaultSettings())
   const [openingBalanceInput, setOpeningBalanceInput] = useState<string>('0')
   const [error, setError] = useState<string | null>(null)
@@ -97,25 +99,25 @@ export function WorkspaceCreateDialog(props: {
       maxWidth="sm"
       fullWidth
     >
-      <DialogTitle>Create workspace</DialogTitle>
+      <DialogTitle>{t('workspaceCreate.title')}</DialogTitle>
       <DialogContent>
         {saving ? <LinearProgress /> : null}
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error ? <ErrorAlert message={error} /> : null}
 
-          <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField label={t('workspaceCreate.name')} value={name} onChange={(e) => setName(e.target.value)} fullWidth />
 
-          <Typography variant="subtitle2">Settings</Typography>
+          <Typography variant="subtitle2">{t('workspaceCreate.settings')}</Typography>
           <Stack direction="row" spacing={2}>
             <TextField
-              label="Year"
+              label={t('workspaceCreate.year')}
               type="number"
               value={settings.year}
               onChange={(e) => setSettings((s) => ({ ...s, year: Number(e.target.value) }))}
               fullWidth
             />
             <TextField
-              label="Start date"
+              label={t('workspaceCreate.startDate')}
               type="date"
               value={settings.startDate}
               onChange={(e) => setSettings((s) => ({ ...s, startDate: e.target.value }))}
@@ -126,7 +128,7 @@ export function WorkspaceCreateDialog(props: {
 
           <Stack direction="row" spacing={2}>
             <TextField
-              label="IVA standard"
+              label={t('workspaceCreate.ivaStandard')}
               type="number"
               inputProps={{ step: '0.01' }}
               value={settings.ivaStd}
@@ -134,7 +136,7 @@ export function WorkspaceCreateDialog(props: {
               fullWidth
             />
             <TextField
-              label="IRPF rate"
+              label={t('workspaceCreate.irpfRate')}
               type="number"
               inputProps={{ step: '0.01' }}
               value={settings.irpfRate}
@@ -150,11 +152,11 @@ export function WorkspaceCreateDialog(props: {
                 onChange={(e) => setSettings((s) => ({ ...s, obligacion130: e.target.checked }))}
               />
             }
-            label="Modelo 130 obligation (obligacion130)"
+            label={t('workspaceCreate.obligacion130')}
           />
 
           <TextField
-            label="Opening balance"
+            label={t('workspaceCreate.openingBalance')}
             type="text"
             inputProps={{ inputMode: 'decimal' }}
             value={openingBalanceInput}
@@ -180,26 +182,26 @@ export function WorkspaceCreateDialog(props: {
             fullWidth
           />
 
-          <Typography variant="subtitle2">Expense categories</Typography>
+          <Typography variant="subtitle2">{t('workspaceCreate.expenseCategories')}</Typography>
           <Stack spacing={1}>
             {settings.expenseCategories.map((c, i) => (
               <Stack key={i} direction="row" spacing={1} alignItems="center">
                 <TextField
                   value={c}
                   onChange={(e) => updateCategory(i, e.target.value)}
-                  placeholder="Category"
+                  placeholder={t('workspaceCreate.categoryPlaceholder')}
                   fullWidth
                 />
-                <Chip label="Remove" onClick={() => removeCategory(i)} clickable />
+                <Chip label={t('workspaceCreate.remove')} onClick={() => removeCategory(i)} clickable />
               </Stack>
             ))}
-            <Button onClick={addCategory}>Add category</Button>
+            <Button onClick={addCategory}>{t('workspaceCreate.addCategory')}</Button>
           </Stack>
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={props.onClose} disabled={saving}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -207,7 +209,7 @@ export function WorkspaceCreateDialog(props: {
           disabled={saving || name.trim().length === 0}
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
         >
-          Create
+          {t('common.create')}
         </Button>
       </DialogActions>
     </Dialog>

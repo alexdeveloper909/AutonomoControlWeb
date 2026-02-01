@@ -4,6 +4,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { RecordResponse, RecordType } from '../../domain/records'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { useTranslation } from 'react-i18next'
 
 const monthKeyToday = (): string => {
   const d = new Date()
@@ -15,6 +16,7 @@ export function WorkspaceRecordsPage(props: {
   workspaceId: string
   api: AutonomoControlApi
 }) {
+  const { t } = useTranslation()
   const [monthKey, setMonthKey] = useState(monthKeyToday())
   const [recordType, setRecordType] = useState<RecordType>('INVOICE')
   const [items, setItems] = useState<RecordResponse[] | null>(null)
@@ -67,13 +69,13 @@ export function WorkspaceRecordsPage(props: {
       <Paper sx={{ p: 2 }}>
         <Stack direction="row" spacing={2} alignItems="center">
           <TextField
-            label="Month (YYYY-MM)"
+            label={t('debug.monthKey')}
             value={monthKey}
             onChange={(e) => setMonthKey(e.target.value)}
             placeholder="2025-01"
           />
           <TextField
-            label="Record type"
+            label={t('debug.recordType')}
             value={recordType}
             onChange={(e) => setRecordType(e.target.value as RecordType)}
             select
@@ -86,10 +88,10 @@ export function WorkspaceRecordsPage(props: {
             ))}
           </TextField>
           <Button variant="outlined" onClick={refresh}>
-            Refresh
+            {t('common.refresh')}
           </Button>
           <Button variant="text" component={RouterLink} to={`/workspaces/${props.workspaceId}/budget`}>
-            Budget
+            {t('budget.title')}
           </Button>
         </Stack>
       </Paper>
@@ -98,9 +100,9 @@ export function WorkspaceRecordsPage(props: {
 
       <Paper sx={{ p: 2 }}>
         <Stack spacing={1}>
-          <Typography variant="subtitle1">Create record (JSON payload)</Typography>
+          <Typography variant="subtitle1">{t('debug.createRecordTitle')}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Payload schemas live in `AutonomoControlApi/USAGES.md`. This MVP uses a raw JSON payload editor for fast iteration.
+            {t('debug.schemasHint')}
           </Typography>
           <TextField
             value={payloadJson}
@@ -111,7 +113,7 @@ export function WorkspaceRecordsPage(props: {
             sx={{ '& textarea': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' } }}
           />
           <Button variant="contained" onClick={createRecord}>
-            Create
+            {t('common.create')}
           </Button>
         </Stack>
       </Paper>
@@ -120,7 +122,7 @@ export function WorkspaceRecordsPage(props: {
 
       <Paper sx={{ p: 2 }}>
         <Stack spacing={1}>
-          <Typography variant="subtitle1">Records (month filter)</Typography>
+          <Typography variant="subtitle1">{t('debug.recordsMonthFilter')}</Typography>
           <TextField value={itemsText} multiline minRows={10} fullWidth InputProps={{ readOnly: true }} />
         </Stack>
       </Paper>

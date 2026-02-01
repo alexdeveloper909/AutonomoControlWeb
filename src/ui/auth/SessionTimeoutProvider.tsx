@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { tokenStorage } from '../../infrastructure/auth/tokenStorage'
 import { onSessionExpired, type SessionExpiredEvent } from '../../infrastructure/auth/sessionEvents'
 import { useAuth } from './useAuth'
+import { useTranslation } from 'react-i18next'
 
 const isAuthRoute = (pathname: string): boolean => pathname === '/login' || pathname.startsWith('/auth/')
 
@@ -12,6 +13,7 @@ export function SessionTimeoutProvider(props: PropsWithChildren) {
   const { session, setSession } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
 
   const [open, setOpen] = useState(false)
   const [lastEvent, setLastEvent] = useState<SessionExpiredEvent | null>(null)
@@ -65,20 +67,20 @@ export function SessionTimeoutProvider(props: PropsWithChildren) {
     <>
       {props.children}
       <Dialog open={open} onClose={onOk} maxWidth="xs" fullWidth>
-        <DialogTitle>Session expired</DialogTitle>
+        <DialogTitle>{t('sessionTimeout.title')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Your session might have expired. Please sign in again to continue.
+            {t('sessionTimeout.body')}
           </Typography>
           {lastEvent?.source === 'http' ? (
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-              Server responded with HTTP {lastEvent.status}.
+              {t('sessionTimeout.httpHint', { status: lastEvent.status })}
             </Typography>
           ) : null}
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={onOk} autoFocus>
-            OK
+            {t('sessionTimeout.ok')}
           </Button>
         </DialogActions>
       </Dialog>

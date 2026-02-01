@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { WorkspaceSettings } from '../../domain/settings'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { useTranslation } from 'react-i18next'
 
 export function WorkspaceSettingsDialog(props: {
   open: boolean
@@ -10,6 +11,7 @@ export function WorkspaceSettingsDialog(props: {
   workspaceId: string
   api: AutonomoControlApi
 }) {
+  const { t } = useTranslation()
   const [settings, setSettings] = useState<WorkspaceSettings | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -37,7 +39,7 @@ export function WorkspaceSettingsDialog(props: {
 
   return (
     <Dialog open={props.open} onClose={props.onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Settings</DialogTitle>
+      <DialogTitle>{t('common.settings')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           {error ? <ErrorAlert message={error} /> : null}
@@ -45,7 +47,7 @@ export function WorkspaceSettingsDialog(props: {
             <Stack direction="row" spacing={1} alignItems="center">
               <CircularProgress size={18} />
               <Typography variant="body2" color="text.secondary">
-                Loading…
+                {t('common.loading')}
               </Typography>
             </Stack>
           ) : null}
@@ -61,9 +63,9 @@ export function WorkspaceSettingsDialog(props: {
       </DialogContent>
       <DialogActions>
         <Button onClick={refresh} disabled={loading}>
-          Refresh
+          {t('common.refresh')}
         </Button>
-        <Button onClick={props.onClose}>Close</Button>
+        <Button onClick={props.onClose}>{t('common.close')}</Button>
       </DialogActions>
     </Dialog>
   )

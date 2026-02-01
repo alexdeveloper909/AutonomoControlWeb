@@ -22,6 +22,8 @@ import type { BudgetEntryPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
+import { useTranslation } from 'react-i18next'
+import { decimalFormatter } from '../lib/intl'
 
 const PAGE_SIZE = 20
 
@@ -41,9 +43,9 @@ const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | null => {
   return p as BudgetEntryPayload
 }
 
-const money = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t, i18n } = useTranslation()
+  const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
   const queryClient = useQueryClient()
@@ -91,11 +93,11 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
   return (
     <Stack spacing={2}>
       <PageHeader
-        title="Budget"
-        description="BUDGET records for this workspace (year filter)."
+        title={t('budget.title')}
+        description={t('budget.description')}
         right={
           <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/budget/new`}>
-            Add Budget Entry
+            {t('budget.add')}
           </Button>
         }
       />
@@ -118,23 +120,27 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
               ))}
             </Select>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              Year (uses <code>year=YYYY</code>)
+              {t('records.yearHint', { hint: 'year=YYYY' })}
             </Typography>
           </FormControl>
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Page {pageIndex + 1} · {PAGE_SIZE} per page · sort: eventDate desc
+              {t('records.pageSummary', {
+                page: pageIndex + 1,
+                pageSize: PAGE_SIZE,
+                sort: t('records.sortEventDateDesc'),
+              })}
             </Typography>
             <Button variant="text" onClick={refresh} disabled={isFetching}>
-              Refresh
+              {t('common.refresh')}
             </Button>
             <Button
               variant="outlined"
               onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
               disabled={isFetching || pageIndex === 0}
             >
-              Prev
+              {t('common.prev')}
             </Button>
             <Button
               variant="outlined"
@@ -149,7 +155,7 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
               }}
               disabled={isFetching || (!nextPageLoaded && !nextToken)}
             >
-              Next
+              {t('common.next')}
             </Button>
           </Stack>
         </Stack>
@@ -163,12 +169,12 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Event date</TableCell>
-                <TableCell>Month</TableCell>
-                <TableCell align="right">Planned spend</TableCell>
-                <TableCell align="right">Earned</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Goal</TableCell>
+                <TableCell>{t('records.eventDate')}</TableCell>
+                <TableCell>{t('records.month')}</TableCell>
+                <TableCell align="right">{t('records.plannedSpend')}</TableCell>
+                <TableCell align="right">{t('records.earned')}</TableCell>
+                <TableCell>{t('records.description')}</TableCell>
+                <TableCell>{t('records.goal')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -176,31 +182,31 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
                 tableRows.map(({ record, payload }) => (
                   <TableRow key={record.recordKey} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.monthKey ?? '—'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.monthKey ?? t('common.na')}</TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.plannedSpend) : '—'}
+                      {payload ? money.format(payload.plannedSpend) : t('common.na')}
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.earned) : '—'}
+                      {payload ? money.format(payload.earned) : t('common.na')}
                     </TableCell>
                     <TableCell sx={{ maxWidth: 260 }} title={payload?.description}>
-                      {payload?.description ?? '—'}
+                      {payload?.description ?? t('common.na')}
                     </TableCell>
                     <TableCell sx={{ maxWidth: 220 }} title={payload?.budgetGoal}>
-                      {payload?.budgetGoal ?? '—'}
+                      {payload?.budgetGoal ?? t('common.na')}
                     </TableCell>
                   </TableRow>
                 ))
               ) : currentPageItems ? (
                 <TableRow>
                   <TableCell colSpan={6}>
-                    <Typography color="text.secondary">No budget records found for {year}.</Typography>
+                    <Typography color="text.secondary">{t('budget.empty', { year })}</Typography>
                   </TableCell>
                 </TableRow>
               ) : isPending ? (
                 <TableRow>
                   <TableCell colSpan={6}>
-                    <Typography color="text.secondary">Loading…</Typography>
+                    <Typography color="text.secondary">{t('common.loading')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : null}

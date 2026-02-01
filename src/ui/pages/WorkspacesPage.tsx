@@ -18,11 +18,13 @@ import { AppShell } from '../components/AppShell'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { WorkspaceCreateDialog } from './WorkspacesPage/WorkspaceCreateDialog'
+import { useTranslation } from 'react-i18next'
 
 export function WorkspacesPage() {
   const { session } = useAuth()
   const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const [items, setItems] = useState<Workspace[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -45,11 +47,11 @@ export function WorkspacesPage() {
 
   if (error) {
     return (
-      <AppShell title="Workspaces">
+      <AppShell title={t('workspaces.title')}>
         <Stack spacing={2}>
           <ErrorAlert message={error} />
           <Button variant="contained" onClick={refresh}>
-            Retry
+            {t('common.retry')}
           </Button>
         </Stack>
       </AppShell>
@@ -60,10 +62,10 @@ export function WorkspacesPage() {
 
   return (
     <AppShell
-      title="Workspaces"
+      title={t('workspaces.title')}
       right={
         <Button color="inherit" onClick={() => setCreateOpen(true)} startIcon={<AddCircleOutlineIcon />}>
-          New
+          {t('common.new')}
         </Button>
       }
     >
@@ -91,9 +93,9 @@ export function WorkspacesPage() {
                 <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: 2 }}>
                   <AddCircleOutlineIcon sx={{ fontSize: 56 }} color="primary" />
                   <Box>
-                    <Typography variant="h5">No workspaces yet</Typography>
+                    <Typography variant="h5">{t('workspaces.noWorkspacesTitle')}</Typography>
                     <Typography color="text.secondary">
-                      Create your first workspace to start tracking records.
+                      {t('workspaces.noWorkspacesDesc')}
                     </Typography>
                   </Box>
                   <Button
@@ -104,7 +106,7 @@ export function WorkspacesPage() {
                       setCreateOpen(true)
                     }}
                   >
-                    Create workspace
+                    {t('workspaces.createWorkspace')}
                   </Button>
                 </Stack>
               </CardContent>

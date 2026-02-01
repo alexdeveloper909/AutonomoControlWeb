@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Button, Paper, Stack, TextField, Typography } from '@mui/material'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
+import { useTranslation } from 'react-i18next'
 
 export function WorkspaceBudgetPage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t } = useTranslation()
   const [payloadJson, setPayloadJson] = useState<string>(() =>
     JSON.stringify(
       {
@@ -35,10 +37,10 @@ export function WorkspaceBudgetPage(props: { workspaceId: string; api: AutonomoC
   return (
     <Stack spacing={2}>
       {error ? <ErrorAlert message={error} /> : null}
-      {ok ? <Typography color="success.main">Created.</Typography> : null}
+      {ok ? <Typography color="success.main">{t('debug.created')}</Typography> : null}
       <Paper sx={{ p: 2 }}>
         <Stack spacing={1}>
-          <Typography variant="subtitle1">Create budget entry (JSON payload)</Typography>
+          <Typography variant="subtitle1">{t('debug.createBudgetTitle')}</Typography>
           <TextField
             value={payloadJson}
             onChange={(e) => setPayloadJson(e.target.value)}
@@ -47,7 +49,7 @@ export function WorkspaceBudgetPage(props: { workspaceId: string; api: AutonomoC
             fullWidth
           />
           <Button variant="contained" onClick={createBudgetEntry}>
-            Create
+            {t('common.create')}
           </Button>
         </Stack>
       </Paper>

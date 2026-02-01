@@ -97,6 +97,22 @@ tsc --noEmit
 - `/workspaces` → list/create workspaces (POST `/workspaces`)
 - `/workspaces/:workspaceId` → workspace area with app shell + **left navigation** (services grouped by domain)
 
+## Internationalization (i18n) + language preference
+
+The web app supports UI translations and persists a per-user language preference.
+
+Supported languages:
+
+- English (`en`)
+- Spanish (`es`)
+- Ukrainian (`uk`)
+- Arabic (`ar`) — RTL layout is enabled automatically
+- Romanian (`ro`)
+
+Feature documentation:
+
+- `AutonomoControlWeb/docs/feature/i18n-language-preference.md`
+
 ### Workspace left navigation (Finance domain)
 
 The workspace area uses an app-shell layout: top bar + persistent **left navigation**. Each left-nav item corresponds to a workspace “service” screen.

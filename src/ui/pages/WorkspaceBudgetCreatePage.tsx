@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
+import { useTranslation } from 'react-i18next'
 
 const monthKeyToday = (): string => {
   const d = new Date()
@@ -18,6 +19,7 @@ const monthKeyToday = (): string => {
 const isMonthKey = (s: string): boolean => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
 
 export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -33,13 +35,13 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
   const backToPath = `/workspaces/${props.workspaceId}/budget`
 
   const validationError = useMemo(() => {
-    if (!isMonthKey(monthKey)) return 'Month must be a valid month key (YYYY-MM).'
+    if (!isMonthKey(monthKey)) return t('budgetCreate.validation.month')
     const ps = parseEuroAmount(plannedSpend)
-    if (ps === null) return 'Planned spend must be a number.'
+    if (ps === null) return t('budgetCreate.validation.plannedSpendNumber')
     const e = parseEuroAmount(earned)
-    if (e === null) return 'Earned must be a number.'
+    if (e === null) return t('budgetCreate.validation.earnedNumber')
     return null
-  }, [earned, monthKey, plannedSpend])
+  }, [earned, monthKey, plannedSpend, t])
 
   const submit = async () => {
     setError(null)
@@ -52,8 +54,8 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
     try {
       const ps = parseEuroAmount(plannedSpend)
       const e = parseEuroAmount(earned)
-      if (ps === null) throw new Error('Planned spend must be a number.')
-      if (e === null) throw new Error('Earned must be a number.')
+      if (ps === null) throw new Error(t('budgetCreate.validation.plannedSpendNumber'))
+      if (e === null) throw new Error(t('budgetCreate.validation.earnedNumber'))
 
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'BUDGET',
@@ -79,11 +81,11 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
   return (
     <Stack spacing={2}>
       <PageHeader
-        title="Add budget entry"
-        description="Creates a BUDGET record in this workspace."
+        title={t('budgetCreate.title')}
+        description={t('budgetCreate.description')}
         right={
           <Button component={RouterLink} to={backToPath} variant="text">
-            Cancel
+            {t('common.cancel')}
           </Button>
         }
       />
@@ -94,12 +96,15 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
         <Stack spacing={2}>
           <Alert severity="info">
             <Typography variant="body2">
-              This form submits to <code>POST /workspaces/{'{workspaceId}'}/records</code> with <code>recordType=BUDGET</code>.
+              {t('budgetCreate.info', {
+                path: 'POST /workspaces/{workspaceId}/records',
+                recordType: 'recordType=BUDGET',
+              })}
             </Typography>
           </Alert>
 
           <TextField
-            label="Month"
+            label={t('budgetCreate.month')}
             type="month"
             value={monthKey}
             onChange={(e) => setMonthKey(e.target.value)}
@@ -111,14 +116,14 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <EuroTextField
-              label="Planned spend"
+              label={t('budgetCreate.plannedSpend')}
               value={plannedSpend}
               onChange={(e) => setPlannedSpend(e.target.value)}
               required
               fullWidth
             />
             <EuroTextField
-              label="Earned"
+              label={t('budgetCreate.earned')}
               value={earned}
               onChange={(e) => setEarned(e.target.value)}
               required
@@ -127,13 +132,13 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
           </Stack>
 
           <TextField
-            label="Description (optional)"
+            label={t('budgetCreate.descriptionOptional')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
           />
           <TextField
-            label="Budget goal (optional)"
+            label={t('budgetCreate.goalOptional')}
             value={budgetGoal}
             onChange={(e) => setBudgetGoal(e.target.value)}
             fullWidth
@@ -141,10 +146,10 @@ export function WorkspaceBudgetCreatePage(props: { workspaceId: string; api: Aut
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>
-              Back
+              {t('common.back')}
             </Button>
             <Button variant="contained" onClick={submit} disabled={submitting}>
-              {submitting ? 'Creating…' : 'Create budget entry'}
+              {submitting ? t('common.creating') : t('budgetCreate.create')}
             </Button>
           </Stack>
         </Stack>

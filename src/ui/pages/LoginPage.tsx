@@ -1,24 +1,26 @@
 import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material'
 import { useAuth } from '../auth/useAuth'
 import { env } from '../../infrastructure/config/env'
+import { useTranslation } from 'react-i18next'
 
 export function LoginPage() {
   const { startLogin } = useAuth()
+  const { t } = useTranslation()
 
   return (
     <Box sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center' }}>
       <Container maxWidth="sm">
         <Paper sx={{ p: 4 }}>
           <Stack spacing={2}>
-            <Typography variant="h5">AutonomoControl</Typography>
+            <Typography variant="h5">{t('login.title')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Stage: {env.appStage}
+              {t('login.stage')}: {env.appStage}
             </Typography>
             <Button variant="contained" onClick={startLogin}>
-              Continue with {env.cognitoIdentityProvider ?? 'Cognito'}
+              {t('login.continueWith', { provider: env.cognitoIdentityProvider ?? 'Cognito' })}
             </Button>
             <Typography variant="caption" color="text.secondary">
-              If login fails, verify `VITE_COGNITO_*` env vars and that the Cognito App Client allows your callback URL.
+              {t('login.envHint')}
             </Typography>
           </Stack>
         </Paper>

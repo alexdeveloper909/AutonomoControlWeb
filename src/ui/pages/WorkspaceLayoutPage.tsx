@@ -12,6 +12,7 @@ import { WorkspaceStatePaymentsRoutes } from './WorkspaceStatePaymentsRoutes'
 import { WorkspaceTransfersRoutes } from './WorkspaceTransfersRoutes'
 import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
+import { useTranslation } from 'react-i18next'
 
 export function WorkspaceLayoutPage() {
   const params = useParams()
@@ -20,6 +21,7 @@ export function WorkspaceLayoutPage() {
   const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const location = useLocation()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const { t } = useTranslation()
 
   if (!workspaceId) return <Navigate to="/workspaces" replace />
   const basePath = `/workspaces/${workspaceId}`
@@ -32,17 +34,17 @@ export function WorkspaceLayoutPage() {
 
   return (
     <AppShell
-      title="Workspace"
+      title={t('workspace.title')}
       right={
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             {workspaceId}
           </Typography>
-          <IconButton color="inherit" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+          <IconButton color="inherit" onClick={() => setSettingsOpen(true)} aria-label={t('common.settings')}>
             <SettingsOutlinedIcon />
           </IconButton>
           <MuiLink component={RouterLink} to="/workspaces" color="inherit" underline="hover">
-            Back
+            {t('workspace.back')}
           </MuiLink>
         </Stack>
       }
@@ -51,27 +53,27 @@ export function WorkspaceLayoutPage() {
           component="nav"
           subheader={
             <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
-              Finance
+              {t('workspace.finance')}
             </ListSubheader>
           }
         >
           <ListItemButton component={RouterLink} to={`${basePath}/income`} selected={section === 'income'}>
-            <ListItemText primary="Income" />
+            <ListItemText primary={t('workspace.income')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/expenses`} selected={section === 'expenses'}>
-            <ListItemText primary="Expenses" />
+            <ListItemText primary={t('workspace.expenses')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
-            <ListItemText primary="State payments" />
+            <ListItemText primary={t('workspace.statePayments')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/transfers`} selected={section === 'transfers'}>
-            <ListItemText primary="Transfers" />
+            <ListItemText primary={t('workspace.transfers')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
-            <ListItemText primary="Budget" />
+            <ListItemText primary={t('workspace.budget')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/summaries`} selected={section === 'summaries'}>
-            <ListItemText primary="Summaries" />
+            <ListItemText primary={t('workspace.summaries')} />
           </ListItemButton>
         </List>
       }

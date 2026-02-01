@@ -1,11 +1,21 @@
 import type { Workspace } from '../../domain/workspace'
 import type { WorkspaceSettings } from '../../domain/settings'
 import type { RecordResponse, RecordType, RecordPayload } from '../../domain/records'
+import type { UserMe } from '../../domain/user'
+import type { AppLanguage } from '../../domain/language'
+import { isAppLanguage } from '../../domain/language'
 import { env, requireEnv } from '../config/env'
 import { jsonFetch } from '../http/jsonFetch'
 
 type ListResponse<T> = { items: T[]; nextToken?: string | null }
 type WorkspaceSettingsResponse = { workspaceId: string; settings: WorkspaceSettings }
+type UserMeResponse = {
+  userId: string
+  email?: string | null
+  givenName?: string | null
+  familyName?: string | null
+  preferredLanguage?: string | null
+}
 
 export type RecordsSort = 'eventDateDesc'
 export type RecordsListOptions = { sort?: RecordsSort; limit?: number; nextToken?: string | null }
@@ -23,6 +33,34 @@ export class AutonomoControlApi {
     const idToken = this.getIdToken()
     if (!idToken) return {}
     return { Authorization: `Bearer ${idToken}` }
+  }
+
+  async getUserMe(): Promise<UserMe> {
+    const res = await jsonFetch<UserMeResponse>(new URL('/users/me', this.baseUrl).toString(), {
+      headers: this.authHeaders(),
+    })
+    return {
+      userId: res.userId,
+      email: res.email ?? null,
+      givenName: res.givenName ?? null,
+      familyName: res.familyName ?? null,
+      preferredLanguage: isAppLanguage(res.preferredLanguage) ? res.preferredLanguage : null,
+    }
+  }
+
+  async putUserPreferredLanguage(preferredLanguage: AppLanguage): Promise<UserMe> {
+    const res = await jsonFetch<UserMeResponse>(new URL('/users/me', this.baseUrl).toString(), {
+      method: 'PUT',
+      headers: this.authHeaders(),
+      body: { preferredLanguage },
+    })
+    return {
+      userId: res.userId,
+      email: res.email ?? null,
+      givenName: res.givenName ?? null,
+      familyName: res.familyName ?? null,
+      preferredLanguage: isAppLanguage(res.preferredLanguage) ? res.preferredLanguage : null,
+    }
   }
 
   async listWorkspaces(): Promise<Workspace[]> {

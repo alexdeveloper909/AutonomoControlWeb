@@ -20,6 +20,7 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
+import { useTranslation } from 'react-i18next'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -32,6 +33,7 @@ const todayIso = (): string => {
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: AutonomoControlApi }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -50,16 +52,16 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
   const backToIncomePath = `/workspaces/${props.workspaceId}/income`
 
   const validationError = useMemo(() => {
-    if (!isIsoDate(invoiceDate)) return 'Invoice date must be a valid ISO date (YYYY-MM-DD).'
-    if (paymentDate && !isIsoDate(paymentDate)) return 'Payment date must be a valid ISO date (YYYY-MM-DD).'
-    if (!number.trim()) return 'Invoice number is required.'
-    if (!client.trim()) return 'Client is required.'
+    if (!isIsoDate(invoiceDate)) return t('incomeCreate.validation.invoiceDate')
+    if (paymentDate && !isIsoDate(paymentDate)) return t('incomeCreate.validation.paymentDate')
+    if (!number.trim()) return t('incomeCreate.validation.invoiceNumberRequired')
+    if (!client.trim()) return t('incomeCreate.validation.clientRequired')
     const base = parseEuroAmount(baseExclVat)
-    if (base === null) return 'Base (excl. VAT) must be a number.'
+    if (base === null) return t('incomeCreate.validation.baseNumber')
     const override = amountReceivedOverride.trim() ? parseEuroAmount(amountReceivedOverride) : null
-    if (override === null && amountReceivedOverride.trim()) return 'Amount received override must be a number.'
+    if (override === null && amountReceivedOverride.trim()) return t('incomeCreate.validation.amountReceivedOverrideNumber')
     return null
-  }, [amountReceivedOverride, baseExclVat, client, invoiceDate, number, paymentDate])
+  }, [amountReceivedOverride, baseExclVat, client, invoiceDate, number, paymentDate, t])
 
   const submit = async () => {
     setError(null)
@@ -72,8 +74,8 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
     try {
       const base = parseEuroAmount(baseExclVat)
       const override = amountReceivedOverride.trim() ? parseEuroAmount(amountReceivedOverride) : null
-      if (base === null) throw new Error('Base (excl. VAT) must be a number.')
-      if (override === null && amountReceivedOverride.trim()) throw new Error('Amount received override must be a number.')
+      if (base === null) throw new Error(t('incomeCreate.validation.baseNumber'))
+      if (override === null && amountReceivedOverride.trim()) throw new Error(t('incomeCreate.validation.amountReceivedOverrideNumber'))
 
       const res = await props.api.createRecord(props.workspaceId, {
         recordType: 'INVOICE',
@@ -103,11 +105,11 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
   return (
     <Stack spacing={2}>
       <PageHeader
-        title="Add income"
-        description="Creates an INVOICE record in this workspace."
+        title={t('incomeCreate.title')}
+        description={t('incomeCreate.description')}
         right={
           <Button component={RouterLink} to={backToIncomePath} variant="text">
-            Cancel
+            {t('common.cancel')}
           </Button>
         }
       />
@@ -118,13 +120,16 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
         <Stack spacing={2}>
           <Alert severity="info">
             <Typography variant="body2">
-              This form submits to <code>POST /workspaces/{'{workspaceId}'}/records</code> with <code>recordType=INVOICE</code>.
+              {t('incomeCreate.info', {
+                path: 'POST /workspaces/{workspaceId}/records',
+                recordType: 'recordType=INVOICE',
+              })}
             </Typography>
           </Alert>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Invoice date"
+              label={t('incomeCreate.invoiceDate')}
               type="date"
               value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
@@ -134,66 +139,66 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
               error={Boolean(invoiceDate) && !isIsoDate(invoiceDate)}
             />
             <TextField
-              label="Payment date (optional)"
+              label={t('incomeCreate.paymentDateOptional')}
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
               error={Boolean(paymentDate) && !isIsoDate(paymentDate)}
-              helperText="Used as eventDate if provided."
+              helperText={t('incomeCreate.eventDateHint')}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField label="Invoice number" value={number} onChange={(e) => setNumber(e.target.value)} required fullWidth />
-            <TextField label="Client" value={client} onChange={(e) => setClient(e.target.value)} required fullWidth />
+            <TextField label={t('incomeCreate.invoiceNumber')} value={number} onChange={(e) => setNumber(e.target.value)} required fullWidth />
+            <TextField label={t('incomeCreate.client')} value={client} onChange={(e) => setClient(e.target.value)} required fullWidth />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <EuroTextField
-              label="Base (excl. VAT)"
+              label={t('incomeCreate.baseExclVat')}
               value={baseExclVat}
               onChange={(e) => setBaseExclVat(e.target.value)}
               required
               fullWidth
             />
             <EuroTextField
-              label="Amount received override (optional)"
+              label={t('incomeCreate.amountReceivedOverrideOptional')}
               value={amountReceivedOverride}
               onChange={(e) => setAmountReceivedOverride(e.target.value)}
               fullWidth
-              helperText="Only when received differs from computed total."
+              helperText={t('incomeCreate.amountReceivedOverrideHint')}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth>
-              <InputLabel id="iva-rate-label">IVA rate</InputLabel>
+              <InputLabel id="iva-rate-label">{t('rates.iva.label')}</InputLabel>
               <Select
                 labelId="iva-rate-label"
-                label="IVA rate"
+                label={t('rates.iva.label')}
                 value={ivaRate}
                 onChange={(e) => setIvaRate(e.target.value as IvaRate)}
               >
                 {(['ZERO', 'SUPER_REDUCED', 'REDUCED', 'STANDARD'] as const).map((r) => (
                   <MenuItem key={r} value={r}>
-                    {r}
+                    {t(`rates.iva.${r}`)}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel id="retencion-label">Retención</InputLabel>
+              <InputLabel id="retencion-label">{t('rates.retencion.label')}</InputLabel>
               <Select
                 labelId="retencion-label"
-                label="Retención"
+                label={t('rates.retencion.label')}
                 value={retencion}
                 onChange={(e) => setRetencion(e.target.value as RetencionRate)}
               >
                 {(['ZERO', 'NEW_PROFESSIONAL', 'STANDARD'] as const).map((r) => (
                   <MenuItem key={r} value={r}>
-                    {r}
+                    {t(`rates.retencion.${r}`)}
                   </MenuItem>
                 ))}
               </Select>
@@ -202,10 +207,10 @@ export function WorkspaceIncomeCreatePage(props: { workspaceId: string; api: Aut
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToIncomePath} variant="outlined" disabled={submitting}>
-              Back
+              {t('common.back')}
             </Button>
             <Button variant="contained" onClick={submit} disabled={submitting}>
-              {submitting ? 'Creating…' : 'Create income'}
+              {submitting ? t('common.creating') : t('incomeCreate.create')}
             </Button>
           </Stack>
         </Stack>

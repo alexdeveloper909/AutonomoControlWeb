@@ -2,31 +2,33 @@ import { Alert, Button, Paper, Stack, Typography } from '@mui/material'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import type { RecordResponse } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
+import { useTranslation } from 'react-i18next'
 
 type LocationState = { record?: RecordResponse }
 
 export function WorkspaceStatePaymentsCreatedPage(props: { workspaceId: string }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const record = (location.state as LocationState | null)?.record
 
   return (
     <Stack spacing={2}>
-      <PageHeader title="State payment created" />
+      <PageHeader title={t('statePaymentsCreated.title')} />
 
-      <Alert severity="success">State payment record created successfully.</Alert>
+      <Alert severity="success">{t('statePaymentsCreated.success')}</Alert>
 
       {record ? (
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Stack spacing={0.5}>
-            <Typography variant="subtitle2">Record</Typography>
+            <Typography variant="subtitle2">{t('records.record')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Type: {record.recordType}
+              {t('statePaymentsCreated.recordType', { value: record.recordType })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Event date: {record.eventDate}
+              {t('statePaymentsCreated.eventDate', { value: record.eventDate })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Record id: {record.recordId}
+              {t('statePaymentsCreated.recordId', { value: record.recordId })}
             </Typography>
           </Stack>
         </Paper>
@@ -34,13 +36,12 @@ export function WorkspaceStatePaymentsCreatedPage(props: { workspaceId: string }
 
       <Stack direction="row" spacing={2}>
         <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments`}>
-          Back to State payments
+          {t('statePaymentsCreated.backTo')}
         </Button>
         <Button variant="text" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>
-          Add another
+          {t('statePaymentsCreated.addAnother')}
         </Button>
       </Stack>
     </Stack>
   )
 }
-

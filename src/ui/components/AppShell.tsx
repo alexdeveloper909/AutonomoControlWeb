@@ -1,9 +1,14 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Button, Container, IconButton, Toolbar, Typography } from '@mui/material'
 import type { PropsWithChildren, ReactNode } from 'react'
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined'
 import { useAuth } from '../auth/useAuth'
+import { useTranslation } from 'react-i18next'
+import { useUserSettings } from '../user/userSettingsContext'
 
 export function AppShell(props: PropsWithChildren<{ title: string; right?: ReactNode; nav?: ReactNode }>) {
   const { logout } = useAuth()
+  const { t } = useTranslation()
+  const { openSettings } = useUserSettings()
 
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
@@ -13,8 +18,11 @@ export function AppShell(props: PropsWithChildren<{ title: string; right?: React
             {props.title}
           </Typography>
           {props.right}
+          <IconButton color="inherit" onClick={openSettings} aria-label={t('common.userSettings')}>
+            <ManageAccountsOutlinedIcon />
+          </IconButton>
           <Button color="inherit" onClick={logout}>
-            Sign out
+            {t('appShell.signOut')}
           </Button>
         </Toolbar>
       </AppBar>
@@ -22,7 +30,7 @@ export function AppShell(props: PropsWithChildren<{ title: string; right?: React
         {props.nav ? (
           <Box
             component="nav"
-            aria-label="Navigation"
+            aria-label={t('common.navigation')}
             sx={{
               width: 280,
               flexShrink: 0,
