@@ -148,9 +148,6 @@ export function WorkspacesPage() {
                         <Typography variant="h6" sx={{ wordBreak: 'break-word' }}>
                           {w.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {w.workspaceId}
-                        </Typography>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                           {w.sharedByMe ? <Chip size="small" label={t('workspaces.shared')} /> : null}
                           {w.sharedWithMe ? <Chip size="small" label={t('workspaces.sharedReadOnly')} /> : null}
@@ -168,9 +165,6 @@ export function WorkspacesPage() {
                         <SettingsOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Stack>
-                    <Typography variant="body2" color="text.secondary">
-                      {w.role ?? ''} {w.status ?? ''} {w.accessMode ?? ''}
-                    </Typography>
                   </CardContent>
                 </CardActionArea>
               </Card>

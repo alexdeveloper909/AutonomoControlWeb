@@ -13,15 +13,9 @@ export function LoginPage() {
         <Paper sx={{ p: 4 }}>
           <Stack spacing={2}>
             <Typography variant="h5">{t('login.title')}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('login.stage')}: {env.appStage}
-            </Typography>
             <Button variant="contained" onClick={startLogin}>
               {t('login.continueWith', { provider: env.cognitoIdentityProvider ?? 'Cognito' })}
             </Button>
-            <Typography variant="caption" color="text.secondary">
-              {t('login.envHint')}
-            </Typography>
           </Stack>
         </Paper>
       </Container>

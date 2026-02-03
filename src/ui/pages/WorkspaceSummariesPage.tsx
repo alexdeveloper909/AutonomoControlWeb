@@ -7,12 +7,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Grid,
   LinearProgress,
   Paper,
   Stack,
-  Switch,
   Tab,
   Table,
   TableBody,
@@ -217,12 +215,10 @@ const parseList = <T,>(list: unknown[] | null, parser: (v: unknown) => T | null)
 function SummaryDetailsDialog(props: {
   open: boolean
   title: string
-  raw: unknown
   onClose: () => void
   fields: { label: string; value: string }[]
 }) {
   const { t } = useTranslation()
-  const [showRaw, setShowRaw] = useState(false)
 
   return (
     <Dialog open={props.open} onClose={props.onClose} maxWidth="md" fullWidth>
@@ -235,21 +231,6 @@ function SummaryDetailsDialog(props: {
             </Grid>
           ))}
         </Grid>
-
-        <FormControlLabel
-          sx={{ mt: 2 }}
-          control={<Switch checked={showRaw} onChange={(e) => setShowRaw(e.target.checked)} />}
-          label={t('summaries.showRawJson')}
-        />
-        {showRaw ? (
-          <TextField
-            value={JSON.stringify(props.raw, null, 2)}
-            multiline
-            minRows={10}
-            fullWidth
-            InputProps={{ readOnly: true }}
-          />
-        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={props.onClose}>{t('common.close')}</Button>
@@ -263,7 +244,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const [tab, setTab] = useState<'month' | 'quarter'>('month')
 
-  const [showRaw, setShowRaw] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
 
@@ -311,11 +291,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
             <Tab label={t('summaries.monthTab')} value="month" />
             <Tab label={t('summaries.quarterTab')} value="quarter" />
           </Tabs>
-          <FormControlLabel
-            sx={{ pr: 1 }}
-            control={<Switch checked={showRaw} onChange={(e) => setShowRaw(e.target.checked)} />}
-            label={t('summaries.showRawJson')}
-          />
         </Stack>
       </Paper>
 
@@ -383,18 +358,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               </Table>
             </TableContainer>
           </Paper>
-
-          {showRaw ? (
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <TextField
-                value={monthSummaries ? JSON.stringify(monthSummaries, null, 2) : ''}
-                multiline
-                minRows={12}
-                fullWidth
-                InputProps={{ readOnly: true }}
-              />
-            </Paper>
-          ) : null}
         </Stack>
       ) : (
         <Stack spacing={2}>
@@ -460,18 +423,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               </Table>
             </TableContainer>
           </Paper>
-
-          {showRaw ? (
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <TextField
-                value={quarterSummaries ? JSON.stringify(quarterSummaries, null, 2) : ''}
-                multiline
-                minRows={12}
-                fullWidth
-                InputProps={{ readOnly: true }}
-              />
-            </Paper>
-          ) : null}
         </Stack>
       )}
 
@@ -479,7 +430,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         key={selectedMonth ? selectedMonth.monthKey : 'month-none'}
         open={Boolean(selectedMonth)}
         title={selectedMonth ? t('summaries.monthDetails', { monthKey: selectedMonth.monthKey }) : t('summaries.monthDetailsFallback')}
-        raw={selectedMonth}
         onClose={() => setSelectedMonth(null)}
         fields={
           selectedMonth
@@ -514,7 +464,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
             ? t('summaries.quarterDetails', { quarterKey: `${selectedQuarter.quarterKey.year}-Q${selectedQuarter.quarterKey.quarter}` })
             : t('summaries.quarterDetailsFallback')
         }
-        raw={selectedQuarter}
         onClose={() => setSelectedQuarter(null)}
         fields={
           selectedQuarter

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
+  InputLabel,
   LinearProgress,
   MenuItem,
   Paper,
@@ -120,7 +121,6 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
     <Stack spacing={2}>
       <PageHeader
         title={t('expenses.title')}
-        description={t('expenses.description')}
         right={
           props.readOnly ? null : (
             <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/expenses/new`}>
@@ -133,7 +133,10 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <FormControl sx={{ minWidth: 160 }}>
+            <InputLabel id="expenses-year-label">{t('common.year')}</InputLabel>
             <Select
+              labelId="expenses-year-label"
+              label={t('common.year')}
               value={year}
               onChange={(e) => {
                 setYear(e.target.value)
@@ -147,9 +150,6 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
                 </MenuItem>
               ))}
             </Select>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              {t('records.yearHint', { hint: 'year=YYYY' })}
-            </Typography>
           </FormControl>
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
@@ -157,7 +157,6 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
               {t('records.pageSummary', {
                 page: pageIndex + 1,
                 pageSize: PAGE_SIZE,
-                sort: t('records.sortEventDateDesc'),
               })}
             </Typography>
             <Button variant="text" onClick={refresh} disabled={isFetching}>

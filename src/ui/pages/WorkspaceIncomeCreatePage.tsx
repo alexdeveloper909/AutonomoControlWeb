@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert,
   Button,
   FormControl,
   InputLabel,
@@ -10,7 +9,6 @@ import {
   Select,
   Stack,
   TextField,
-  Typography,
 } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -190,17 +188,6 @@ export function WorkspaceIncomeCreatePage(props: {
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <Alert severity="info">
-            <Typography variant="body2">
-              {t('incomeCreate.info', {
-                path: editing
-                  ? 'PUT /workspaces/{workspaceId}/records/{recordType}/{eventDate}/{recordId}'
-                  : 'POST /workspaces/{workspaceId}/records',
-                recordType: 'recordType=INVOICE',
-              })}
-            </Typography>
-          </Alert>
-
           {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

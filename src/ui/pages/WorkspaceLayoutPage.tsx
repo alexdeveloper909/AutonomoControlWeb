@@ -91,7 +91,7 @@ export function WorkspaceLayoutPage() {
         <Stack direction="row" spacing={2} alignItems="center">
           {readOnly ? <Chip size="small" color="default" label={t('workspaceDetails.readOnly')} /> : null}
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            {workspaceId}
+            {workspace.name}
           </Typography>
           <IconButton color="inherit" onClick={() => setSettingsOpen(true)} aria-label={t('common.settings')}>
             <SettingsOutlinedIcon />

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
+  InputLabel,
   LinearProgress,
   MenuItem,
   Paper,
@@ -186,7 +187,6 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
     <Stack spacing={2}>
       <PageHeader
         title={t('transfers.title')}
-        description={t('transfers.description')}
         right={
           props.readOnly ? null : (
             <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
@@ -199,7 +199,10 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <FormControl sx={{ minWidth: 160 }}>
+            <InputLabel id="transfers-year-label">{t('common.year')}</InputLabel>
             <Select
+              labelId="transfers-year-label"
+              label={t('common.year')}
               value={year}
               onChange={(e) => {
                 setYear(e.target.value)
@@ -212,9 +215,6 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                 </MenuItem>
               ))}
             </Select>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              {t('records.yearHint', { hint: 'year=YYYY' })}
-            </Typography>
           </FormControl>
 
           <Stack sx={{ flex: 1, textAlign: { xs: 'left', sm: 'center' } }} spacing={0.25}>

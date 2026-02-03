@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
+  InputLabel,
   LinearProgress,
   MenuItem,
   Paper,
@@ -128,7 +129,6 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
     <Stack spacing={2}>
       <PageHeader
         title={t('statePayments.title')}
-        description={t('statePayments.description')}
         right={
           props.readOnly ? null : (
             <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>
@@ -141,7 +141,10 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <FormControl sx={{ minWidth: 160 }}>
+            <InputLabel id="state-payments-year-label">{t('common.year')}</InputLabel>
             <Select
+              labelId="state-payments-year-label"
+              label={t('common.year')}
               value={year}
               onChange={(e) => {
                 setYear(e.target.value)
@@ -155,9 +158,6 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
                 </MenuItem>
               ))}
             </Select>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              {t('records.yearHint', { hint: 'year=YYYY' })}
-            </Typography>
           </FormControl>
 
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
@@ -165,7 +165,6 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
               {t('records.pageSummary', {
                 page: pageIndex + 1,
                 pageSize: PAGE_SIZE,
-                sort: t('records.sortEventDateDesc'),
               })}
             </Typography>
             <Button variant="text" onClick={refresh} disabled={isFetching}>

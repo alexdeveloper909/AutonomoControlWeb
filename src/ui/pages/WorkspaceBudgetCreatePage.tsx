@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, LinearProgress, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Button, LinearProgress, Paper, Stack, TextField } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
@@ -160,17 +160,6 @@ export function WorkspaceBudgetCreatePage(props: {
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <Alert severity="info">
-            <Typography variant="body2">
-              {t('budgetCreate.info', {
-                path: editing
-                  ? 'PUT /workspaces/{workspaceId}/records/{recordType}/{eventDate}/{recordId}'
-                  : 'POST /workspaces/{workspaceId}/records',
-                recordType: 'recordType=BUDGET',
-              })}
-            </Typography>
-          </Alert>
-
           {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
 
           <TextField
