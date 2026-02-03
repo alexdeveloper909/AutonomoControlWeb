@@ -19,8 +19,10 @@ All authenticated requests include:
 
 - `GET /health`
 - `GET /workspaces`
+- `GET /workspaces?includeDeleted=true` (Trash view)
 - `POST /workspaces`
 - `DELETE /workspaces/{workspaceId}`
+- `POST /workspaces/{workspaceId}/restore`
 - `POST /workspaces/{workspaceId}/share` (share workspace read-only by email)
 - `GET /workspaces/{workspaceId}/settings`
 - `PUT /workspaces/{workspaceId}/settings`

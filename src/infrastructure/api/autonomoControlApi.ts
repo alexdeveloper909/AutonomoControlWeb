@@ -65,8 +65,10 @@ export class AutonomoControlApi {
     }
   }
 
-  async listWorkspaces(): Promise<Workspace[]> {
-    const res = await jsonFetch<ListResponse<Workspace>>(new URL('/workspaces', this.baseUrl).toString(), {
+  async listWorkspaces(options?: { includeDeleted?: boolean }): Promise<Workspace[]> {
+    const url = new URL('/workspaces', this.baseUrl)
+    if (options?.includeDeleted) url.searchParams.set('includeDeleted', 'true')
+    const res = await jsonFetch<ListResponse<Workspace>>(url.toString(), {
       headers: this.authHeaders(),
     })
     return res.items
@@ -86,6 +88,13 @@ export class AutonomoControlApi {
   async deleteWorkspace(workspaceId: string): Promise<void> {
     await jsonFetch<void>(new URL(`/workspaces/${workspaceId}`, this.baseUrl).toString(), {
       method: 'DELETE',
+      headers: this.authHeaders(),
+    })
+  }
+
+  async restoreWorkspace(workspaceId: string): Promise<void> {
+    await jsonFetch<void>(new URL(`/workspaces/${workspaceId}/restore`, this.baseUrl).toString(), {
+      method: 'POST',
       headers: this.authHeaders(),
     })
   }

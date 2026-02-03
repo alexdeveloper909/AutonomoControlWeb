@@ -10,4 +10,7 @@ export type Workspace = {
   accessMode: WorkspaceAccessMode
   sharedByMe?: boolean
   sharedWithMe?: boolean
+  deletedAt?: string | null
+  deletedBy?: string | null
+  ttlEpoch?: number | null
 }

@@ -24,6 +24,7 @@ export function WorkspaceDetailsDialog(props: {
   onClose: () => void
   onShared: () => void | Promise<void>
   onDeleted: () => void | Promise<void>
+  onRestored: () => void | Promise<void>
 }) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
@@ -31,6 +32,7 @@ export function WorkspaceDetailsDialog(props: {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [restoring, setRestoring] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -39,6 +41,7 @@ export function WorkspaceDetailsDialog(props: {
     [props.workspace.role, props.workspace.status],
   )
   const isReadOnly = useMemo(() => props.workspace.accessMode === 'READ_ONLY', [props.workspace.accessMode])
+  const isDeleted = useMemo(() => !!props.workspace.deletedAt, [props.workspace.deletedAt])
   const canConfirmDelete = useMemo(
     () => deleteConfirm.trim() === props.workspace.name.trim(),
     [deleteConfirm, props.workspace.name],
@@ -77,13 +80,37 @@ export function WorkspaceDetailsDialog(props: {
     }
   }
 
+  const onRestore = async () => {
+    setError(null)
+    setSuccess(null)
+    setRestoring(true)
+    try {
+      await props.api.restoreWorkspace(props.workspace.workspaceId)
+      setSuccess(t('workspaceSettings.restoreSuccess'))
+      await props.onRestored()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setRestoring(false)
+    }
+  }
+
   return (
-    <Dialog open={props.open} onClose={sharing || deleting ? () => {} : props.onClose} maxWidth="sm" fullWidth>
+    <Dialog open={props.open} onClose={sharing || deleting || restoring ? () => {} : props.onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('workspaces.details')}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
           {error ? <ErrorAlert message={error} /> : null}
           {success ? <Alert severity="success">{success}</Alert> : null}
+
+          {isDeleted ? (
+            <Alert severity="warning">
+              {t('workspaceSettings.trashedNotice', {
+                days: 30,
+                purgeDate: props.workspace.ttlEpoch ? new Date(props.workspace.ttlEpoch * 1000).toLocaleString() : t('common.na'),
+              })}
+            </Alert>
+          ) : null}
 
           <Stack spacing={0.5}>
             <Typography variant="subtitle2">{t('workspaceDetails.name')}</Typography>
@@ -102,47 +129,63 @@ export function WorkspaceDetailsDialog(props: {
 
           {isOwner ? (
             <>
-              <Divider />
-              <Typography variant="subtitle1">{t('workspaceDetails.shareTitle')}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('workspaceDetails.shareDesc')}
-              </Typography>
-              <TextField
-                label={t('workspaceDetails.shareEmail')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                fullWidth
-                disabled={sharing || deleting}
-              />
-              <Button
-                variant="contained"
-                onClick={onShare}
-                disabled={sharing || deleting || email.trim().length === 0}
-                startIcon={sharing ? <CircularProgress size={16} color="inherit" /> : undefined}
-              >
-                {t('workspaceDetails.shareAction')}
-              </Button>
+              {isDeleted ? (
+                <>
+                  <Divider />
+                  <Button
+                    variant="contained"
+                    onClick={onRestore}
+                    disabled={sharing || deleting || restoring}
+                    startIcon={restoring ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  >
+                    {t('workspaceSettings.restoreAction')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Divider />
+                  <Typography variant="subtitle1">{t('workspaceDetails.shareTitle')}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('workspaceDetails.shareDesc')}
+                  </Typography>
+                  <TextField
+                    label={t('workspaceDetails.shareEmail')}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    fullWidth
+                    disabled={sharing || deleting || restoring}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={onShare}
+                    disabled={sharing || deleting || restoring || email.trim().length === 0}
+                    startIcon={sharing ? <CircularProgress size={16} color="inherit" /> : undefined}
+                  >
+                    {t('workspaceDetails.shareAction')}
+                  </Button>
 
-              <Divider />
-              <Typography variant="subtitle1">{t('workspaceSettings.dangerZone')}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('workspaceSettings.deleteDesc')}
-              </Typography>
-              <Button
-                color="error"
-                variant="outlined"
-                onClick={() => setDeleteOpen(true)}
-                disabled={sharing || deleting}
-              >
-                {t('workspaceSettings.deleteAction')}
-              </Button>
+                  <Divider />
+                  <Typography variant="subtitle1">{t('workspaceSettings.dangerZone')}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('workspaceSettings.deleteDesc')}
+                  </Typography>
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    onClick={() => setDeleteOpen(true)}
+                    disabled={sharing || deleting || restoring}
+                  >
+                    {t('workspaceSettings.deleteAction')}
+                  </Button>
+                </>
+              )}
             </>
           ) : null}
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={props.onClose} disabled={sharing || deleting}>
+        <Button onClick={props.onClose} disabled={sharing || deleting || restoring}>
           {t('common.close')}
         </Button>
       </DialogActions>

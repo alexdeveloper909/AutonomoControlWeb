@@ -9,6 +9,8 @@ import {
   Grid,
   IconButton,
   Stack,
+  Tab,
+  Tabs,
   Typography,
 } from '@mui/material'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
@@ -34,13 +36,15 @@ export function WorkspacesPage() {
   const [error, setError] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [detailsWorkspaceId, setDetailsWorkspaceId] = useState<string | null>(null)
+  const [view, setView] = useState<'active' | 'trash'>('active')
 
-  const refresh = async (): Promise<Workspace[] | null> => {
+  const refresh = async (nextView: 'active' | 'trash' = view): Promise<Workspace[] | null> => {
     setError(null)
     try {
-      const ws = await api.listWorkspaces()
-      setItems(ws)
-      return ws
+      const ws = await api.listWorkspaces({ includeDeleted: nextView === 'trash' })
+      const filtered = nextView === 'trash' ? ws.filter((w) => !!w.deletedAt) : ws.filter((w) => !w.deletedAt)
+      setItems(filtered)
+      return filtered
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
       return null
@@ -48,9 +52,9 @@ export function WorkspacesPage() {
   }
 
   useEffect(() => {
-    void refresh()
+    void refresh(view)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [view])
 
   if (error) {
     return (
@@ -103,8 +107,22 @@ export function WorkspacesPage() {
             setDetailsWorkspaceId(null)
             await refresh()
           }}
+          onRestored={async () => {
+            const next = await refresh()
+            const updated = next?.find((w) => w.workspaceId === detailsWorkspace.workspaceId)
+            setDetailsWorkspaceId(updated?.workspaceId ?? null)
+          }}
         />
       ) : null}
+
+      <Tabs
+        value={view}
+        onChange={(_, v) => setView(v)}
+        sx={{ mb: 2 }}
+      >
+        <Tab value="active" label={t('workspaces.activeTab')} />
+        <Tab value="trash" label={t('workspaces.trashTab')} />
+      </Tabs>
 
       {items.length === 0 ? (
         <Box sx={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -115,29 +133,39 @@ export function WorkspacesPage() {
               borderStyle: 'dashed',
             }}
           >
-            <CardActionArea onClick={() => setCreateOpen(true)}>
+            {view === 'active' ? (
+              <CardActionArea onClick={() => setCreateOpen(true)}>
+                <CardContent>
+                  <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: 2 }}>
+                    <AddCircleOutlineIcon sx={{ fontSize: 56 }} color="primary" />
+                    <Box>
+                      <Typography variant="h5">{t('workspaces.noWorkspacesTitle')}</Typography>
+                      <Typography color="text.secondary">{t('workspaces.noWorkspacesDesc')}</Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddCircleOutlineIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCreateOpen(true)
+                      }}
+                    >
+                      {t('workspaces.createWorkspace')}
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </CardActionArea>
+            ) : (
               <CardContent>
                 <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: 2 }}>
-                  <AddCircleOutlineIcon sx={{ fontSize: 56 }} color="primary" />
-                  <Box>
-                    <Typography variant="h5">{t('workspaces.noWorkspacesTitle')}</Typography>
-                    <Typography color="text.secondary">
-                      {t('workspaces.noWorkspacesDesc')}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddCircleOutlineIcon />}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setCreateOpen(true)
-                    }}
-                  >
-                    {t('workspaces.createWorkspace')}
+                  <Typography variant="h5">{t('workspaces.trashEmptyTitle')}</Typography>
+                  <Typography color="text.secondary">{t('workspaces.trashEmptyDesc')}</Typography>
+                  <Button variant="contained" onClick={() => setView('active')}>
+                    {t('workspaces.backToActive')}
                   </Button>
                 </Stack>
               </CardContent>
-            </CardActionArea>
+            )}
           </Card>
         </Box>
       ) : (
@@ -145,7 +173,39 @@ export function WorkspacesPage() {
           {items.map((w) => (
             <Grid key={w.workspaceId} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card>
-                <CardActionArea component={RouterLink} to={`/workspaces/${w.workspaceId}`}>
+                {view === 'active' ? (
+                  <CardActionArea component={RouterLink} to={`/workspaces/${w.workspaceId}`}>
+                    <CardContent>
+                      <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-between">
+                        <Stack spacing={0.5} sx={{ minWidth: 0 }}>
+                          <Typography variant="h6" sx={{ wordBreak: 'break-word' }}>
+                            {w.name}
+                          </Typography>
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                            {w.sharedByMe ? <Chip size="small" label={t('workspaces.shared')} /> : null}
+                            {w.sharedWithMe ? <Chip size="small" label={t('workspaces.sharedReadOnly')} /> : null}
+                          </Stack>
+                        </Stack>
+                        <IconButton
+                          size="small"
+                          aria-label={t('workspaces.details')}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setDetailsWorkspaceId(w.workspaceId)
+                          }}
+                        >
+                          <SettingsOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </CardContent>
+                  </CardActionArea>
+                ) : (
+                  <CardActionArea
+                    onClick={() => {
+                      setDetailsWorkspaceId(w.workspaceId)
+                    }}
+                  >
                   <CardContent>
                     <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-between">
                       <Stack spacing={0.5} sx={{ minWidth: 0 }}>
@@ -155,6 +215,7 @@ export function WorkspacesPage() {
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                           {w.sharedByMe ? <Chip size="small" label={t('workspaces.shared')} /> : null}
                           {w.sharedWithMe ? <Chip size="small" label={t('workspaces.sharedReadOnly')} /> : null}
+                          {w.deletedAt ? <Chip size="small" color="warning" label={t('workspaces.trashedChip')} /> : null}
                         </Stack>
                       </Stack>
                       <IconButton
@@ -170,7 +231,8 @@ export function WorkspacesPage() {
                       </IconButton>
                     </Stack>
                   </CardContent>
-                </CardActionArea>
+                  </CardActionArea>
+                )}
               </Card>
             </Grid>
           ))}
