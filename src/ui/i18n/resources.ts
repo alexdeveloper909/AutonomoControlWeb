@@ -89,6 +89,14 @@ export const resources = {
         shareAction: 'Share (read-only)',
         sharedSuccess: 'Shared with {{email}}',
       },
+      workspaceSettings: {
+        dangerZone: 'Danger zone',
+        deleteDesc: "Deleting a workspace permanently removes its settings, memberships, and all records. This can't be undone.",
+        deleteAction: 'Delete workspace',
+        deleteConfirmTitle: 'Delete workspace “{{name}}”?',
+        deleteConfirmBody: "This can't be undone.",
+        deleteConfirmInputLabel: 'Type the workspace name to confirm',
+      },
       records: {
         eventDate: 'Event date',
         invoiceDate: 'Invoice date',
@@ -503,6 +511,14 @@ export const resources = {
         shareEmail: 'Email',
         shareAction: 'Compartir (solo lectura)',
         sharedSuccess: 'Compartido con {{email}}',
+      },
+      workspaceSettings: {
+        dangerZone: 'Zona peligrosa',
+        deleteDesc: 'Eliminar un espacio de trabajo borra permanentemente su configuración, miembros y todos los registros. Esto no se puede deshacer.',
+        deleteAction: 'Eliminar espacio de trabajo',
+        deleteConfirmTitle: '¿Eliminar el espacio de trabajo “{{name}}”?',
+        deleteConfirmBody: 'Esto no se puede deshacer.',
+        deleteConfirmInputLabel: 'Escribe el nombre del espacio de trabajo para confirmar',
       },
       records: {
         eventDate: 'Fecha del evento',
@@ -919,6 +935,14 @@ export const resources = {
         shareAction: 'Поділитися (лише читання)',
         sharedSuccess: 'Поділено з {{email}}',
       },
+      workspaceSettings: {
+        dangerZone: 'Небезпечна зона',
+        deleteDesc: 'Видалення робочого простору назавжди видаляє його налаштування, учасників і всі записи. Це неможливо скасувати.',
+        deleteAction: 'Видалити робочий простір',
+        deleteConfirmTitle: 'Видалити робочий простір “{{name}}”?',
+        deleteConfirmBody: 'Це неможливо скасувати.',
+        deleteConfirmInputLabel: 'Введіть назву робочого простору для підтвердження',
+      },
       records: {
         eventDate: 'Дата події',
         invoiceDate: 'Дата рахунку',
@@ -1334,6 +1358,14 @@ export const resources = {
         shareAction: 'مشاركة (للقراءة فقط)',
         sharedSuccess: 'تمت المشاركة مع {{email}}',
       },
+      workspaceSettings: {
+        dangerZone: 'منطقة خطرة',
+        deleteDesc: 'حذف مساحة العمل يزيل إعداداتها وعضوياتها وجميع السجلات نهائياً. لا يمكن التراجع عن ذلك.',
+        deleteAction: 'حذف مساحة العمل',
+        deleteConfirmTitle: 'حذف مساحة العمل “{{name}}”؟',
+        deleteConfirmBody: 'لا يمكن التراجع عن ذلك.',
+        deleteConfirmInputLabel: 'اكتب اسم مساحة العمل للتأكيد',
+      },
       records: {
         eventDate: 'تاريخ الحدث',
         invoiceDate: 'تاريخ الفاتورة',
@@ -1748,6 +1780,14 @@ export const resources = {
         shareEmail: 'Email',
         shareAction: 'Partajează (doar citire)',
         sharedSuccess: 'Partajat cu {{email}}',
+      },
+      workspaceSettings: {
+        dangerZone: 'Zonă periculoasă',
+        deleteDesc: 'Ștergerea unui spațiu de lucru elimină definitiv setările, membrii și toate înregistrările. Nu poate fi anulată.',
+        deleteAction: 'Șterge spațiul de lucru',
+        deleteConfirmTitle: 'Ștergi spațiul de lucru „{{name}}”?',
+        deleteConfirmBody: 'Nu poate fi anulată.',
+        deleteConfirmInputLabel: 'Tastează numele spațiului de lucru pentru confirmare',
       },
       records: {
         eventDate: 'Data evenimentului',

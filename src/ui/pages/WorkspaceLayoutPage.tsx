@@ -131,7 +131,12 @@ export function WorkspaceLayoutPage() {
         </List>
       }
     >
-      <WorkspaceSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} workspaceId={workspaceId} api={api} />
+      <WorkspaceSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        workspace={workspace}
+        api={api}
+      />
 
       <Routes>
         <Route index element={<Navigate to={`${basePath}/income`} replace />} />

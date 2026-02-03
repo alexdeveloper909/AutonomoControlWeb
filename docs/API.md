@@ -20,6 +20,7 @@ All authenticated requests include:
 - `GET /health`
 - `GET /workspaces`
 - `POST /workspaces`
+- `DELETE /workspaces/{workspaceId}`
 - `POST /workspaces/{workspaceId}/share` (share workspace read-only by email)
 - `GET /workspaces/{workspaceId}/settings`
 - `PUT /workspaces/{workspaceId}/settings`

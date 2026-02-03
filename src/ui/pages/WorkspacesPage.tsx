@@ -99,6 +99,10 @@ export function WorkspacesPage() {
             const updated = next?.find((w) => w.workspaceId === detailsWorkspace.workspaceId)
             setDetailsWorkspaceId(updated?.workspaceId ?? detailsWorkspace.workspaceId)
           }}
+          onDeleted={async () => {
+            setDetailsWorkspaceId(null)
+            await refresh()
+          }}
         />
       ) : null}
 

@@ -23,15 +23,26 @@ export function WorkspaceDetailsDialog(props: {
   api: AutonomoControlApi
   onClose: () => void
   onShared: () => void | Promise<void>
+  onDeleted: () => void | Promise<void>
 }) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [sharing, setSharing] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const isOwner = useMemo(() => props.workspace.role === 'OWNER', [props.workspace.role])
+  const isOwner = useMemo(
+    () => props.workspace.role === 'OWNER' || props.workspace.status === 'OWNER',
+    [props.workspace.role, props.workspace.status],
+  )
   const isReadOnly = useMemo(() => props.workspace.accessMode === 'READ_ONLY', [props.workspace.accessMode])
+  const canConfirmDelete = useMemo(
+    () => deleteConfirm.trim() === props.workspace.name.trim(),
+    [deleteConfirm, props.workspace.name],
+  )
 
   const onShare = async () => {
     setError(null)
@@ -49,8 +60,25 @@ export function WorkspaceDetailsDialog(props: {
     }
   }
 
+  const onDelete = async () => {
+    setError(null)
+    setSuccess(null)
+    setDeleting(true)
+    try {
+      await props.api.deleteWorkspace(props.workspace.workspaceId)
+      await props.onDeleted()
+      props.onClose()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setDeleting(false)
+      setDeleteOpen(false)
+      setDeleteConfirm('')
+    }
+  }
+
   return (
-    <Dialog open={props.open} onClose={sharing ? () => {} : props.onClose} maxWidth="sm" fullWidth>
+    <Dialog open={props.open} onClose={sharing || deleting ? () => {} : props.onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('workspaces.details')}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
@@ -85,26 +113,70 @@ export function WorkspaceDetailsDialog(props: {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
                 fullWidth
-                disabled={sharing}
+                disabled={sharing || deleting}
               />
               <Button
                 variant="contained"
                 onClick={onShare}
-                disabled={sharing || email.trim().length === 0}
+                disabled={sharing || deleting || email.trim().length === 0}
                 startIcon={sharing ? <CircularProgress size={16} color="inherit" /> : undefined}
               >
                 {t('workspaceDetails.shareAction')}
+              </Button>
+
+              <Divider />
+              <Typography variant="subtitle1">{t('workspaceSettings.dangerZone')}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('workspaceSettings.deleteDesc')}
+              </Typography>
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={() => setDeleteOpen(true)}
+                disabled={sharing || deleting}
+              >
+                {t('workspaceSettings.deleteAction')}
               </Button>
             </>
           ) : null}
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={props.onClose} disabled={sharing}>
+        <Button onClick={props.onClose} disabled={sharing || deleting}>
           {t('common.close')}
         </Button>
       </DialogActions>
+
+      <Dialog open={deleteOpen} onClose={deleting ? () => {} : () => setDeleteOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('workspaceSettings.deleteConfirmTitle', { name: props.workspace.name })}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2}>
+            <Alert severity="error">{t('workspaceSettings.deleteConfirmBody')}</Alert>
+            <TextField
+              label={t('workspaceSettings.deleteConfirmInputLabel')}
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder={props.workspace.name}
+              disabled={deleting}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteOpen(false)} disabled={deleting}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={onDelete}
+            disabled={!canConfirmDelete || deleting}
+            startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : undefined}
+          >
+            {t('workspaceSettings.deleteAction')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   )
 }
-

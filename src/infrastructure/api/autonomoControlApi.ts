@@ -83,6 +83,13 @@ export class AutonomoControlApi {
     })
   }
 
+  async deleteWorkspace(workspaceId: string): Promise<void> {
+    await jsonFetch<void>(new URL(`/workspaces/${workspaceId}`, this.baseUrl).toString(), {
+      method: 'DELETE',
+      headers: this.authHeaders(),
+    })
+  }
+
   async shareWorkspaceReadOnly(workspaceId: string, input: { email: string }): Promise<WorkspaceShareResponse> {
     return jsonFetch<WorkspaceShareResponse>(new URL(`/workspaces/${workspaceId}/share`, this.baseUrl).toString(), {
       method: 'POST',
