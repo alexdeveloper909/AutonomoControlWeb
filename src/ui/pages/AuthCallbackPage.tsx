@@ -17,8 +17,9 @@ export function AuthCallbackPage() {
 
     const run = async () => {
       const url = new URL(window.location.href)
-      const code = url.searchParams.get('code')
-      const state = url.searchParams.get('state')
+      const hashParams = new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash)
+      const code = url.searchParams.get('code') ?? hashParams.get('code')
+      const state = url.searchParams.get('state') ?? hashParams.get('state')
       const errorParam = url.searchParams.get('error')
       const errorDesc = url.searchParams.get('error_description')
 
@@ -27,7 +28,13 @@ export function AuthCallbackPage() {
         return
       }
       if (!code || !state) {
-        setError('Missing OAuth callback params (code/state)')
+        setError(
+          [
+            'Missing OAuth callback params (code/state).',
+            'If this happens only on GitHub Pages/mobile, verify Cognito is returning the code in the URL (response_mode=query).',
+            'The form_post (POST) response mode is not compatible with static hosting deep-link shims.',
+          ].join(' '),
+        )
         return
       }
 

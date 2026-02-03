@@ -25,6 +25,7 @@ The web app needs:
 2) App generates PKCE `code_verifier` + `code_challenge` and a random `state`
 3) App redirects to:
    - `GET {COGNITO_DOMAIN}/oauth2/authorize?...`
+   - Note: the app forces `response_mode=query` so the callback includes `code/state` in the URL (not a POST).
 4) Cognito redirects back to `/auth/callback?code=...&state=...`
 5) App exchanges `code` for tokens at:
    - `POST {COGNITO_DOMAIN}/oauth2/token` (form-encoded)

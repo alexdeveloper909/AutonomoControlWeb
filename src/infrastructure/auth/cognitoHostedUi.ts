@@ -42,6 +42,9 @@ export const buildAuthorizeUrl = async (): Promise<string> => {
   const url = new URL('/oauth2/authorize', cognitoDomain)
   url.searchParams.set('client_id', clientId)
   url.searchParams.set('response_type', 'code')
+  // Force query params in the callback (code/state in URL) instead of form_post.
+  // Static hosting (e.g. GitHub Pages) can't reliably support POST callbacks.
+  url.searchParams.set('response_mode', 'query')
   url.searchParams.set('scope', 'openid email profile')
   url.searchParams.set('redirect_uri', redirectUri)
   url.searchParams.set('state', state)

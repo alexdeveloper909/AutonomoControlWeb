@@ -18,6 +18,15 @@ Check:
 - Start login from `/login` and complete the flow in the same tab/session.
 - Avoid opening the callback URL directly.
 
+## “Missing OAuth callback params (code/state)” (often on GitHub Pages / mobile)
+
+This usually means the OAuth provider returned the callback parameters via **POST** (`response_mode=form_post`), which is not compatible with static hosting deep-link shims.
+
+Fix:
+
+- Ensure the authorize request uses `response_mode=query` (this repo sets it in `src/infrastructure/auth/cognitoHostedUi.ts`).
+- Verify the app client / Hosted UI config is not forcing `form_post`.
+
 ## API calls fail with CORS in the browser console
 
 Fix the CDK stack config:
@@ -41,4 +50,3 @@ See:
 
 - `../AutonomoControlApi/README.md`
 - `../AutonomoControlApi/USAGES.md`
-
