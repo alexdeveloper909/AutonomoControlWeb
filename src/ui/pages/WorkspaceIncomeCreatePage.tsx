@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
+  FormHelperText,
   InputLabel,
   LinearProgress,
   MenuItem,
@@ -17,6 +18,7 @@ import type { IvaRate, InvoicePayload, RetencionRate } from '../../domain/record
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
+import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -192,7 +194,12 @@ export function WorkspaceIncomeCreatePage(props: {
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label={t('incomeCreate.invoiceDate')}
+              label={
+                <FieldLabel
+                  label={t('incomeCreate.invoiceDate')}
+                  tooltip={t('incomeCreate.tooltips.invoiceDate', { defaultValue: '' })}
+                />
+              }
               type="date"
               value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
@@ -200,17 +207,23 @@ export function WorkspaceIncomeCreatePage(props: {
               required
               fullWidth
               error={Boolean(invoiceDate) && !isIsoDate(invoiceDate)}
+              helperText={t('incomeCreate.help.invoiceDate', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
             <TextField
-              label={t('incomeCreate.paymentDateOptional')}
+              label={
+                <FieldLabel
+                  label={t('incomeCreate.paymentDateOptional')}
+                  tooltip={t('incomeCreate.tooltips.paymentDate', { defaultValue: '' })}
+                />
+              }
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
               error={Boolean(paymentDate) && !isIsoDate(paymentDate)}
-              helperText={t('incomeCreate.eventDateHint')}
+              helperText={t('incomeCreate.help.paymentDate', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
           </Stack>
@@ -223,6 +236,7 @@ export function WorkspaceIncomeCreatePage(props: {
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('incomeCreate.help.invoiceNumber', { defaultValue: '' }) || undefined}
             />
             <TextField
               label={t('incomeCreate.client')}
@@ -231,31 +245,45 @@ export function WorkspaceIncomeCreatePage(props: {
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('incomeCreate.help.client', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <EuroTextField
-              label={t('incomeCreate.baseExclVat')}
+              label={
+                <FieldLabel
+                  label={t('incomeCreate.baseExclVat')}
+                  tooltip={t('incomeCreate.tooltips.baseExclVat', { defaultValue: '' })}
+                />
+              }
               value={baseExclVat}
               onChange={(e) => setBaseExclVat(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('incomeCreate.help.baseExclVat', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
-              label={t('incomeCreate.amountReceivedOverrideOptional')}
+              label={
+                <FieldLabel
+                  label={t('incomeCreate.amountReceivedOverrideOptional')}
+                  tooltip={t('incomeCreate.tooltips.amountReceivedOverride', { defaultValue: '' })}
+                />
+              }
               value={amountReceivedOverride}
               onChange={(e) => setAmountReceivedOverride(e.target.value)}
               fullWidth
-              helperText={t('incomeCreate.amountReceivedOverrideHint')}
+              helperText={t('incomeCreate.help.amountReceivedOverride', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth>
-              <InputLabel id="iva-rate-label">{t('rates.iva.label')}</InputLabel>
+              <InputLabel id="iva-rate-label">
+                <FieldLabel label={t('rates.iva.label')} tooltip={t('incomeCreate.tooltips.ivaRate', { defaultValue: '' })} />
+              </InputLabel>
               <Select
                 labelId="iva-rate-label"
                 label={t('rates.iva.label')}
@@ -269,9 +297,17 @@ export function WorkspaceIncomeCreatePage(props: {
                   </MenuItem>
                 ))}
               </Select>
+              {t('incomeCreate.help.ivaRate', { defaultValue: '' }) ? (
+                <FormHelperText>{t('incomeCreate.help.ivaRate', { defaultValue: '' })}</FormHelperText>
+              ) : null}
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel id="retencion-label">{t('rates.retencion.label')}</InputLabel>
+              <InputLabel id="retencion-label">
+                <FieldLabel
+                  label={t('rates.retencion.label')}
+                  tooltip={t('incomeCreate.tooltips.retencion', { defaultValue: '' })}
+                />
+              </InputLabel>
               <Select
                 labelId="retencion-label"
                 label={t('rates.retencion.label')}
@@ -285,6 +321,9 @@ export function WorkspaceIncomeCreatePage(props: {
                   </MenuItem>
                 ))}
               </Select>
+              {t('incomeCreate.help.retencion', { defaultValue: '' }) ? (
+                <FormHelperText>{t('incomeCreate.help.retencion', { defaultValue: '' })}</FormHelperText>
+              ) : null}
             </FormControl>
           </Stack>
 

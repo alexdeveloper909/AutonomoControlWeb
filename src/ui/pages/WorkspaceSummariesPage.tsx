@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   Alert,
   Button,
@@ -29,6 +29,7 @@ import { PageHeader } from '../components/PageHeader'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
+import { FieldLabel } from '../components/FieldLabel'
 
 type MonthSummary = {
   monthKey: string
@@ -216,7 +217,7 @@ function SummaryDetailsDialog(props: {
   open: boolean
   title: string
   onClose: () => void
-  fields: { label: string; value: string }[]
+  fields: { key: string; label: ReactNode; value: string; helperText?: string }[]
 }) {
   const { t } = useTranslation()
 
@@ -226,8 +227,15 @@ function SummaryDetailsDialog(props: {
       <DialogContent dividers>
         <Grid container spacing={2}>
           {props.fields.map((f) => (
-            <Grid key={f.label} size={{ xs: 12, sm: 6 }}>
-              <TextField label={f.label} value={f.value} size="small" fullWidth InputProps={{ readOnly: true }} />
+            <Grid key={f.key} size={{ xs: 12, sm: 6 }}>
+              <TextField
+                label={f.label}
+                value={f.value}
+                helperText={f.helperText}
+                size="small"
+                fullWidth
+                InputProps={{ readOnly: true }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -270,6 +278,10 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
     setSelectedQuarter(null)
     await refetch()
   }
+
+  const summaryLabel = (key: string): ReactNode => (
+    <FieldLabel label={t(`summaries.fields.${key}`)} tooltip={t(`summaries.tooltips.${key}`, { defaultValue: '' })} />
+  )
 
   return (
     <Stack spacing={2}>
@@ -434,23 +446,27 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         fields={
           selectedMonth
             ? [
-                { label: t('summaries.table.month'), value: selectedMonth.monthKey },
-                { label: t('summaries.fields.isActiveFromStart'), value: selectedMonth.isActiveFromStart ? t('summaries.yes') : t('summaries.no') },
-                { label: t('summaries.fields.incomeBase'), value: money.format(selectedMonth.incomeBase) },
-                { label: t('summaries.fields.vatOutput'), value: money.format(selectedMonth.vatOutput) },
-                { label: t('summaries.fields.irpfWithheldPlus'), value: money.format(selectedMonth.irpfWithheldPlus) },
-                { label: t('summaries.fields.expenseDeductibleBase'), value: money.format(selectedMonth.expenseDeductibleBase) },
-                { label: t('summaries.fields.vatRecoverable'), value: money.format(selectedMonth.vatRecoverable) },
-                { label: t('summaries.fields.seguridadSocialPaid'), value: money.format(selectedMonth.seguridadSocialPaid) },
-                { label: t('summaries.fields.profitForIrpf'), value: money.format(selectedMonth.profitForIrpf) },
-                { label: t('summaries.fields.irpfReserve'), value: money.format(selectedMonth.irpfReserve) },
-                { label: t('summaries.fields.ivaSettlementEstimate'), value: money.format(selectedMonth.ivaSettlementEstimate) },
-                { label: t('summaries.fields.recommendedTaxReserve'), value: money.format(selectedMonth.recommendedTaxReserve) },
-                { label: t('summaries.fields.cashIn'), value: money.format(selectedMonth.cashIn) },
-                { label: t('summaries.fields.cashOutExpenses'), value: money.format(selectedMonth.cashOutExpenses) },
-                { label: t('summaries.fields.cashOutState'), value: money.format(selectedMonth.cashOutState) },
-                { label: t('summaries.fields.canSpendThisMonth'), value: money.format(selectedMonth.canSpendThisMonth) },
-                { label: t('summaries.fields.canSpendIgnoringExpenses'), value: money.format(selectedMonth.canSpendIgnoringExpenses) },
+                { key: 'monthKey', label: t('summaries.table.month'), value: selectedMonth.monthKey },
+                {
+                  key: 'isActiveFromStart',
+                  label: summaryLabel('isActiveFromStart'),
+                  value: selectedMonth.isActiveFromStart ? t('summaries.yes') : t('summaries.no'),
+                },
+                { key: 'incomeBase', label: summaryLabel('incomeBase'), value: money.format(selectedMonth.incomeBase) },
+                { key: 'vatOutput', label: summaryLabel('vatOutput'), value: money.format(selectedMonth.vatOutput) },
+                { key: 'irpfWithheldPlus', label: summaryLabel('irpfWithheldPlus'), value: money.format(selectedMonth.irpfWithheldPlus) },
+                { key: 'expenseDeductibleBase', label: summaryLabel('expenseDeductibleBase'), value: money.format(selectedMonth.expenseDeductibleBase) },
+                { key: 'vatRecoverable', label: summaryLabel('vatRecoverable'), value: money.format(selectedMonth.vatRecoverable) },
+                { key: 'seguridadSocialPaid', label: summaryLabel('seguridadSocialPaid'), value: money.format(selectedMonth.seguridadSocialPaid) },
+                { key: 'profitForIrpf', label: summaryLabel('profitForIrpf'), value: money.format(selectedMonth.profitForIrpf) },
+                { key: 'irpfReserve', label: summaryLabel('irpfReserve'), value: money.format(selectedMonth.irpfReserve) },
+                { key: 'ivaSettlementEstimate', label: summaryLabel('ivaSettlementEstimate'), value: money.format(selectedMonth.ivaSettlementEstimate) },
+                { key: 'recommendedTaxReserve', label: summaryLabel('recommendedTaxReserve'), value: money.format(selectedMonth.recommendedTaxReserve) },
+                { key: 'cashIn', label: summaryLabel('cashIn'), value: money.format(selectedMonth.cashIn) },
+                { key: 'cashOutExpenses', label: summaryLabel('cashOutExpenses'), value: money.format(selectedMonth.cashOutExpenses) },
+                { key: 'cashOutState', label: summaryLabel('cashOutState'), value: money.format(selectedMonth.cashOutState) },
+                { key: 'canSpendThisMonth', label: summaryLabel('canSpendThisMonth'), value: money.format(selectedMonth.canSpendThisMonth) },
+                { key: 'canSpendIgnoringExpenses', label: summaryLabel('canSpendIgnoringExpenses'), value: money.format(selectedMonth.canSpendIgnoringExpenses) },
               ]
             : []
         }
@@ -468,20 +484,20 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         fields={
           selectedQuarter
             ? [
-                { label: t('summaries.table.quarter'), value: `${selectedQuarter.quarterKey.year}-Q${selectedQuarter.quarterKey.quarter}` },
-                { label: t('summaries.fields.start'), value: selectedQuarter.start },
-                { label: t('summaries.fields.end'), value: selectedQuarter.end },
-                { label: t('summaries.fields.isActiveFromStart'), value: selectedQuarter.isActiveFromStart ? t('summaries.yes') : t('summaries.no') },
-                { label: t('summaries.fields.incomeBase'), value: money.format(selectedQuarter.incomeBase) },
-                { label: t('summaries.fields.expenseDeductibleBase'), value: money.format(selectedQuarter.expenseDeductibleBase) },
-                { label: t('summaries.fields.seguridadSocialPaidInQuarter'), value: money.format(selectedQuarter.seguridadSocialPaidInQuarter) },
-                { label: t('summaries.fields.profitForIrpf'), value: money.format(selectedQuarter.profitForIrpf) },
-                { label: t('summaries.fields.irpfWithheldPlus'), value: money.format(selectedQuarter.irpfWithheldPlus) },
-                { label: t('summaries.fields.vatOutput'), value: money.format(selectedQuarter.vatOutput) },
-                { label: t('summaries.fields.vatRecoverable'), value: money.format(selectedQuarter.vatRecoverable) },
-                { label: t('summaries.fields.irpfReserve'), value: money.format(selectedQuarter.irpfReserve) },
-                { label: t('summaries.fields.ivaSettlementEstimate'), value: money.format(selectedQuarter.ivaSettlementEstimate) },
-                { label: t('summaries.fields.recommendedTaxReserve'), value: money.format(selectedQuarter.recommendedTaxReserve) },
+                { key: 'quarterKey', label: t('summaries.table.quarter'), value: `${selectedQuarter.quarterKey.year}-Q${selectedQuarter.quarterKey.quarter}` },
+                { key: 'start', label: t('summaries.fields.start'), value: selectedQuarter.start },
+                { key: 'end', label: t('summaries.fields.end'), value: selectedQuarter.end },
+                { key: 'isActiveFromStart', label: summaryLabel('isActiveFromStart'), value: selectedQuarter.isActiveFromStart ? t('summaries.yes') : t('summaries.no') },
+                { key: 'incomeBase', label: summaryLabel('incomeBase'), value: money.format(selectedQuarter.incomeBase) },
+                { key: 'expenseDeductibleBase', label: summaryLabel('expenseDeductibleBase'), value: money.format(selectedQuarter.expenseDeductibleBase) },
+                { key: 'seguridadSocialPaidInQuarter', label: summaryLabel('seguridadSocialPaidInQuarter'), value: money.format(selectedQuarter.seguridadSocialPaidInQuarter) },
+                { key: 'profitForIrpf', label: summaryLabel('profitForIrpf'), value: money.format(selectedQuarter.profitForIrpf) },
+                { key: 'irpfWithheldPlus', label: summaryLabel('irpfWithheldPlus'), value: money.format(selectedQuarter.irpfWithheldPlus) },
+                { key: 'vatOutput', label: summaryLabel('vatOutput'), value: money.format(selectedQuarter.vatOutput) },
+                { key: 'vatRecoverable', label: summaryLabel('vatRecoverable'), value: money.format(selectedQuarter.vatRecoverable) },
+                { key: 'irpfReserve', label: summaryLabel('irpfReserve'), value: money.format(selectedQuarter.irpfReserve) },
+                { key: 'ivaSettlementEstimate', label: summaryLabel('ivaSettlementEstimate'), value: money.format(selectedQuarter.ivaSettlementEstimate) },
+                { key: 'recommendedTaxReserve', label: summaryLabel('recommendedTaxReserve'), value: money.format(selectedQuarter.recommendedTaxReserve) },
               ]
             : []
         }

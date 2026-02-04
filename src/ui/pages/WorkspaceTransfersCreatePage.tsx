@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, TextField } from '@mui/material'
+import {
+  Button,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+} from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
@@ -7,6 +18,7 @@ import type { TransferOp, TransferPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
+import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -159,7 +171,9 @@ export function WorkspaceTransfersCreatePage(props: {
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label={t('transfersCreate.date')}
+              label={
+                <FieldLabel label={t('transfersCreate.date')} tooltip={t('transfersCreate.tooltips.date', { defaultValue: '' })} />
+              }
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -168,19 +182,31 @@ export function WorkspaceTransfersCreatePage(props: {
               fullWidth
               error={Boolean(date) && !isIsoDate(date)}
               disabled={inputsDisabled}
+              helperText={t('transfersCreate.help.date', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
-              label={t('transfersCreate.amount')}
+              label={
+                <FieldLabel
+                  label={t('transfersCreate.amount')}
+                  tooltip={t('transfersCreate.tooltips.amount', { defaultValue: '' })}
+                />
+              }
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('transfersCreate.help.amount', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
           <FormControl fullWidth>
-            <InputLabel id="transfer-operation-label">{t('transfersCreate.operation')}</InputLabel>
+            <InputLabel id="transfer-operation-label">
+              <FieldLabel
+                label={t('transfersCreate.operation')}
+                tooltip={t('transfersCreate.tooltips.operation', { defaultValue: '' })}
+              />
+            </InputLabel>
             <Select
               labelId="transfer-operation-label"
               label={t('transfersCreate.operation')}
@@ -194,6 +220,9 @@ export function WorkspaceTransfersCreatePage(props: {
                 </MenuItem>
               ))}
             </Select>
+            {t('transfersCreate.help.operation', { defaultValue: '' }) ? (
+              <FormHelperText>{t('transfersCreate.help.operation', { defaultValue: '' })}</FormHelperText>
+            ) : null}
           </FormControl>
 
           <TextField
@@ -204,6 +233,7 @@ export function WorkspaceTransfersCreatePage(props: {
             multiline
             minRows={2}
             disabled={inputsDisabled}
+            helperText={t('transfersCreate.help.note', { defaultValue: '' }) || undefined}
           />
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">

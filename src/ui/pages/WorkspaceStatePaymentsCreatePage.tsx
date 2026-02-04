@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   FormControl,
+  FormHelperText,
   InputLabel,
   LinearProgress,
   MenuItem,
@@ -17,6 +18,7 @@ import type { StatePaymentPayload, StatePaymentType } from '../../domain/records
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
+import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -163,7 +165,12 @@ export function WorkspaceStatePaymentsCreatePage(props: {
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label={t('statePaymentsCreate.paymentDate')}
+              label={
+                <FieldLabel
+                  label={t('statePaymentsCreate.paymentDate')}
+                  tooltip={t('statePaymentsCreate.tooltips.paymentDate', { defaultValue: '' })}
+                />
+              }
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
@@ -172,19 +179,31 @@ export function WorkspaceStatePaymentsCreatePage(props: {
               fullWidth
               error={Boolean(paymentDate) && !isIsoDate(paymentDate)}
               disabled={inputsDisabled}
+              helperText={t('statePaymentsCreate.help.paymentDate', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
-              label={t('statePaymentsCreate.amount')}
+              label={
+                <FieldLabel
+                  label={t('statePaymentsCreate.amount')}
+                  tooltip={t('statePaymentsCreate.tooltips.amount', { defaultValue: '' })}
+                />
+              }
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('statePaymentsCreate.help.amount', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
           <FormControl fullWidth>
-            <InputLabel id="state-payment-type-label">{t('statePaymentsCreate.type')}</InputLabel>
+            <InputLabel id="state-payment-type-label">
+              <FieldLabel
+                label={t('statePaymentsCreate.type')}
+                tooltip={t('statePaymentsCreate.tooltips.type', { defaultValue: '' })}
+              />
+            </InputLabel>
             <Select
               labelId="state-payment-type-label"
               label={t('statePaymentsCreate.type')}
@@ -198,6 +217,9 @@ export function WorkspaceStatePaymentsCreatePage(props: {
                 </MenuItem>
               ))}
             </Select>
+            {t('statePaymentsCreate.help.type', { defaultValue: '' }) ? (
+              <FormHelperText>{t('statePaymentsCreate.help.type', { defaultValue: '' })}</FormHelperText>
+            ) : null}
           </FormControl>
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">

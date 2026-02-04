@@ -4,6 +4,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   InputLabel,
   LinearProgress,
   MenuItem,
@@ -19,6 +20,7 @@ import type { ExpensePayload, IvaRate } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
+import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -202,7 +204,12 @@ export function WorkspaceExpensesCreatePage(props: {
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label={t('expensesCreate.documentDate')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.documentDate')}
+                  tooltip={t('expensesCreate.tooltips.documentDate', { defaultValue: '' })}
+                />
+              }
               type="date"
               value={documentDate}
               onChange={(e) => setDocumentDate(e.target.value)}
@@ -210,17 +217,23 @@ export function WorkspaceExpensesCreatePage(props: {
               required
               fullWidth
               error={Boolean(documentDate) && !isIsoDate(documentDate)}
+              helperText={t('expensesCreate.help.documentDate', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
             <TextField
-              label={t('expensesCreate.paymentDateOptional')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.paymentDateOptional')}
+                  tooltip={t('expensesCreate.tooltips.paymentDate', { defaultValue: '' })}
+                />
+              }
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
               error={Boolean(paymentDate) && !isIsoDate(paymentDate)}
-              helperText={t('expensesCreate.eventDateHint')}
+              helperText={t('expensesCreate.help.paymentDate', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
           </Stack>
@@ -233,39 +246,59 @@ export function WorkspaceExpensesCreatePage(props: {
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('expensesCreate.help.vendor', { defaultValue: '' }) || undefined}
             />
             <TextField
-              label={t('expensesCreate.category')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.category')}
+                  tooltip={t('expensesCreate.tooltips.category', { defaultValue: '' })}
+                />
+              }
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('expensesCreate.help.category', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <EuroTextField
-              label={t('expensesCreate.baseExclVat')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.baseExclVat')}
+                  tooltip={t('expensesCreate.tooltips.baseExclVat', { defaultValue: '' })}
+                />
+              }
               value={baseExclVat}
               onChange={(e) => setBaseExclVat(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('expensesCreate.help.baseExclVat', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
-              label={t('expensesCreate.amountPaidOverrideOptional')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.amountPaidOverrideOptional')}
+                  tooltip={t('expensesCreate.tooltips.amountPaidOverride', { defaultValue: '' })}
+                />
+              }
               value={amountPaidOverride}
               onChange={(e) => setAmountPaidOverride(e.target.value)}
               fullWidth
-              helperText={t('expensesCreate.amountPaidOverrideHint')}
+              helperText={t('expensesCreate.help.amountPaidOverride', { defaultValue: '' }) || undefined}
               disabled={inputsDisabled}
             />
           </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth>
-              <InputLabel id="iva-rate-label">{t('rates.iva.label')}</InputLabel>
+              <InputLabel id="iva-rate-label">
+                <FieldLabel label={t('rates.iva.label')} tooltip={t('expensesCreate.tooltips.ivaRate', { defaultValue: '' })} />
+              </InputLabel>
               <Select
                 labelId="iva-rate-label"
                 label={t('rates.iva.label')}
@@ -279,9 +312,17 @@ export function WorkspaceExpensesCreatePage(props: {
                   </MenuItem>
                 ))}
               </Select>
+              {t('expensesCreate.help.ivaRate', { defaultValue: '' }) ? (
+                <FormHelperText>{t('expensesCreate.help.ivaRate', { defaultValue: '' })}</FormHelperText>
+              ) : null}
             </FormControl>
             <TextField
-              label={t('expensesCreate.deductibleShare')}
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.deductibleShare')}
+                  tooltip={t('expensesCreate.tooltips.deductibleShare', { defaultValue: '' })}
+                />
+              }
               value={deductibleShare}
               onChange={(e) => setDeductibleShare(e.target.value)}
               required
@@ -289,19 +330,30 @@ export function WorkspaceExpensesCreatePage(props: {
               inputMode="decimal"
               error={Boolean(deductibleShare) && !(Number.isFinite(Number(deductibleShare)) && Number(deductibleShare) >= 0 && Number(deductibleShare) <= 1)}
               disabled={inputsDisabled}
+              helperText={t('expensesCreate.help.deductibleShare', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={vatRecoverableFlag}
-                onChange={(e) => setVatRecoverableFlag(e.target.checked)}
-                disabled={inputsDisabled}
-              />
-            }
-            label={t('expensesCreate.vatRecoverable')}
-          />
+          <FormControl>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={vatRecoverableFlag}
+                  onChange={(e) => setVatRecoverableFlag(e.target.checked)}
+                  disabled={inputsDisabled}
+                />
+              }
+              label={
+                <FieldLabel
+                  label={t('expensesCreate.vatRecoverable')}
+                  tooltip={t('expensesCreate.tooltips.vatRecoverable', { defaultValue: '' })}
+                />
+              }
+            />
+            {t('expensesCreate.help.vatRecoverable', { defaultValue: '' }) ? (
+              <FormHelperText sx={{ mt: -0.5 }}>{t('expensesCreate.help.vatRecoverable', { defaultValue: '' })}</FormHelperText>
+            ) : null}
+          </FormControl>
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToExpensesPath} variant="outlined" disabled={submitting}>

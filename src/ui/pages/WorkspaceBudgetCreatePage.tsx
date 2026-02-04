@@ -7,6 +7,7 @@ import type { BudgetEntryPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
+import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -163,7 +164,9 @@ export function WorkspaceBudgetCreatePage(props: {
           {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
 
           <TextField
-            label={t('budgetCreate.month')}
+            label={
+              <FieldLabel label={t('budgetCreate.month')} tooltip={t('budgetCreate.tooltips.month', { defaultValue: '' })} />
+            }
             type="month"
             value={monthKey}
             onChange={(e) => setMonthKey(e.target.value)}
@@ -172,24 +175,32 @@ export function WorkspaceBudgetCreatePage(props: {
             fullWidth
             error={Boolean(monthKey) && !isMonthKey(monthKey)}
             disabled={inputsDisabled}
+            helperText={t('budgetCreate.help.month', { defaultValue: '' }) || undefined}
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <EuroTextField
-              label={t('budgetCreate.plannedSpend')}
+              label={
+                <FieldLabel
+                  label={t('budgetCreate.plannedSpend')}
+                  tooltip={t('budgetCreate.tooltips.plannedSpend', { defaultValue: '' })}
+                />
+              }
               value={plannedSpend}
               onChange={(e) => setPlannedSpend(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('budgetCreate.help.plannedSpend', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
-              label={t('budgetCreate.earned')}
+              label={<FieldLabel label={t('budgetCreate.earned')} tooltip={t('budgetCreate.tooltips.earned', { defaultValue: '' })} />}
               value={earned}
               onChange={(e) => setEarned(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
+              helperText={t('budgetCreate.help.earned', { defaultValue: '' }) || undefined}
             />
           </Stack>
 
@@ -199,13 +210,15 @@ export function WorkspaceBudgetCreatePage(props: {
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
             disabled={inputsDisabled}
+            helperText={t('budgetCreate.help.description', { defaultValue: '' }) || undefined}
           />
           <TextField
-            label={t('budgetCreate.goalOptional')}
+            label={<FieldLabel label={t('budgetCreate.goalOptional')} tooltip={t('budgetCreate.tooltips.goal', { defaultValue: '' })} />}
             value={budgetGoal}
             onChange={(e) => setBudgetGoal(e.target.value)}
             fullWidth
             disabled={inputsDisabled}
+            helperText={t('budgetCreate.help.goal', { defaultValue: '' }) || undefined}
           />
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
