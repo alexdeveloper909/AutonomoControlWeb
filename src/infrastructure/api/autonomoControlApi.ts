@@ -1,5 +1,5 @@
 import type { Workspace } from '../../domain/workspace'
-import type { WorkspaceSettings } from '../../domain/settings'
+import { cleanWorkspaceSettings, type WorkspaceSettings } from '../../domain/settings'
 import type { RecordResponse, RecordType, RecordPayload } from '../../domain/records'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
@@ -78,11 +78,12 @@ export class AutonomoControlApi {
     workspace: Workspace
     settings: WorkspaceSettings
   }> {
-    return jsonFetch(new URL('/workspaces', this.baseUrl).toString(), {
+    const res = await jsonFetch<{ workspace: Workspace; settings: WorkspaceSettings }>(new URL('/workspaces', this.baseUrl).toString(), {
       method: 'POST',
       headers: this.authHeaders(),
-      body: input,
+      body: { ...input, settings: cleanWorkspaceSettings(input.settings) },
     })
+    return { ...res, settings: cleanWorkspaceSettings(res.settings) }
   }
 
   async deleteWorkspace(workspaceId: string): Promise<void> {
@@ -114,7 +115,7 @@ export class AutonomoControlApi {
         headers: this.authHeaders(),
       },
     )
-    return res.settings
+    return cleanWorkspaceSettings(res.settings)
   }
 
   async putWorkspaceSettings(workspaceId: string, settings: WorkspaceSettings): Promise<WorkspaceSettings> {
@@ -123,10 +124,10 @@ export class AutonomoControlApi {
       {
         method: 'PUT',
         headers: this.authHeaders(),
-        body: settings,
+        body: cleanWorkspaceSettings(settings),
       },
     )
-    return res.settings
+    return cleanWorkspaceSettings(res.settings)
   }
 
   async listRecordsByMonth(workspaceId: string, monthKey: string, recordType?: RecordType): Promise<RecordResponse[]> {

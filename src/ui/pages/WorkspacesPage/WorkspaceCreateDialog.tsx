@@ -2,7 +2,6 @@ import { useState } from 'react'
 import {
   CircularProgress,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,6 +17,7 @@ import type { Workspace } from '../../../domain/workspace'
 import type { WorkspaceSettings } from '../../../domain/settings'
 import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../../components/ErrorAlert'
+import { ExpenseCategoriesEditor } from '../../components/ExpenseCategoriesEditor'
 import { useTranslation } from 'react-i18next'
 
 const defaultSettings = (): WorkspaceSettings => {
@@ -53,21 +53,6 @@ export function WorkspaceCreateDialog(props: {
     if (value.trim() === '') return null
     const n = Number(value)
     return Number.isFinite(n) ? n : null
-  }
-
-  const updateCategory = (i: number, value: string) => {
-    setSettings((s) => ({
-      ...s,
-      expenseCategories: s.expenseCategories.map((c, idx) => (idx === i ? value : c)),
-    }))
-  }
-
-  const addCategory = () => {
-    setSettings((s) => ({ ...s, expenseCategories: [...s.expenseCategories, ''] }))
-  }
-
-  const removeCategory = (i: number) => {
-    setSettings((s) => ({ ...s, expenseCategories: s.expenseCategories.filter((_, idx) => idx !== i) }))
   }
 
   const onCreate = async () => {
@@ -183,20 +168,14 @@ export function WorkspaceCreateDialog(props: {
           />
 
           <Typography variant="subtitle2">{t('workspaceCreate.expenseCategories')}</Typography>
-          <Stack spacing={1}>
-            {settings.expenseCategories.map((c, i) => (
-              <Stack key={i} direction="row" spacing={1} alignItems="center">
-                <TextField
-                  value={c}
-                  onChange={(e) => updateCategory(i, e.target.value)}
-                  placeholder={t('workspaceCreate.categoryPlaceholder')}
-                  fullWidth
-                />
-                <Chip label={t('workspaceCreate.remove')} onClick={() => removeCategory(i)} clickable />
-              </Stack>
-            ))}
-            <Button onClick={addCategory}>{t('workspaceCreate.addCategory')}</Button>
-          </Stack>
+          <ExpenseCategoriesEditor
+            categories={settings.expenseCategories}
+            onChange={(next) => setSettings((s) => ({ ...s, expenseCategories: next }))}
+            placeholder={t('workspaceCreate.categoryPlaceholder')}
+            removeLabel={t('workspaceCreate.remove')}
+            addLabel={t('workspaceCreate.addCategory')}
+            disabled={saving}
+          />
         </Stack>
       </DialogContent>
       <DialogActions>
