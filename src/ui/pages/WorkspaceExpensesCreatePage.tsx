@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Autocomplete,
   Button,
   Checkbox,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -63,6 +65,11 @@ export function WorkspaceExpensesCreatePage(props: {
   const mode = props.mode ?? 'create'
   const editing = mode === 'edit'
 
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.workspaceSettings(props.workspaceId),
+    queryFn: () => props.api.getWorkspaceSettings(props.workspaceId),
+  })
+
   const recordQuery = useQuery({
     queryKey:
       editing && props.eventDate && props.recordId
@@ -88,6 +95,21 @@ export function WorkspaceExpensesCreatePage(props: {
   const [initializedFromRecord, setInitializedFromRecord] = useState(false)
 
   const backToExpensesPath = `/workspaces/${props.workspaceId}/expenses`
+
+  const categoryOptions = useMemo(() => {
+    const cats = settingsQuery.data?.expenseCategories ?? []
+    const out: string[] = []
+    const seen = new Set<string>()
+    for (const raw of cats) {
+      const v = raw.trim()
+      if (!v) continue
+      const k = v.toLowerCase()
+      if (seen.has(k)) continue
+      seen.add(k)
+      out.push(v)
+    }
+    return out.sort((a, b) => a.localeCompare(b))
+  }, [settingsQuery.data?.expenseCategories])
 
   useEffect(() => {
     if (!editing) return
@@ -248,19 +270,37 @@ export function WorkspaceExpensesCreatePage(props: {
               disabled={inputsDisabled}
               helperText={t('expensesCreate.help.vendor', { defaultValue: '' }) || undefined}
             />
-            <TextField
-              label={
-                <FieldLabel
-                  label={t('expensesCreate.category')}
-                  tooltip={t('expensesCreate.tooltips.category', { defaultValue: '' })}
-                />
-              }
+            <Autocomplete<string, false, false, true>
+              freeSolo
+              options={categoryOptions}
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              fullWidth
+              inputValue={category}
+              onInputChange={(_, next) => setCategory(next)}
+              onChange={(_, next) => setCategory(next ?? '')}
               disabled={inputsDisabled}
-              helperText={t('expensesCreate.help.category', { defaultValue: '' }) || undefined}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={
+                    <FieldLabel
+                      label={t('expensesCreate.category')}
+                      tooltip={t('expensesCreate.tooltips.category', { defaultValue: '' })}
+                    />
+                  }
+                  required
+                  fullWidth
+                  helperText={t('expensesCreate.help.category', { defaultValue: '' }) || undefined}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {settingsQuery.isFetching ? <CircularProgress color="inherit" size={16} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
             />
           </Stack>
 
