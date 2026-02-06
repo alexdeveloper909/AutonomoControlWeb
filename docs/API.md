@@ -32,6 +32,7 @@ All authenticated requests include:
 - `POST /workspaces/{workspaceId}/records`
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
+- `POST /workspaces/{workspaceId}/summaries/renta`
 
 ## Read-only shared workspaces
 

@@ -9,6 +9,7 @@ import {
   Divider,
   FormControlLabel,
   LinearProgress,
+  MenuItem,
   Stack,
   Switch,
   TextField,
@@ -16,7 +17,7 @@ import {
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { cleanWorkspaceSettings, type WorkspaceSettings } from '../../domain/settings'
+import { cleanWorkspaceSettings, defaultRentaPlanningSettings, type IrpfTerritory, type WorkspaceSettings } from '../../domain/settings'
 import type { Workspace } from '../../domain/workspace'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
@@ -68,6 +69,7 @@ export function WorkspaceSettingsDialog(props: {
       irpfRate: s.irpfRate,
       obligacion130: s.obligacion130,
       expenseCategories: normalizeCategories(s.expenseCategories),
+      rentaPlanning: s.rentaPlanning,
     })
 
   const dirty = useMemo(() => {
@@ -78,6 +80,15 @@ export function WorkspaceSettingsDialog(props: {
 
   const ivaInvalid = useMemo(() => (draft ? !Number.isFinite(draft.ivaStd) || draft.ivaStd < 0 || draft.ivaStd > 1 : false), [draft])
   const irpfInvalid = useMemo(() => (draft ? !Number.isFinite(draft.irpfRate) || draft.irpfRate < 0 || draft.irpfRate > 1 : false), [draft])
+  const rentaForalUnsupported = useMemo(
+    () =>
+      draft?.rentaPlanning?.enabled === true && (draft.rentaPlanning.residence === 'NAVARRA' || draft.rentaPlanning.residence === 'PAIS_VASCO'),
+    [draft],
+  )
+  const rentaInicioMissingYear = useMemo(
+    () => draft?.rentaPlanning?.enabled === true && draft.rentaPlanning.inicioActividadReduction?.enabled === true && !Number.isFinite(draft.rentaPlanning.inicioActividadReduction.firstPositiveNetIncomeYear ?? NaN),
+    [draft],
+  )
 
   const refresh = async () => {
     setError(null)
@@ -118,6 +129,7 @@ export function WorkspaceSettingsDialog(props: {
         obligacion130: draft.obligacion130,
         openingBalance: settings.openingBalance ?? null,
         expenseCategories: normalizeCategories(draft.expenseCategories),
+        rentaPlanning: draft.rentaPlanning,
       })
       const saved = await props.api.putWorkspaceSettings(props.workspace.workspaceId, payload)
       setSettings(saved)
@@ -234,6 +246,289 @@ export function WorkspaceSettingsDialog(props: {
                 addLabel={t('workspaceCreate.addCategory')}
                 disabled={readOnly || saving}
               />
+
+              <Divider />
+              <Typography variant="subtitle2">{t('workspaceCreate.rentaPlanningTitle')}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('workspaceCreate.rentaPlanningDisclaimer')}
+              </Typography>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={draft.rentaPlanning?.enabled ?? false}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              rentaPlanning: { ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)), enabled: e.target.checked, taxYear: s.year },
+                            }
+                          : s,
+                      )
+                    }
+                    disabled={readOnly || saving}
+                  />
+                }
+                label={t('workspaceCreate.rentaPlanningEnabled')}
+              />
+
+              {draft.rentaPlanning?.enabled ? (
+                <Stack spacing={2}>
+                  <TextField
+                    select
+                    label={t('workspaceCreate.rentaResidence')}
+                    value={draft.rentaPlanning.residence}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              rentaPlanning: { ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)), residence: e.target.value as IrpfTerritory },
+                            }
+                          : s,
+                      )
+                    }
+                    fullWidth
+                    disabled={readOnly || saving}
+                  >
+                    {[
+                      { value: 'DEFAULT', label: 'Default' },
+                      { value: 'ANDALUCIA', label: 'Andalucía' },
+                      { value: 'ARAGON', label: 'Aragón' },
+                      { value: 'ASTURIAS', label: 'Asturias' },
+                      { value: 'BALEARES', label: 'Baleares' },
+                      { value: 'CANARIAS', label: 'Canarias' },
+                      { value: 'CANTABRIA', label: 'Cantabria' },
+                      { value: 'CASTILLA_LA_MANCHA', label: 'Castilla-La Mancha' },
+                      { value: 'CASTILLA_Y_LEON', label: 'Castilla y León' },
+                      { value: 'CATALUNYA', label: 'Catalunya' },
+                      { value: 'COMUNITAT_VALENCIANA', label: 'Comunitat Valenciana' },
+                      { value: 'EXTREMADURA', label: 'Extremadura' },
+                      { value: 'GALICIA', label: 'Galicia' },
+                      { value: 'LA_RIOJA', label: 'La Rioja' },
+                      { value: 'MADRID', label: 'Madrid' },
+                      { value: 'MURCIA', label: 'Murcia' },
+                      { value: 'NAVARRA', label: 'Navarra (not supported in MVP)' },
+                      { value: 'PAIS_VASCO', label: 'País Vasco (not supported in MVP)' },
+                      { value: 'CEUTA_MELILLA', label: 'Ceuta/Melilla' },
+                    ].map((o) => (
+                      <MenuItem key={o.value} value={o.value}>
+                        {o.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  {rentaForalUnsupported ? <Alert severity="warning">{t('workspaceCreate.rentaForalUnsupported')}</Alert> : null}
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={draft.rentaPlanning.minimumPersonalFamiliar == null}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  rentaPlanning: {
+                                    ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                    minimumPersonalFamiliar: e.target.checked ? null : 5550,
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        disabled={readOnly || saving}
+                      />
+                    }
+                    label={t('workspaceCreate.rentaMinimumDefault')}
+                  />
+
+                  {draft.rentaPlanning.minimumPersonalFamiliar != null ? (
+                    <TextField
+                      label={t('workspaceCreate.rentaMinimumCustom')}
+                      type="number"
+                      inputProps={{ step: '1' }}
+                      value={draft.rentaPlanning.minimumPersonalFamiliar}
+                      onChange={(e) =>
+                        setDraft((s) =>
+                          s
+                            ? {
+                                ...s,
+                                rentaPlanning: {
+                                  ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                  minimumPersonalFamiliar: e.target.value === '' ? null : Number(e.target.value),
+                                },
+                              }
+                            : s,
+                        )
+                      }
+                      fullWidth
+                      disabled={readOnly || saving}
+                    />
+                  ) : null}
+
+                  <TextField
+                    label={t('workspaceCreate.rentaOtherIncome')}
+                    type="number"
+                    inputProps={{ step: '0.01' }}
+                    value={draft.rentaPlanning.otherGeneralIncome ?? ''}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              rentaPlanning: {
+                                ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                otherGeneralIncome: e.target.value === '' ? null : Number(e.target.value),
+                              },
+                            }
+                          : s,
+                      )
+                    }
+                    fullWidth
+                    disabled={readOnly || saving}
+                  />
+
+                  <TextField
+                    label={t('workspaceCreate.rentaOtherReductions')}
+                    type="number"
+                    inputProps={{ step: '0.01' }}
+                    value={draft.rentaPlanning.otherReductions ?? ''}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              rentaPlanning: {
+                                ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                otherReductions: e.target.value === '' ? null : Number(e.target.value),
+                              },
+                            }
+                          : s,
+                      )
+                    }
+                    fullWidth
+                    disabled={readOnly || saving}
+                  />
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={draft.rentaPlanning.inicioActividadReduction?.enabled ?? false}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  rentaPlanning: {
+                                    ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                    inicioActividadReduction: e.target.checked
+                                      ? {
+                                          enabled: true,
+                                          firstPositiveNetIncomeYear: s.year,
+                                          incomeFromPriorEmployerShareOver50: false,
+                                          capEur: null,
+                                        }
+                                      : null,
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        disabled={readOnly || saving}
+                      />
+                    }
+                    label={t('workspaceCreate.rentaInicioEnabled')}
+                  />
+
+                  {draft.rentaPlanning.inicioActividadReduction?.enabled ? (
+                    <>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        <TextField
+                          label={t('workspaceCreate.rentaInicioFirstPositiveYear')}
+                          type="number"
+                          value={draft.rentaPlanning.inicioActividadReduction.firstPositiveNetIncomeYear ?? ''}
+                          onChange={(e) =>
+                            setDraft((s) =>
+                              s
+                                ? {
+                                    ...s,
+                                    rentaPlanning: {
+                                      ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                      inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                                        ? {
+                                            ...s.rentaPlanning.inicioActividadReduction,
+                                            firstPositiveNetIncomeYear: e.target.value === '' ? null : Number(e.target.value),
+                                          }
+                                        : null,
+                                    },
+                                  }
+                                : s,
+                            )
+                          }
+                          fullWidth
+                          disabled={readOnly || saving}
+                          error={rentaInicioMissingYear}
+                        />
+                        <TextField
+                          label={t('workspaceCreate.rentaInicioCap')}
+                          type="number"
+                          value={draft.rentaPlanning.inicioActividadReduction.capEur ?? ''}
+                          onChange={(e) =>
+                            setDraft((s) =>
+                              s
+                                ? {
+                                    ...s,
+                                    rentaPlanning: {
+                                      ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                      inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                                        ? {
+                                            ...s.rentaPlanning.inicioActividadReduction,
+                                            capEur: e.target.value === '' ? null : Number(e.target.value),
+                                          }
+                                        : null,
+                                    },
+                                  }
+                                : s,
+                            )
+                          }
+                          fullWidth
+                          disabled={readOnly || saving}
+                        />
+                      </Stack>
+
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={draft.rentaPlanning.inicioActividadReduction.incomeFromPriorEmployerShareOver50 ?? false}
+                            onChange={(e) =>
+                              setDraft((s) =>
+                                s
+                                  ? {
+                                      ...s,
+                                      rentaPlanning: {
+                                        ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                                        inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                                          ? {
+                                              ...s.rentaPlanning.inicioActividadReduction,
+                                              incomeFromPriorEmployerShareOver50: e.target.checked,
+                                            }
+                                          : null,
+                                      },
+                                    }
+                                  : s,
+                              )
+                            }
+                            disabled={readOnly || saving}
+                          />
+                        }
+                        label={t('workspaceCreate.rentaInicioPriorEmployerOver50')}
+                      />
+                    </>
+                  ) : null}
+                </Stack>
+              ) : null}
             </>
           ) : null}
 
@@ -254,7 +549,7 @@ export function WorkspaceSettingsDialog(props: {
       <DialogActions>
         <Button
           onClick={onSave}
-          disabled={readOnly || loading || saving || !dirty || ivaInvalid || irpfInvalid || !draft}
+          disabled={readOnly || loading || saving || !dirty || ivaInvalid || irpfInvalid || rentaForalUnsupported || rentaInicioMissingYear || !draft}
           variant="contained"
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
         >

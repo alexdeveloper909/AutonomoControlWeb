@@ -68,6 +68,33 @@ type QuarterSummary = {
   recommendedTaxReserve: number
 }
 
+type RentaBreakdownItem = {
+  from: number
+  to: number | null
+  rate: number
+  tax: number
+  scope: 'STATE' | 'AUTONOMIC'
+}
+
+type RentaEstimate = {
+  taxYear: number
+  residence: string
+  scalesTaxYearUsed: number
+  scalesWarning: string | null
+  generalBase: number
+  taxableBaseForScale: number
+  stateQuota: number
+  autonomicQuota: number
+  estimatedAnnualIrpf: number
+  irpfWithheld: number
+  modelo130Paid: number
+  estimatedSettlement: number
+  monthsLeft: number
+  suggestedMonthlyReserve: number
+  effectiveRate: number
+  breakdown: RentaBreakdownItem[]
+}
+
 const asRecord = (v: unknown): Record<string, unknown> | null => {
   if (!v || typeof v !== 'object') return null
   return v as Record<string, unknown>
@@ -76,6 +103,81 @@ const asRecord = (v: unknown): Record<string, unknown> | null => {
 const asNumber = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const asString = (v: unknown): string | null => (typeof v === 'string' ? v : null)
 const asBoolean = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null)
+
+const asRentaBreakdownItem = (v: unknown): RentaBreakdownItem | null => {
+  const o = asRecord(v)
+  if (!o) return null
+  const from = asNumber(o.from)
+  const to = o.to == null ? null : asNumber(o.to)
+  const rate = asNumber(o.rate)
+  const tax = asNumber(o.tax)
+  const scope = o.scope === 'STATE' || o.scope === 'AUTONOMIC' ? (o.scope as 'STATE' | 'AUTONOMIC') : null
+  if (from == null || rate == null || tax == null || scope == null) return null
+  return { from, to, rate, tax, scope }
+}
+
+const asRentaEstimate = (v: unknown): RentaEstimate | null => {
+  const o = asRecord(v)
+  if (!o) return null
+
+  const taxYear = asNumber(o.taxYear)
+  const residence = asString(o.residence)
+  const scalesTaxYearUsed = asNumber(o.scalesTaxYearUsed)
+  const scalesWarning = o.scalesWarning == null ? null : asString(o.scalesWarning)
+
+  const generalBase = asNumber(o.generalBase)
+  const taxableBaseForScale = asNumber(o.taxableBaseForScale)
+  const stateQuota = asNumber(o.stateQuota)
+  const autonomicQuota = asNumber(o.autonomicQuota)
+  const estimatedAnnualIrpf = asNumber(o.estimatedAnnualIrpf)
+  const irpfWithheld = asNumber(o.irpfWithheld)
+  const modelo130Paid = asNumber(o.modelo130Paid)
+  const estimatedSettlement = asNumber(o.estimatedSettlement)
+  const monthsLeft = asNumber(o.monthsLeft)
+  const suggestedMonthlyReserve = asNumber(o.suggestedMonthlyReserve)
+  const effectiveRate = asNumber(o.effectiveRate)
+
+  const breakdownRaw = Array.isArray(o.breakdown) ? o.breakdown : null
+  const breakdown = breakdownRaw ? breakdownRaw.map(asRentaBreakdownItem).filter(Boolean) : []
+
+  if (
+    taxYear == null ||
+    !residence ||
+    scalesTaxYearUsed == null ||
+    generalBase == null ||
+    taxableBaseForScale == null ||
+    stateQuota == null ||
+    autonomicQuota == null ||
+    estimatedAnnualIrpf == null ||
+    irpfWithheld == null ||
+    modelo130Paid == null ||
+    estimatedSettlement == null ||
+    monthsLeft == null ||
+    suggestedMonthlyReserve == null ||
+    effectiveRate == null
+  ) {
+    return null
+  }
+
+  return {
+    taxYear,
+    residence,
+    scalesTaxYearUsed,
+    scalesWarning,
+    generalBase,
+    taxableBaseForScale,
+    stateQuota,
+    autonomicQuota,
+    estimatedAnnualIrpf,
+    irpfWithheld,
+    modelo130Paid,
+    estimatedSettlement,
+    monthsLeft,
+    suggestedMonthlyReserve,
+    effectiveRate,
+    breakdown: breakdown as RentaBreakdownItem[],
+  }
+}
 
 const asMonthSummary = (v: unknown): MonthSummary | null => {
   const o = asRecord(v)
@@ -250,28 +352,35 @@ function SummaryDetailsDialog(props: {
 export function WorkspaceSummariesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
+  const pct = useMemo(() => new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 2 }), [i18n.language])
   const [tab, setTab] = useState<'month' | 'quarter'>('month')
 
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
+  const [rentaDetailsOpen, setRentaDetailsOpen] = useState(false)
 
   const { data, error, isFetching, refetch } = useQuery({
     queryKey: queryKeys.summaries(props.workspaceId),
     queryFn: async () => {
       const settings = await props.api.getWorkspaceSettings(props.workspaceId)
-      const [m, q] = await Promise.all([
+      const [m, q, r] = await Promise.all([
         props.api.monthSummaries(props.workspaceId, settings),
         props.api.quarterSummaries(props.workspaceId, settings),
+        props.api.rentaSummary(props.workspaceId, settings),
       ])
-      return { month: m.items, quarter: q.items }
+      return { settings, month: m.items, quarter: q.items, renta: r.renta }
     },
   })
 
+  const settings = data?.settings ?? null
   const monthSummaries = data?.month ?? null
   const quarterSummaries = data?.quarter ?? null
+  const rentaRaw = data?.renta ?? null
 
   const monthParsed = useMemo(() => parseList(monthSummaries, asMonthSummary), [monthSummaries])
   const quarterParsed = useMemo(() => parseList(quarterSummaries, asQuarterSummary), [quarterSummaries])
+  const rentaParsed = useMemo(() => (rentaRaw ? asRentaEstimate(rentaRaw) : null), [rentaRaw])
+  const showRentaSaveColumn = settings?.rentaPlanning?.enabled === true
 
   const refresh = async () => {
     setSelectedMonth(null)
@@ -297,6 +406,87 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
 
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Stack spacing={1}>
+          <Typography variant="subtitle2">{t('summaries.renta.title')}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('summaries.renta.disclaimer')}
+          </Typography>
+
+          {settings?.rentaPlanning?.enabled !== true ? (
+            <Alert severity="info">{t('summaries.renta.disabledHint')}</Alert>
+          ) : rentaRaw && !rentaParsed ? (
+            <Alert severity="warning">{t('summaries.renta.invalidEstimate')}</Alert>
+          ) : settings?.rentaPlanning?.enabled === true && !rentaParsed ? (
+            <Alert severity="warning">{t('summaries.renta.unavailable')}</Alert>
+          ) : rentaParsed ? (
+            <>
+              {rentaParsed.scalesWarning ? <Alert severity="warning">{rentaParsed.scalesWarning}</Alert> : null}
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label={t('summaries.renta.estimatedAnnualIrpf')}
+                  value={money.format(rentaParsed.estimatedAnnualIrpf)}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+                <TextField
+                  label={t('summaries.renta.alreadyCovered')}
+                  value={money.format(rentaParsed.irpfWithheld + rentaParsed.modelo130Paid)}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label={t('summaries.renta.settlement')}
+                  value={money.format(rentaParsed.estimatedSettlement)}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+                <TextField
+                  label={t('summaries.renta.monthly')}
+                  value={`${money.format(rentaParsed.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', { count: rentaParsed.monthsLeft })})`}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label={t('summaries.renta.stateQuota')}
+                  value={money.format(rentaParsed.stateQuota)}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+                <TextField
+                  label={t('summaries.renta.autonomicQuota')}
+                  value={money.format(rentaParsed.autonomicQuota)}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  {t('summaries.renta.effectiveRate')}: {pct.format(rentaParsed.effectiveRate)}
+                </Typography>
+                <Button size="small" onClick={() => setRentaDetailsOpen(true)}>
+                  {t('summaries.renta.breakdown')}
+                </Button>
+              </Stack>
+            </>
+          ) : null}
+        </Stack>
+      </Paper>
+
       <Paper variant="outlined" sx={{ px: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter')} sx={{ flex: 1 }}>
@@ -316,7 +506,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
           <Paper variant="outlined">
             <TableContainer sx={{ overflowX: 'auto' }}>
-              <Table size="small" sx={{ minWidth: 950 }}>
+              <Table size="small" sx={{ minWidth: showRentaSaveColumn ? 1100 : 950 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>{t('summaries.table.month')}</TableCell>
@@ -326,14 +516,22 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                     <TableCell align="right">{t('summaries.fields.seguridadSocialPaid')}</TableCell>
                     <TableCell align="right">{t('summaries.fields.profitForIrpf')}</TableCell>
                     <TableCell align="right">{t('summaries.fields.recommendedTaxReserve')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.canSpendThisMonth')}</TableCell>
                     <TableCell align="right">{t('summaries.fields.canSpendIgnoringExpenses')}</TableCell>
+                    <TableCell align="right">{t('summaries.fields.canSpendThisMonth')}</TableCell>
+                    {showRentaSaveColumn ? (
+                      <TableCell align="right">
+                        <FieldLabel
+                          label={t('summaries.fields.canSpendWithRentaSave')}
+                          tooltip={t('summaries.tooltips.canSpendWithRentaSave', { defaultValue: '' })}
+                        />
+                      </TableCell>
+                    ) : null}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {monthParsed.items.length === 0 && monthSummaries ? (
                     <TableRow>
-                      <TableCell colSpan={9}>
+                      <TableCell colSpan={showRentaSaveColumn ? 10 : 9}>
                         <Typography variant="body2" color="text.secondary">
                           {t('summaries.emptyMonth')}
                         </Typography>
@@ -362,8 +560,20 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                       <TableCell align="right">{money.format(m.seguridadSocialPaid)}</TableCell>
                       <TableCell align="right">{money.format(m.profitForIrpf)}</TableCell>
                       <TableCell align="right">{money.format(m.recommendedTaxReserve)}</TableCell>
-                      <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
                       <TableCell align="right">{money.format(m.canSpendIgnoringExpenses)}</TableCell>
+                      <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
+                      {showRentaSaveColumn ? (
+                        <TableCell align="right">
+                          {(() => {
+                            if (!rentaParsed) return '-'
+                            const monthYear = Number(m.monthKey.slice(0, 4))
+                            if (!Number.isFinite(monthYear) || monthYear !== rentaParsed.taxYear) return '-'
+                            if (rentaParsed.monthsLeft <= 0) return '-'
+                            if (rentaParsed.estimatedSettlement <= 0) return '-'
+                            return money.format(m.canSpendIgnoringExpenses - rentaParsed.suggestedMonthlyReserve)
+                          })()}
+                        </TableCell>
+                      ) : null}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -502,6 +712,43 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
             : []
         }
       />
+
+      <Dialog open={rentaDetailsOpen} onClose={() => setRentaDetailsOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>{t('summaries.renta.breakdownTitle')}</DialogTitle>
+        <DialogContent dividers>
+          {rentaParsed ? (
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t('summaries.renta.scope')}</TableCell>
+                  <TableCell align="right">{t('summaries.renta.from')}</TableCell>
+                  <TableCell align="right">{t('summaries.renta.to')}</TableCell>
+                  <TableCell align="right">{t('summaries.renta.rate')}</TableCell>
+                  <TableCell align="right">{t('summaries.renta.tax')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rentaParsed.breakdown.map((b, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{b.scope === 'STATE' ? t('summaries.renta.scopeState') : t('summaries.renta.scopeAutonomic')}</TableCell>
+                    <TableCell align="right">{money.format(b.from)}</TableCell>
+                    <TableCell align="right">{b.to == null ? '∞' : money.format(b.to)}</TableCell>
+                    <TableCell align="right">{pct.format(b.rate)}</TableCell>
+                    <TableCell align="right">{money.format(b.tax)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              {t('summaries.renta.unavailable')}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRentaDetailsOpen(false)}>{t('common.close')}</Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

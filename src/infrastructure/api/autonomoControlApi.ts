@@ -251,4 +251,15 @@ export class AutonomoControlApi {
       body: settings,
     })
   }
+
+  async rentaSummary(
+    workspaceId: string,
+    settings: WorkspaceSettings,
+  ): Promise<{ settings: WorkspaceSettings; renta: unknown | null }> {
+    return jsonFetch(new URL(`/workspaces/${workspaceId}/summaries/renta`, this.baseUrl).toString(), {
+      method: 'POST',
+      headers: this.authHeaders(),
+      body: settings,
+    })
+  }
 }

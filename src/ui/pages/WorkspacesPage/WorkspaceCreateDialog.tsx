@@ -2,19 +2,21 @@ import { useState } from 'react'
 import {
   CircularProgress,
   Button,
+  Divider,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControlLabel,
   LinearProgress,
+  MenuItem,
   Stack,
   Switch,
   TextField,
   Typography,
 } from '@mui/material'
 import type { Workspace } from '../../../domain/workspace'
-import type { WorkspaceSettings } from '../../../domain/settings'
+import { defaultRentaPlanningSettings, type IrpfTerritory, type WorkspaceSettings } from '../../../domain/settings'
 import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../../components/ErrorAlert'
 import { ExpenseCategoriesEditor } from '../../components/ExpenseCategoriesEditor'
@@ -31,6 +33,7 @@ const defaultSettings = (): WorkspaceSettings => {
     obligacion130: true,
     openingBalance: 0,
     expenseCategories: ['Software/SaaS', 'Equipment', 'Other'],
+    rentaPlanning: defaultRentaPlanningSettings(year),
   }
 }
 
@@ -55,6 +58,28 @@ export function WorkspaceCreateDialog(props: {
     return Number.isFinite(n) ? n : null
   }
 
+  const territoryOptions: { value: IrpfTerritory; label: string }[] = [
+    { value: 'DEFAULT', label: 'Default' },
+    { value: 'ANDALUCIA', label: 'Andalucía' },
+    { value: 'ARAGON', label: 'Aragón' },
+    { value: 'ASTURIAS', label: 'Asturias' },
+    { value: 'BALEARES', label: 'Baleares' },
+    { value: 'CANARIAS', label: 'Canarias' },
+    { value: 'CANTABRIA', label: 'Cantabria' },
+    { value: 'CASTILLA_LA_MANCHA', label: 'Castilla-La Mancha' },
+    { value: 'CASTILLA_Y_LEON', label: 'Castilla y León' },
+    { value: 'CATALUNYA', label: 'Catalunya' },
+    { value: 'COMUNITAT_VALENCIANA', label: 'Comunitat Valenciana' },
+    { value: 'EXTREMADURA', label: 'Extremadura' },
+    { value: 'GALICIA', label: 'Galicia' },
+    { value: 'LA_RIOJA', label: 'La Rioja' },
+    { value: 'MADRID', label: 'Madrid' },
+    { value: 'MURCIA', label: 'Murcia' },
+    { value: 'NAVARRA', label: 'Navarra (not supported in MVP)' },
+    { value: 'PAIS_VASCO', label: 'País Vasco (not supported in MVP)' },
+    { value: 'CEUTA_MELILLA', label: 'Ceuta/Melilla' },
+  ]
+
   const onCreate = async () => {
     setError(null)
     setSaving(true)
@@ -66,6 +91,9 @@ export function WorkspaceCreateDialog(props: {
           ...settings,
           openingBalance,
           expenseCategories: settings.expenseCategories.map((c) => c.trim()).filter(Boolean),
+          rentaPlanning: settings.rentaPlanning
+            ? { ...settings.rentaPlanning, taxYear: settings.year }
+            : defaultRentaPlanningSettings(settings.year),
         },
       })
       props.onCreated(res.workspace)
@@ -176,6 +204,221 @@ export function WorkspaceCreateDialog(props: {
             addLabel={t('workspaceCreate.addCategory')}
             disabled={saving}
           />
+
+          <Divider />
+
+          <Typography variant="subtitle2">{t('workspaceCreate.rentaPlanningTitle')}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('workspaceCreate.rentaPlanningDisclaimer')}
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.rentaPlanning?.enabled ?? false}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    rentaPlanning: { ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)), enabled: e.target.checked, taxYear: s.year },
+                  }))
+                }
+                disabled={saving}
+              />
+            }
+            label={t('workspaceCreate.rentaPlanningEnabled')}
+          />
+
+          {settings.rentaPlanning?.enabled ? (
+            <Stack spacing={2}>
+              <TextField
+                select
+                label={t('workspaceCreate.rentaResidence')}
+                value={settings.rentaPlanning.residence}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    rentaPlanning: { ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)), residence: e.target.value as IrpfTerritory },
+                  }))
+                }
+                fullWidth
+              >
+                {territoryOptions.map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={settings.rentaPlanning.minimumPersonalFamiliar == null}
+                    onChange={(e) =>
+                      setSettings((s) => ({
+                        ...s,
+                        rentaPlanning: {
+                          ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                          minimumPersonalFamiliar: e.target.checked ? null : 5550,
+                        },
+                      }))
+                    }
+                    disabled={saving}
+                  />
+                }
+                label={t('workspaceCreate.rentaMinimumDefault')}
+              />
+
+              {settings.rentaPlanning.minimumPersonalFamiliar != null ? (
+                <TextField
+                  label={t('workspaceCreate.rentaMinimumCustom')}
+                  type="number"
+                  inputProps={{ step: '1' }}
+                  value={settings.rentaPlanning.minimumPersonalFamiliar}
+                  onChange={(e) =>
+                    setSettings((s) => ({
+                      ...s,
+                      rentaPlanning: {
+                        ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                        minimumPersonalFamiliar: e.target.value === '' ? null : Number(e.target.value),
+                      },
+                    }))
+                  }
+                  fullWidth
+                />
+              ) : null}
+
+              <TextField
+                label={t('workspaceCreate.rentaOtherIncome')}
+                type="number"
+                inputProps={{ step: '0.01' }}
+                value={settings.rentaPlanning.otherGeneralIncome ?? ''}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    rentaPlanning: {
+                      ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                      otherGeneralIncome: e.target.value === '' ? null : Number(e.target.value),
+                    },
+                  }))
+                }
+                fullWidth
+              />
+
+              <TextField
+                label={t('workspaceCreate.rentaOtherReductions')}
+                type="number"
+                inputProps={{ step: '0.01' }}
+                value={settings.rentaPlanning.otherReductions ?? ''}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    rentaPlanning: {
+                      ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                      otherReductions: e.target.value === '' ? null : Number(e.target.value),
+                    },
+                  }))
+                }
+                fullWidth
+              />
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={settings.rentaPlanning.inicioActividadReduction?.enabled ?? false}
+                    onChange={(e) =>
+                      setSettings((s) => ({
+                        ...s,
+                        rentaPlanning: {
+                          ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                          inicioActividadReduction: e.target.checked
+                            ? {
+                                enabled: true,
+                                firstPositiveNetIncomeYear: s.year,
+                                incomeFromPriorEmployerShareOver50: false,
+                                capEur: null,
+                              }
+                            : null,
+                        },
+                      }))
+                    }
+                    disabled={saving}
+                  />
+                }
+                label={t('workspaceCreate.rentaInicioEnabled')}
+              />
+
+              {settings.rentaPlanning.inicioActividadReduction?.enabled ? (
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label={t('workspaceCreate.rentaInicioFirstPositiveYear')}
+                    type="number"
+                    value={settings.rentaPlanning.inicioActividadReduction.firstPositiveNetIncomeYear ?? ''}
+                    onChange={(e) =>
+                      setSettings((s) => ({
+                        ...s,
+                        rentaPlanning: {
+                          ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                          inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                            ? {
+                                ...s.rentaPlanning.inicioActividadReduction,
+                                firstPositiveNetIncomeYear: e.target.value === '' ? null : Number(e.target.value),
+                              }
+                            : null,
+                        },
+                      }))
+                    }
+                    fullWidth
+                  />
+                  <TextField
+                    label={t('workspaceCreate.rentaInicioCap')}
+                    type="number"
+                    value={settings.rentaPlanning.inicioActividadReduction.capEur ?? ''}
+                    onChange={(e) =>
+                      setSettings((s) => ({
+                        ...s,
+                        rentaPlanning: {
+                          ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                          inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                            ? {
+                                ...s.rentaPlanning.inicioActividadReduction,
+                                capEur: e.target.value === '' ? null : Number(e.target.value),
+                              }
+                            : null,
+                        },
+                      }))
+                    }
+                    fullWidth
+                  />
+                </Stack>
+              ) : null}
+
+              {settings.rentaPlanning.inicioActividadReduction?.enabled ? (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={settings.rentaPlanning.inicioActividadReduction.incomeFromPriorEmployerShareOver50 ?? false}
+                      onChange={(e) =>
+                        setSettings((s) => ({
+                          ...s,
+                          rentaPlanning: {
+                            ...(s.rentaPlanning ?? defaultRentaPlanningSettings(s.year)),
+                            inicioActividadReduction: s.rentaPlanning?.inicioActividadReduction
+                              ? {
+                                  ...s.rentaPlanning.inicioActividadReduction,
+                                  incomeFromPriorEmployerShareOver50: e.target.checked,
+                                }
+                              : null,
+                          },
+                        }))
+                      }
+                      disabled={saving}
+                    />
+                  }
+                  label={t('workspaceCreate.rentaInicioPriorEmployerOver50')}
+                />
+              ) : null}
+            </Stack>
+          ) : null}
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -185,7 +428,13 @@ export function WorkspaceCreateDialog(props: {
         <Button
           variant="contained"
           onClick={onCreate}
-          disabled={saving || name.trim().length === 0}
+          disabled={
+            saving ||
+            name.trim().length === 0 ||
+            (settings.rentaPlanning?.enabled === true &&
+              settings.rentaPlanning.inicioActividadReduction?.enabled === true &&
+              !Number.isFinite(settings.rentaPlanning.inicioActividadReduction.firstPositiveNetIncomeYear ?? NaN))
+          }
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
         >
           {t('common.create')}
