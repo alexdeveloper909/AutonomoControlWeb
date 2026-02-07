@@ -166,7 +166,7 @@ Screens (Finance):
   - Add transfer (`/workspaces/:workspaceId/transfers/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add budget entry (`/workspaces/:workspaceId/budget/new`) → `src/ui/pages/WorkspaceBudgetCreatePage.tsx` (creates a `BUDGET` record)
-- Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; table view + details dialog; optional raw JSON; month table includes “Can spend (no expenses)” column)
+- Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; table view + details dialog; optional raw JSON; month table includes “Can spend” and “Can spend (with expenses)” columns)
 
 For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
 

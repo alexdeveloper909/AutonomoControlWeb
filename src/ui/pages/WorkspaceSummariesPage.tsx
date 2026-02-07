@@ -400,6 +400,28 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
     return rentaProjectedParsed ?? rentaParsed
   }, [rentaParsed, rentaProjectedParsed, useRentaProjection])
 
+  const rentaPlanSpan = useMemo(() => {
+    if (!rentaSelected) return null
+    const monthFmt = new Intl.DateTimeFormat(i18n.language, { month: 'short' })
+    const endLabel = monthFmt.format(new Date(2000, 11, 1))
+
+    const raw = settings?.startDate ?? ''
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw)
+    if (!m) {
+      return { monthsPlanned: 12, startLabel: monthFmt.format(new Date(2000, 0, 1)), endLabel }
+    }
+
+    const startYear = Number(m[1])
+    const startMonthRaw = Number(m[2])
+    const startMonth =
+      Number.isFinite(startYear) && Number.isFinite(startMonthRaw) && startMonthRaw >= 1 && startMonthRaw <= 12 ? startMonthRaw : 1
+
+    const plannedStartMonth = rentaSelected.taxYear === startYear ? startMonth : 1
+    const monthsPlanned = Math.max(0, 12 - plannedStartMonth + 1)
+    const startLabel = monthFmt.format(new Date(2000, plannedStartMonth - 1, 1))
+    return { monthsPlanned, startLabel, endLabel }
+  }, [i18n.language, rentaSelected, settings?.startDate])
+
   const helper = (key: string): string | undefined => {
     const v = t(key, { defaultValue: '' }).trim()
     return v ? v : undefined
@@ -519,7 +541,11 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                   }
                   value={
                     rentaSelected
-                      ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', { count: rentaSelected.monthsLeft })})`
+                      ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', {
+                          count: rentaPlanSpan?.monthsPlanned ?? rentaSelected.monthsLeft,
+                          start: rentaPlanSpan?.startLabel ?? '',
+                          end: rentaPlanSpan?.endLabel ?? '',
+                        })})`
                       : '—'
                   }
                   helperText={helper('summaries.renta.help.monthly')}
@@ -597,20 +623,20 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
             <TableContainer sx={{ overflowX: 'auto' }}>
               <Table size="small" sx={{ minWidth: showRentaSaveColumn ? 1100 : 950 }}>
                 <TableHead>
-                  <TableRow>
-                    <TableCell>{t('summaries.table.month')}</TableCell>
-                    <TableCell>{t('summaries.status')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.incomeBase')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.expenseDeductibleBase')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.seguridadSocialPaid')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.profitForIrpf')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.recommendedTaxReserve')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.canSpendIgnoringExpenses')}</TableCell>
-                    <TableCell align="right">{t('summaries.fields.canSpendThisMonth')}</TableCell>
-                    {showRentaSaveColumn ? (
-                      <TableCell align="right">
-                        <FieldLabel
-                          label={t('summaries.fields.canSpendWithRentaSave')}
+	                  <TableRow>
+	                    <TableCell>{t('summaries.table.month')}</TableCell>
+	                    <TableCell>{t('summaries.status')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.incomeBase')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.expenseDeductibleBase')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.seguridadSocialPaid')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.profitForIrpf')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.recommendedTaxReserve')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.canSpendThisMonth')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.canSpendIgnoringExpenses')}</TableCell>
+	                    {showRentaSaveColumn ? (
+	                      <TableCell align="right">
+	                        <FieldLabel
+	                          label={t('summaries.fields.canSpendWithRentaSave')}
                           tooltip={t('summaries.tooltips.canSpendWithRentaSave', { defaultValue: '' })}
                         />
                       </TableCell>
@@ -644,22 +670,25 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                           variant={m.isActiveFromStart ? 'filled' : 'outlined'}
                         />
                       </TableCell>
-                      <TableCell align="right">{money.format(m.incomeBase)}</TableCell>
-                      <TableCell align="right">{money.format(m.expenseDeductibleBase)}</TableCell>
-                      <TableCell align="right">{money.format(m.seguridadSocialPaid)}</TableCell>
-                      <TableCell align="right">{money.format(m.profitForIrpf)}</TableCell>
-                      <TableCell align="right">{money.format(m.recommendedTaxReserve)}</TableCell>
-                      <TableCell align="right">{money.format(m.canSpendIgnoringExpenses)}</TableCell>
-                      <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
-                      {showRentaSaveColumn ? (
-                        <TableCell align="right">
-                          {(() => {
-                            if (!rentaSelected) return '-'
+	                      <TableCell align="right">{money.format(m.incomeBase)}</TableCell>
+	                      <TableCell align="right">{money.format(m.expenseDeductibleBase)}</TableCell>
+	                      <TableCell align="right">{money.format(m.seguridadSocialPaid)}</TableCell>
+	                      <TableCell align="right">{money.format(m.profitForIrpf)}</TableCell>
+	                      <TableCell align="right">{money.format(m.recommendedTaxReserve)}</TableCell>
+	                      <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
+	                      <TableCell align="right">{money.format(m.canSpendIgnoringExpenses)}</TableCell>
+	                      {showRentaSaveColumn ? (
+	                        <TableCell align="right">
+	                          {(() => {
+	                            if (!rentaSelected) return '-'
+                            if (!m.isActiveFromStart) return '-'
                             const monthYear = Number(m.monthKey.slice(0, 4))
                             if (!Number.isFinite(monthYear) || monthYear !== rentaSelected.taxYear) return '-'
-                            if (rentaSelected.monthsLeft <= 0) return '-'
                             if (rentaSelected.estimatedSettlement <= 0) return '-'
-                            return money.format(m.canSpendIgnoringExpenses - rentaSelected.suggestedMonthlyReserve)
+                            if (rentaSelected.suggestedMonthlyReserve <= 0) return '-'
+
+                            const v = m.canSpendIgnoringExpenses - rentaSelected.suggestedMonthlyReserve
+                            return money.format(Math.max(0, v))
                           })()}
                         </TableCell>
                       ) : null}

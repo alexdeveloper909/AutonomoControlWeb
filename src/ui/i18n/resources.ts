@@ -552,7 +552,7 @@ export const resources = {
           canSpendThisMonth: 'max(0, cash in − cash out (expenses) − cash out (state) − IRPF reserve − IVA settlement).',
           canSpendIgnoringExpenses: 'Can spend + cash out (expenses). Useful if expenses are paid from another account.',
           canSpendWithRentaSave:
-            'If Renta planning expects an additional settlement payment: Can spend − suggested monthly Renta reserve. Otherwise “-”.',
+            'If Renta planning expects an additional settlement payment: max(0, Can spend − suggested monthly Renta reserve). Shown as “-” for inactive months. Otherwise “-”.',
         },
         table: {
           month: 'Month',
@@ -570,7 +570,7 @@ export const resources = {
           help: {
             alreadyCovered: 'Includes IRPF withheld on invoices + Modelo 130 payments recorded as state payments.',
             settlement: 'Estimated annual IRPF − already covered.',
-            monthly: 'If settlement > 0: spread across remaining months of the tax year (save by year-end).',
+            monthly: 'If settlement > 0: spread across the planned months of the tax year (from Jan or your start month through Dec).',
           },
           tooltips: {
             useProjection: 'Projects a full-year outcome from the observed months to provide earlier guidance.',
@@ -587,7 +587,7 @@ export const resources = {
           alreadyCovered: 'Already covered (withheld + Modelo 130)',
           settlement: 'Estimated settlement (owe/refund)',
           monthly: 'Suggested monthly reserve',
-          monthsLeft: '{{count}} months left',
+          monthsLeft: '{{count}} months ({{start}}–{{end}})',
           stateQuota: 'State quota',
           autonomicQuota: 'Autonomic quota',
           effectiveRate: 'Effective rate',
@@ -1169,7 +1169,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Puede gastar + salidas (gastos). Útil si los gastos se pagan desde otra cuenta.',
           canSpendWithRentaSave:
-            'Si la planificación de Renta espera un pago adicional: Puede gastar − ahorro mensual sugerido. Si no, “-”.',
+            'Si la planificación de Renta espera un pago adicional: max(0, Puede gastar − ahorro mensual sugerido). Se muestra como “-” en meses inactivos. Si no, “-”.',
         },
         table: {
           month: 'Mes',
@@ -1187,7 +1187,7 @@ export const resources = {
           help: {
             alreadyCovered: 'Incluye IRPF retenido en facturas + pagos de Modelo 130 (como pagos al Estado).',
             settlement: 'IRPF anual estimado − cubierto.',
-            monthly: 'Si el resultado > 0: se reparte entre los meses restantes del ejercicio (ahorrar hasta fin de año).',
+            monthly: 'Si el resultado > 0: se reparte entre los meses planificados del ejercicio (desde enero o tu mes de inicio hasta diciembre).',
           },
           tooltips: {
             useProjection: 'Proyecta el año completo a partir de los meses observados para dar guía antes.',
@@ -1204,7 +1204,7 @@ export const resources = {
           alreadyCovered: 'Cubierto (retenciones + Modelo 130)',
           settlement: 'Resultado estimado (a pagar/devolver)',
           monthly: 'Ahorro mensual sugerido',
-          monthsLeft: '{{count}} meses restantes',
+          monthsLeft: '{{count}} meses ({{start}}–{{end}})',
           stateQuota: 'Cuota estatal',
           autonomicQuota: 'Cuota autonómica',
           effectiveRate: 'Tipo efectivo',
@@ -1783,7 +1783,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Можна витратити + витрати (гроші). Корисно, якщо витрати оплачуються з іншого рахунку.',
           canSpendWithRentaSave:
-            'Якщо планування Renta очікує додаткову сплату: Можна витратити − рекомендований місячний резерв. Інакше “-”.',
+            'Якщо планування Renta очікує додаткову сплату: max(0, Можна витратити − рекомендований місячний резерв). Для неактивних місяців показує “-”. Інакше “-”.',
         },
         table: {
           month: 'Місяць',
@@ -1801,7 +1801,7 @@ export const resources = {
           help: {
             alreadyCovered: 'Включає утриманий IRPF з рахунків + платежі Modelo 130 (як платежі державі).',
             settlement: 'Оцінка річного IRPF − вже покрито.',
-            monthly: 'Якщо результат > 0: розподіл на решту місяців року (резерв до кінця року).',
+            monthly: 'Якщо результат > 0: розподіл на заплановані місяці податкового року (від січня або місяця старту до грудня).',
           },
           tooltips: {
             useProjection: 'Проєктує результат за весь рік з уже введених місяців для ранньої підказки.',
@@ -1818,7 +1818,7 @@ export const resources = {
           alreadyCovered: 'Вже покрито (утримання + Modelo 130)',
           settlement: 'Оцінка результату (сплата/повернення)',
           monthly: 'Рекомендований місячний резерв',
-          monthsLeft: 'Залишилось місяців: {{count}}',
+          monthsLeft: '{{count}} місяців ({{start}}–{{end}})',
           stateQuota: 'Державна частина',
           autonomicQuota: 'Регіональна частина',
           effectiveRate: 'Ефективна ставка',
@@ -2395,7 +2395,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'يمكن الإنفاق + cash out (expenses). مفيد إذا كانت المصروفات تُدفع من حساب آخر.',
           canSpendWithRentaSave:
-            'إذا كان تخطيط Renta يتوقع دفعة إضافية: يمكن الإنفاق − الاحتياطي الشهري المقترح. وإلا “-”.',
+            'إذا كان تخطيط Renta يتوقع دفعة إضافية: max(0, يمكن الإنفاق − الاحتياطي الشهري المقترح). تُعرض كـ “-” للأشهر غير النشطة. وإلا “-”.',
         },
         table: {
           month: 'الشهر',
@@ -2413,7 +2413,7 @@ export const resources = {
           help: {
             alreadyCovered: 'يشمل IRPF المحتجز على الفواتير + مدفوعات Modelo 130 (كمدفوعات دولة).',
             settlement: 'IRPF السنوي المُقدّر − المغطّى بالفعل.',
-            monthly: 'إذا كانت النتيجة > 0: تُوزّع على الأشهر المتبقية من السنة (ادخار حتى نهاية السنة).',
+            monthly: 'إذا كانت النتيجة > 0: تُوزّع على الأشهر المخططة من السنة الضريبية (من يناير أو شهر البدء حتى ديسمبر).',
           },
           tooltips: {
             useProjection: 'يُسقط نتيجة السنة كاملة اعتمادًا على الأشهر المُلاحظة لتوفير إرشاد مبكر.',
@@ -2430,7 +2430,7 @@ export const resources = {
           alreadyCovered: 'مغطّى بالفعل (الاستقطاعات + Modelo 130)',
           settlement: 'النتيجة المُقدّرة (دفع/استرداد)',
           monthly: 'الاحتياطي الشهري المقترح',
-          monthsLeft: 'الأشهر المتبقية: {{count}}',
+          monthsLeft: '{{count}} أشهر ({{start}}–{{end}})',
           stateQuota: 'الحصة الحكومية',
           autonomicQuota: 'الحصة الإقليمية',
           effectiveRate: 'المعدل الفعّال',
@@ -3009,7 +3009,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Poți cheltui + cash out (cheltuieli). Util dacă cheltuielile sunt plătite din alt cont.',
           canSpendWithRentaSave:
-            'Dacă planificarea Renta prevede o plată suplimentară: Poți cheltui − rezerva lunară sugerată. Altfel “-”.',
+            'Dacă planificarea Renta prevede o plată suplimentară: max(0, Poți cheltui − rezerva lunară sugerată). Pentru luni inactive: “-”. Altfel “-”.',
         },
         table: {
           month: 'Lună',
@@ -3027,7 +3027,7 @@ export const resources = {
           help: {
             alreadyCovered: 'Include IRPF reținut pe facturi + plăți Modelo 130 (ca plăți către stat).',
             settlement: 'IRPF anual estimat − acoperit.',
-            monthly: 'Dacă rezultatul > 0: se împarte pe lunile rămase (economisești până la final de an).',
+            monthly: 'Dacă rezultatul > 0: se împarte pe lunile planificate ale anului fiscal (din ianuarie sau luna de start până în decembrie).',
           },
           tooltips: {
             useProjection: 'Proiectează rezultatul pe tot anul folosind lunile observate pentru ghidaj mai devreme.',
@@ -3044,7 +3044,7 @@ export const resources = {
           alreadyCovered: 'Acoperit (rețineri + Modelo 130)',
           settlement: 'Rezultat estimat (de plată/de restituit)',
           monthly: 'Rezervă lunară sugerată',
-          monthsLeft: '{{count}} luni rămase',
+          monthsLeft: '{{count}} luni ({{start}}–{{end}})',
           stateQuota: 'Cota stat',
           autonomicQuota: 'Cota regională',
           effectiveRate: 'Rată efectivă',
