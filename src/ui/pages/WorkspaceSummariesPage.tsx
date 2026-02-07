@@ -367,7 +367,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const pct = useMemo(() => new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 2 }), [i18n.language])
-  const [tab, setTab] = useState<'month' | 'quarter'>('month')
+  const [tab, setTab] = useState<'month' | 'quarter' | 'renta'>('month')
 
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
@@ -456,185 +456,190 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={1}>
-          <Typography variant="subtitle2">{t('summaries.renta.title')}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {t('summaries.renta.disclaimer')}
+            {t('summaries.description')}
           </Typography>
-
-          {settings?.rentaPlanning?.enabled !== true ? (
-            <Alert severity="info">{t('summaries.renta.disabledHint')}</Alert>
-          ) : rentaRaw && !rentaParsed ? (
-            <Alert severity="warning">{t('summaries.renta.invalidEstimate')}</Alert>
-          ) : settings?.rentaPlanning?.enabled === true && !rentaParsed ? (
-            <Alert severity="warning">{t('summaries.renta.unavailable')}</Alert>
-          ) : rentaParsed ? (
-            <>
-              {rentaProjectedParsed ? (
-                <FormControlLabel
-                  control={<Switch checked={useRentaProjection} onChange={(e) => setUseRentaProjection(e.target.checked)} />}
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.useProjection')}
-                      tooltip={t('summaries.renta.tooltips.useProjection', { defaultValue: '' })}
-                    />
-                  }
-                />
-              ) : null}
-
-              {useRentaProjection && rentaProjectedParsed?.monthsObserved != null ? (
-                <Typography variant="body2" color="text.secondary">
-                  {t('summaries.renta.projectedBasedOnMonths', { count: rentaProjectedParsed.monthsObserved })}
-                </Typography>
-              ) : null}
-
-              {useRentaProjection && rentaProjectedParsed?.monthsObserved != null && rentaProjectedParsed.monthsObserved <= 2 ? (
-                <Alert severity="warning">{t('summaries.renta.lowConfidence', { count: rentaProjectedParsed.monthsObserved })}</Alert>
-              ) : null}
-
-              {rentaSelected?.scalesWarning ? <Alert severity="warning">{rentaSelected.scalesWarning}</Alert> : null}
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.estimatedAnnualIrpf')}
-                      tooltip={t('summaries.renta.tooltips.estimatedAnnualIrpf', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.estimatedAnnualIrpf) : '—'}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.settlement')}
-                      tooltip={t('summaries.renta.tooltips.settlement', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.estimatedSettlement) : '—'}
-                  helperText={helper('summaries.renta.help.settlement')}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-              </Stack>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.alreadyCovered')}
-                      tooltip={t('summaries.renta.tooltips.alreadyCovered', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
-                  helperText={helper('summaries.renta.help.alreadyCovered')}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.plannedModelo130')}
-                      tooltip={t('summaries.renta.tooltips.plannedModelo130', { defaultValue: '' })}
-                    />
-                  }
-                  value={
-                    rentaSelected
-                      ? money.format(Math.max(0, rentaSelected.plannedModelo130Remaining ?? 0))
-                      : '—'
-                  }
-                  helperText={helper('summaries.renta.help.plannedModelo130')}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-              </Stack>
-
-              <TextField
-                label={
-                  <FieldLabel
-                    label={t('summaries.renta.monthly')}
-                    tooltip={t('summaries.renta.tooltips.monthly', { defaultValue: '' })}
-                  />
-                }
-                value={
-                  rentaSelected
-                    ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', {
-                        count: rentaPlanSpan?.monthsPlanned ?? rentaSelected.monthsLeft,
-                        start: rentaPlanSpan?.startLabel ?? '',
-                        end: rentaPlanSpan?.endLabel ?? '',
-                      })})`
-                    : '—'
-                }
-                helperText={helper('summaries.renta.help.monthly')}
-                size="small"
-                fullWidth
-                InputProps={{ readOnly: true }}
-              />
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.stateQuota')}
-                      tooltip={t('summaries.renta.tooltips.stateQuota', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.stateQuota) : '—'}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-                <TextField
-                  label={
-                    <FieldLabel
-                      label={t('summaries.renta.autonomicQuota')}
-                      tooltip={t('summaries.renta.tooltips.autonomicQuota', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.autonomicQuota) : '—'}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-              </Stack>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                  <FieldLabel
-                    label={t('summaries.renta.effectiveRate')}
-                    tooltip={t('summaries.renta.tooltips.effectiveRate', { defaultValue: '' })}
-                  />
-                  : {rentaSelected ? pct.format(rentaSelected.effectiveRate) : '—'}
-                </Typography>
-                <Button size="small" onClick={() => setRentaDetailsOpen(true)}>
-                  <FieldLabel
-                    label={t('summaries.renta.breakdown')}
-                    tooltip={t('summaries.renta.tooltips.breakdown', { defaultValue: '' })}
-                  />
-                </Button>
-              </Stack>
-            </>
-          ) : null}
         </Stack>
       </Paper>
 
       <Paper variant="outlined" sx={{ px: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter')} sx={{ flex: 1 }}>
+          <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter' | 'renta')} sx={{ flex: 1 }}>
             <Tab label={t('summaries.monthTab')} value="month" />
             <Tab label={t('summaries.quarterTab')} value="quarter" />
+            <Tab label={t('summaries.rentaTab')} value="renta" />
           </Tabs>
         </Stack>
       </Paper>
 
       {isFetching ? <LinearProgress /> : null}
 
-      {tab === 'month' ? (
+      {tab === 'renta' ? (
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">{t('summaries.renta.title')}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('summaries.renta.disclaimer')}
+            </Typography>
+
+            {settings?.rentaPlanning?.enabled !== true ? (
+              <Alert severity="info">{t('summaries.renta.disabledHint')}</Alert>
+            ) : rentaRaw && !rentaParsed ? (
+              <Alert severity="warning">{t('summaries.renta.invalidEstimate')}</Alert>
+            ) : settings?.rentaPlanning?.enabled === true && !rentaParsed ? (
+              <Alert severity="warning">{t('summaries.renta.unavailable')}</Alert>
+            ) : rentaParsed ? (
+              <>
+                {rentaProjectedParsed ? (
+                  <FormControlLabel
+                    control={<Switch checked={useRentaProjection} onChange={(e) => setUseRentaProjection(e.target.checked)} />}
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.useProjection')}
+                        tooltip={t('summaries.renta.tooltips.useProjection', { defaultValue: '' })}
+                      />
+                    }
+                  />
+                ) : null}
+
+                {useRentaProjection && rentaProjectedParsed?.monthsObserved != null ? (
+                  <Typography variant="body2" color="text.secondary">
+                    {t('summaries.renta.projectedBasedOnMonths', { count: rentaProjectedParsed.monthsObserved })}
+                  </Typography>
+                ) : null}
+
+                {useRentaProjection && rentaProjectedParsed?.monthsObserved != null && rentaProjectedParsed.monthsObserved <= 2 ? (
+                  <Alert severity="warning">{t('summaries.renta.lowConfidence', { count: rentaProjectedParsed.monthsObserved })}</Alert>
+                ) : null}
+
+                {rentaSelected?.scalesWarning ? <Alert severity="warning">{rentaSelected.scalesWarning}</Alert> : null}
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.estimatedAnnualIrpf')}
+                        tooltip={t('summaries.renta.tooltips.estimatedAnnualIrpf', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(rentaSelected.estimatedAnnualIrpf) : '—'}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.settlement')}
+                        tooltip={t('summaries.renta.tooltips.settlement', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(rentaSelected.estimatedSettlement) : '—'}
+                    helperText={helper('summaries.renta.help.settlement')}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                </Stack>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.alreadyCovered')}
+                        tooltip={t('summaries.renta.tooltips.alreadyCovered', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
+                    helperText={helper('summaries.renta.help.alreadyCovered')}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.plannedModelo130')}
+                        tooltip={t('summaries.renta.tooltips.plannedModelo130', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(Math.max(0, rentaSelected.plannedModelo130Remaining ?? 0)) : '—'}
+                    helperText={helper('summaries.renta.help.plannedModelo130')}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                </Stack>
+
+                <TextField
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.monthly')}
+                      tooltip={t('summaries.renta.tooltips.monthly', { defaultValue: '' })}
+                    />
+                  }
+                  value={
+                    rentaSelected
+                      ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', {
+                          count: rentaPlanSpan?.monthsPlanned ?? rentaSelected.monthsLeft,
+                          start: rentaPlanSpan?.startLabel ?? '',
+                          end: rentaPlanSpan?.endLabel ?? '',
+                        })})`
+                      : '—'
+                  }
+                  helperText={helper('summaries.renta.help.monthly')}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.stateQuota')}
+                        tooltip={t('summaries.renta.tooltips.stateQuota', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(rentaSelected.stateQuota) : '—'}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                  <TextField
+                    label={
+                      <FieldLabel
+                        label={t('summaries.renta.autonomicQuota')}
+                        tooltip={t('summaries.renta.tooltips.autonomicQuota', { defaultValue: '' })}
+                      />
+                    }
+                    value={rentaSelected ? money.format(rentaSelected.autonomicQuota) : '—'}
+                    size="small"
+                    fullWidth
+                    InputProps={{ readOnly: true }}
+                  />
+                </Stack>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                    <FieldLabel
+                      label={t('summaries.renta.effectiveRate')}
+                      tooltip={t('summaries.renta.tooltips.effectiveRate', { defaultValue: '' })}
+                    />
+                    : {rentaSelected ? pct.format(rentaSelected.effectiveRate) : '—'}
+                  </Typography>
+                  <Button size="small" onClick={() => setRentaDetailsOpen(true)}>
+                    <FieldLabel
+                      label={t('summaries.renta.breakdown')}
+                      tooltip={t('summaries.renta.tooltips.breakdown', { defaultValue: '' })}
+                    />
+                  </Button>
+                </Stack>
+              </>
+            ) : null}
+          </Stack>
+        </Paper>
+      ) : tab === 'month' ? (
         <Stack spacing={2}>
           {monthParsed.invalidCount > 0 ? (
             <Alert severity="warning">{t('summaries.invalidItems', { count: monthParsed.invalidCount })}</Alert>
