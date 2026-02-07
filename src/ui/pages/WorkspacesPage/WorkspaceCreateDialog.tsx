@@ -21,6 +21,7 @@ import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoCon
 import { ErrorAlert } from '../../components/ErrorAlert'
 import { ExpenseCategoriesEditor } from '../../components/ExpenseCategoriesEditor'
 import { useTranslation } from 'react-i18next'
+import { FieldLabel } from '../../components/FieldLabel'
 
 const defaultSettings = (): WorkspaceSettings => {
   const now = new Date()
@@ -225,14 +226,27 @@ export function WorkspaceCreateDialog(props: {
                 disabled={saving}
               />
             }
-            label={t('workspaceCreate.rentaPlanningEnabled')}
+            label={
+              <FieldLabel
+                label={t('workspaceCreate.rentaPlanningEnabled')}
+                tooltip={t('workspaceCreate.rentaTooltips.enabled', { defaultValue: '' })}
+              />
+            }
           />
+          <Typography variant="caption" color="text.secondary">
+            {t('workspaceCreate.rentaHelp.enabled')}
+          </Typography>
 
           {settings.rentaPlanning?.enabled ? (
             <Stack spacing={2}>
               <TextField
                 select
-                label={t('workspaceCreate.rentaResidence')}
+                label={
+                  <FieldLabel
+                    label={t('workspaceCreate.rentaResidence')}
+                    tooltip={t('workspaceCreate.rentaTooltips.residence', { defaultValue: '' })}
+                  />
+                }
                 value={settings.rentaPlanning.residence}
                 onChange={(e) =>
                   setSettings((s) => ({
@@ -241,6 +255,7 @@ export function WorkspaceCreateDialog(props: {
                   }))
                 }
                 fullWidth
+                helperText={t('workspaceCreate.rentaHelp.residence')}
               >
                 {territoryOptions.map((o) => (
                   <MenuItem key={o.value} value={o.value}>
@@ -265,8 +280,16 @@ export function WorkspaceCreateDialog(props: {
                     disabled={saving}
                   />
                 }
-                label={t('workspaceCreate.rentaMinimumDefault')}
+                label={
+                  <FieldLabel
+                    label={t('workspaceCreate.rentaMinimumDefault')}
+                    tooltip={t('workspaceCreate.rentaTooltips.minimum', { defaultValue: '' })}
+                  />
+                }
               />
+              <Typography variant="caption" color="text.secondary">
+                {t('workspaceCreate.rentaHelp.minimum')}
+              </Typography>
 
               {settings.rentaPlanning.minimumPersonalFamiliar != null ? (
                 <TextField
@@ -284,11 +307,17 @@ export function WorkspaceCreateDialog(props: {
                     }))
                   }
                   fullWidth
+                  helperText={t('workspaceCreate.rentaHelp.minimumCustom')}
                 />
               ) : null}
 
               <TextField
-                label={t('workspaceCreate.rentaOtherIncome')}
+                label={
+                  <FieldLabel
+                    label={t('workspaceCreate.rentaOtherIncome')}
+                    tooltip={t('workspaceCreate.rentaTooltips.otherIncome', { defaultValue: '' })}
+                  />
+                }
                 type="number"
                 inputProps={{ step: '0.01' }}
                 value={settings.rentaPlanning.otherGeneralIncome ?? ''}
@@ -302,10 +331,16 @@ export function WorkspaceCreateDialog(props: {
                   }))
                 }
                 fullWidth
+                helperText={t('workspaceCreate.rentaHelp.otherIncome')}
               />
 
               <TextField
-                label={t('workspaceCreate.rentaOtherReductions')}
+                label={
+                  <FieldLabel
+                    label={t('workspaceCreate.rentaOtherReductions')}
+                    tooltip={t('workspaceCreate.rentaTooltips.otherReductions', { defaultValue: '' })}
+                  />
+                }
                 type="number"
                 inputProps={{ step: '0.01' }}
                 value={settings.rentaPlanning.otherReductions ?? ''}
@@ -319,6 +354,7 @@ export function WorkspaceCreateDialog(props: {
                   }))
                 }
                 fullWidth
+                helperText={t('workspaceCreate.rentaHelp.otherReductions')}
               />
 
               <FormControlLabel
@@ -344,13 +380,26 @@ export function WorkspaceCreateDialog(props: {
                     disabled={saving}
                   />
                 }
-                label={t('workspaceCreate.rentaInicioEnabled')}
+                label={
+                  <FieldLabel
+                    label={t('workspaceCreate.rentaInicioEnabled')}
+                    tooltip={t('workspaceCreate.rentaTooltips.inicioEnabled', { defaultValue: '' })}
+                  />
+                }
               />
+              <Typography variant="caption" color="text.secondary">
+                {t('workspaceCreate.rentaHelp.inicioEnabled')}
+              </Typography>
 
               {settings.rentaPlanning.inicioActividadReduction?.enabled ? (
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
-                    label={t('workspaceCreate.rentaInicioFirstPositiveYear')}
+                    label={
+                      <FieldLabel
+                        label={t('workspaceCreate.rentaInicioFirstPositiveYear')}
+                        tooltip={t('workspaceCreate.rentaTooltips.inicioFirstPositiveYear', { defaultValue: '' })}
+                      />
+                    }
                     type="number"
                     value={settings.rentaPlanning.inicioActividadReduction.firstPositiveNetIncomeYear ?? ''}
                     onChange={(e) =>
@@ -368,9 +417,15 @@ export function WorkspaceCreateDialog(props: {
                       }))
                     }
                     fullWidth
+                    helperText={t('workspaceCreate.rentaHelp.inicioFirstPositiveYear')}
                   />
                   <TextField
-                    label={t('workspaceCreate.rentaInicioCap')}
+                    label={
+                      <FieldLabel
+                        label={t('workspaceCreate.rentaInicioCap')}
+                        tooltip={t('workspaceCreate.rentaTooltips.inicioCap', { defaultValue: '' })}
+                      />
+                    }
                     type="number"
                     value={settings.rentaPlanning.inicioActividadReduction.capEur ?? ''}
                     onChange={(e) =>
@@ -388,6 +443,7 @@ export function WorkspaceCreateDialog(props: {
                       }))
                     }
                     fullWidth
+                    helperText={t('workspaceCreate.rentaHelp.inicioCap')}
                   />
                 </Stack>
               ) : null}
@@ -414,8 +470,18 @@ export function WorkspaceCreateDialog(props: {
                       disabled={saving}
                     />
                   }
-                  label={t('workspaceCreate.rentaInicioPriorEmployerOver50')}
+                  label={
+                    <FieldLabel
+                      label={t('workspaceCreate.rentaInicioPriorEmployerOver50')}
+                      tooltip={t('workspaceCreate.rentaTooltips.inicioPriorEmployerOver50', { defaultValue: '' })}
+                    />
+                  }
                 />
+              ) : null}
+              {settings.rentaPlanning.inicioActividadReduction?.enabled ? (
+                <Typography variant="caption" color="text.secondary">
+                  {t('workspaceCreate.rentaHelp.inicioPriorEmployerOver50')}
+                </Typography>
               ) : null}
             </Stack>
           ) : null}

@@ -400,6 +400,11 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
     return rentaProjectedParsed ?? rentaParsed
   }, [rentaParsed, rentaProjectedParsed, useRentaProjection])
 
+  const helper = (key: string): string | undefined => {
+    const v = t(key, { defaultValue: '' }).trim()
+    return v ? v : undefined
+  }
+
   const refresh = async () => {
     setSelectedMonth(null)
     setSelectedQuarter(null)
@@ -442,7 +447,12 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               {rentaProjectedParsed ? (
                 <FormControlLabel
                   control={<Switch checked={useRentaProjection} onChange={(e) => setUseRentaProjection(e.target.checked)} />}
-                  label={t('summaries.renta.useProjection')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.useProjection')}
+                      tooltip={t('summaries.renta.tooltips.useProjection', { defaultValue: '' })}
+                    />
+                  }
                 />
               ) : null}
 
@@ -460,15 +470,26 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label={t('summaries.renta.estimatedAnnualIrpf')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.estimatedAnnualIrpf')}
+                      tooltip={t('summaries.renta.tooltips.estimatedAnnualIrpf', { defaultValue: '' })}
+                    />
+                  }
                   value={rentaSelected ? money.format(rentaSelected.estimatedAnnualIrpf) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
-                  label={t('summaries.renta.alreadyCovered')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.alreadyCovered')}
+                      tooltip={t('summaries.renta.tooltips.alreadyCovered', { defaultValue: '' })}
+                    />
+                  }
                   value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
+                  helperText={helper('summaries.renta.help.alreadyCovered')}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
@@ -477,19 +498,31 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label={t('summaries.renta.settlement')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.settlement')}
+                      tooltip={t('summaries.renta.tooltips.settlement', { defaultValue: '' })}
+                    />
+                  }
                   value={rentaSelected ? money.format(rentaSelected.estimatedSettlement) : '—'}
+                  helperText={helper('summaries.renta.help.settlement')}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
-                  label={t('summaries.renta.monthly')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.monthly')}
+                      tooltip={t('summaries.renta.tooltips.monthly', { defaultValue: '' })}
+                    />
+                  }
                   value={
                     rentaSelected
                       ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', { count: rentaSelected.monthsLeft })})`
                       : '—'
                   }
+                  helperText={helper('summaries.renta.help.monthly')}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
@@ -498,14 +531,24 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label={t('summaries.renta.stateQuota')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.stateQuota')}
+                      tooltip={t('summaries.renta.tooltips.stateQuota', { defaultValue: '' })}
+                    />
+                  }
                   value={rentaSelected ? money.format(rentaSelected.stateQuota) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
-                  label={t('summaries.renta.autonomicQuota')}
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.autonomicQuota')}
+                      tooltip={t('summaries.renta.tooltips.autonomicQuota', { defaultValue: '' })}
+                    />
+                  }
                   value={rentaSelected ? money.format(rentaSelected.autonomicQuota) : '—'}
                   size="small"
                   fullWidth
@@ -515,10 +558,17 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
                 <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                  {t('summaries.renta.effectiveRate')}: {rentaSelected ? pct.format(rentaSelected.effectiveRate) : '—'}
+                  <FieldLabel
+                    label={t('summaries.renta.effectiveRate')}
+                    tooltip={t('summaries.renta.tooltips.effectiveRate', { defaultValue: '' })}
+                  />
+                  : {rentaSelected ? pct.format(rentaSelected.effectiveRate) : '—'}
                 </Typography>
                 <Button size="small" onClick={() => setRentaDetailsOpen(true)}>
-                  {t('summaries.renta.breakdown')}
+                  <FieldLabel
+                    label={t('summaries.renta.breakdown')}
+                    tooltip={t('summaries.renta.tooltips.breakdown', { defaultValue: '' })}
+                  />
                 </Button>
               </Stack>
             </>
