@@ -7,10 +7,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Grid,
   LinearProgress,
   Paper,
   Stack,
+  Switch,
   Tab,
   Table,
   TableBody,
@@ -79,6 +81,9 @@ type RentaBreakdownItem = {
 type RentaEstimate = {
   taxYear: number
   residence: string
+  basis?: 'ACTUALS' | 'PROJECTED_RUN_RATE'
+  monthsObserved?: number | null
+  projectionWarning?: string | null
   scalesTaxYearUsed: number
   scalesWarning: string | null
   generalBase: number
@@ -122,6 +127,9 @@ const asRentaEstimate = (v: unknown): RentaEstimate | null => {
 
   const taxYear = asNumber(o.taxYear)
   const residence = asString(o.residence)
+  const basis = o.basis === 'ACTUALS' || o.basis === 'PROJECTED_RUN_RATE' ? (o.basis as 'ACTUALS' | 'PROJECTED_RUN_RATE') : undefined
+  const monthsObserved = asNumber(o.monthsObserved)
+  const projectionWarning = o.projectionWarning == null ? null : asString(o.projectionWarning)
   const scalesTaxYearUsed = asNumber(o.scalesTaxYearUsed)
   const scalesWarning = o.scalesWarning == null ? null : asString(o.scalesWarning)
 
@@ -162,6 +170,9 @@ const asRentaEstimate = (v: unknown): RentaEstimate | null => {
   return {
     taxYear,
     residence,
+    basis,
+    monthsObserved,
+    projectionWarning,
     scalesTaxYearUsed,
     scalesWarning,
     generalBase,
@@ -358,6 +369,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
   const [rentaDetailsOpen, setRentaDetailsOpen] = useState(false)
+  const [useRentaProjection, setUseRentaProjection] = useState(true)
 
   const { data, error, isFetching, refetch } = useQuery({
     queryKey: queryKeys.summaries(props.workspaceId),
@@ -368,7 +380,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         props.api.quarterSummaries(props.workspaceId, settings),
         props.api.rentaSummary(props.workspaceId, settings),
       ])
-      return { settings, month: m.items, quarter: q.items, renta: r.renta }
+      return { settings, month: m.items, quarter: q.items, renta: r.renta, rentaProjected: r.rentaProjected ?? null }
     },
   })
 
@@ -376,11 +388,17 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const monthSummaries = data?.month ?? null
   const quarterSummaries = data?.quarter ?? null
   const rentaRaw = data?.renta ?? null
+  const rentaProjectedRaw = (data as { rentaProjected?: unknown | null } | null)?.rentaProjected ?? null
 
   const monthParsed = useMemo(() => parseList(monthSummaries, asMonthSummary), [monthSummaries])
   const quarterParsed = useMemo(() => parseList(quarterSummaries, asQuarterSummary), [quarterSummaries])
   const rentaParsed = useMemo(() => (rentaRaw ? asRentaEstimate(rentaRaw) : null), [rentaRaw])
+  const rentaProjectedParsed = useMemo(() => (rentaProjectedRaw ? asRentaEstimate(rentaProjectedRaw) : null), [rentaProjectedRaw])
   const showRentaSaveColumn = settings?.rentaPlanning?.enabled === true
+  const rentaSelected = useMemo(() => {
+    if (!useRentaProjection) return rentaParsed
+    return rentaProjectedParsed ?? rentaParsed
+  }, [rentaParsed, rentaProjectedParsed, useRentaProjection])
 
   const refresh = async () => {
     setSelectedMonth(null)
@@ -421,19 +439,36 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
             <Alert severity="warning">{t('summaries.renta.unavailable')}</Alert>
           ) : rentaParsed ? (
             <>
-              {rentaParsed.scalesWarning ? <Alert severity="warning">{rentaParsed.scalesWarning}</Alert> : null}
+              {rentaProjectedParsed ? (
+                <FormControlLabel
+                  control={<Switch checked={useRentaProjection} onChange={(e) => setUseRentaProjection(e.target.checked)} />}
+                  label={t('summaries.renta.useProjection')}
+                />
+              ) : null}
+
+              {useRentaProjection && rentaProjectedParsed?.monthsObserved != null ? (
+                <Typography variant="body2" color="text.secondary">
+                  {t('summaries.renta.projectedBasedOnMonths', { count: rentaProjectedParsed.monthsObserved })}
+                </Typography>
+              ) : null}
+
+              {useRentaProjection && rentaProjectedParsed?.monthsObserved != null && rentaProjectedParsed.monthsObserved <= 2 ? (
+                <Alert severity="warning">{t('summaries.renta.lowConfidence', { count: rentaProjectedParsed.monthsObserved })}</Alert>
+              ) : null}
+
+              {rentaSelected?.scalesWarning ? <Alert severity="warning">{rentaSelected.scalesWarning}</Alert> : null}
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label={t('summaries.renta.estimatedAnnualIrpf')}
-                  value={money.format(rentaParsed.estimatedAnnualIrpf)}
+                  value={rentaSelected ? money.format(rentaSelected.estimatedAnnualIrpf) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
                   label={t('summaries.renta.alreadyCovered')}
-                  value={money.format(rentaParsed.irpfWithheld + rentaParsed.modelo130Paid)}
+                  value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
@@ -443,14 +478,18 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label={t('summaries.renta.settlement')}
-                  value={money.format(rentaParsed.estimatedSettlement)}
+                  value={rentaSelected ? money.format(rentaSelected.estimatedSettlement) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
                   label={t('summaries.renta.monthly')}
-                  value={`${money.format(rentaParsed.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', { count: rentaParsed.monthsLeft })})`}
+                  value={
+                    rentaSelected
+                      ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', { count: rentaSelected.monthsLeft })})`
+                      : '—'
+                  }
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
@@ -460,14 +499,14 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label={t('summaries.renta.stateQuota')}
-                  value={money.format(rentaParsed.stateQuota)}
+                  value={rentaSelected ? money.format(rentaSelected.stateQuota) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
                 <TextField
                   label={t('summaries.renta.autonomicQuota')}
-                  value={money.format(rentaParsed.autonomicQuota)}
+                  value={rentaSelected ? money.format(rentaSelected.autonomicQuota) : '—'}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
@@ -476,7 +515,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
                 <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                  {t('summaries.renta.effectiveRate')}: {pct.format(rentaParsed.effectiveRate)}
+                  {t('summaries.renta.effectiveRate')}: {rentaSelected ? pct.format(rentaSelected.effectiveRate) : '—'}
                 </Typography>
                 <Button size="small" onClick={() => setRentaDetailsOpen(true)}>
                   {t('summaries.renta.breakdown')}
@@ -565,12 +604,12 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                       {showRentaSaveColumn ? (
                         <TableCell align="right">
                           {(() => {
-                            if (!rentaParsed) return '-'
+                            if (!rentaSelected) return '-'
                             const monthYear = Number(m.monthKey.slice(0, 4))
-                            if (!Number.isFinite(monthYear) || monthYear !== rentaParsed.taxYear) return '-'
-                            if (rentaParsed.monthsLeft <= 0) return '-'
-                            if (rentaParsed.estimatedSettlement <= 0) return '-'
-                            return money.format(m.canSpendIgnoringExpenses - rentaParsed.suggestedMonthlyReserve)
+                            if (!Number.isFinite(monthYear) || monthYear !== rentaSelected.taxYear) return '-'
+                            if (rentaSelected.monthsLeft <= 0) return '-'
+                            if (rentaSelected.estimatedSettlement <= 0) return '-'
+                            return money.format(m.canSpendIgnoringExpenses - rentaSelected.suggestedMonthlyReserve)
                           })()}
                         </TableCell>
                       ) : null}
@@ -716,7 +755,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
       <Dialog open={rentaDetailsOpen} onClose={() => setRentaDetailsOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>{t('summaries.renta.breakdownTitle')}</DialogTitle>
         <DialogContent dividers>
-          {rentaParsed ? (
+          {rentaSelected ? (
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -728,7 +767,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rentaParsed.breakdown.map((b, idx) => (
+                {rentaSelected.breakdown.map((b, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{b.scope === 'STATE' ? t('summaries.renta.scopeState') : t('summaries.renta.scopeAutonomic')}</TableCell>
                     <TableCell align="right">{money.format(b.from)}</TableCell>

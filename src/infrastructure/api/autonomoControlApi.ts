@@ -255,7 +255,7 @@ export class AutonomoControlApi {
   async rentaSummary(
     workspaceId: string,
     settings: WorkspaceSettings,
-  ): Promise<{ settings: WorkspaceSettings; renta: unknown | null }> {
+  ): Promise<{ settings: WorkspaceSettings; renta: unknown | null; rentaProjected?: unknown | null }> {
     return jsonFetch(new URL(`/workspaces/${workspaceId}/summaries/renta`, this.baseUrl).toString(), {
       method: 'POST',
       headers: this.authHeaders(),
