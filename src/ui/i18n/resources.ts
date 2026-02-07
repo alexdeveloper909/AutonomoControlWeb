@@ -552,7 +552,7 @@ export const resources = {
           canSpendThisMonth: 'max(0, cash in − cash out (expenses) − cash out (state) − IRPF reserve − IVA settlement).',
           canSpendIgnoringExpenses: 'Can spend + cash out (expenses). Useful if expenses are paid from another account.',
           canSpendWithRentaSave:
-            'If Renta planning expects an additional settlement payment: max(0, Can spend − suggested monthly Renta reserve). Shown as “-” for inactive months. Otherwise “-”.',
+            'If Renta planning expects an additional settlement payment: max(0, Can spend − suggested monthly Renta reserve). This is incremental saving beyond the quarterly/Modelo 130 reserve already included in “Can spend”. Shown as “-” for inactive months. Otherwise “-”.',
         },
         table: {
           month: 'Month',
@@ -569,14 +569,17 @@ export const resources = {
           lowConfidence: 'Low confidence projection (only {{count}} months of data).',
           help: {
             alreadyCovered: 'Includes IRPF withheld on invoices + Modelo 130 payments recorded as state payments.',
-            settlement: 'Estimated annual IRPF − already covered.',
+            plannedModelo130:
+              'Planned advance IRPF via Modelo 130 (based on your irpfRate) that is not yet recorded as a payment. Used to avoid double-counting.',
+            settlement: 'Estimated annual IRPF − already covered − planned Modelo 130 (planning).',
             monthly: 'If settlement > 0: spread across the planned months of the tax year (from Jan or your start month through Dec).',
           },
           tooltips: {
             useProjection: 'Projects a full-year outcome from the observed months to provide earlier guidance.',
             estimatedAnnualIrpf: 'Progressive estimate (state + autonomous) applied to a simplified general base.',
             alreadyCovered: 'Already paid/withheld amounts that reduce the annual settlement.',
-            settlement: 'Positive means you may owe; negative means you may be refunded.',
+            plannedModelo130: 'Estimated Modelo 130 advances not yet recorded as payments. Included in settlement planning to avoid double-counting.',
+            settlement: 'Positive means you may owe (after planned advances); negative means you may be refunded.',
             monthly: 'Suggested monthly contribution to the annual Renta reserve bucket.',
             stateQuota: 'Tax computed using the state progressive scale for the taxable base.',
             autonomicQuota: 'Tax computed using the selected autonomous community progressive scale.',
@@ -584,7 +587,8 @@ export const resources = {
             breakdown: 'Shows per-bracket slices for state and autonomous parts.',
           },
           estimatedAnnualIrpf: 'Estimated annual IRPF',
-          alreadyCovered: 'Already covered (withheld + Modelo 130)',
+          alreadyCovered: 'Already covered (withheld + Modelo 130 paid)',
+          plannedModelo130: 'Planned Modelo 130 (not yet paid)',
           settlement: 'Estimated settlement (owe/refund)',
           monthly: 'Suggested monthly reserve',
           monthsLeft: '{{count}} months ({{start}}–{{end}})',
@@ -1169,7 +1173,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Puede gastar + salidas (gastos). Útil si los gastos se pagan desde otra cuenta.',
           canSpendWithRentaSave:
-            'Si la planificación de Renta espera un pago adicional: max(0, Puede gastar − ahorro mensual sugerido). Se muestra como “-” en meses inactivos. Si no, “-”.',
+            'Si la planificación de Renta espera un pago adicional: max(0, Puede gastar − ahorro mensual sugerido). Es un ahorro incremental además de la reserva trimestral/Modelo 130 que ya está incluida en “Puede gastar”. Se muestra como “-” en meses inactivos. Si no, “-”.',
         },
         table: {
           month: 'Mes',
@@ -1186,14 +1190,17 @@ export const resources = {
           lowConfidence: 'Proyección de baja confianza (solo {{count}} meses de datos).',
           help: {
             alreadyCovered: 'Incluye IRPF retenido en facturas + pagos de Modelo 130 (como pagos al Estado).',
-            settlement: 'IRPF anual estimado − cubierto.',
+            plannedModelo130:
+              'Anticipo planificado vía Modelo 130 (según tu tipo de Modelo 130) que aún no está registrado como pago. Se usa para evitar doble conteo.',
+            settlement: 'IRPF anual estimado − cubierto − Modelo 130 planificado (planificación).',
             monthly: 'Si el resultado > 0: se reparte entre los meses planificados del ejercicio (desde enero o tu mes de inicio hasta diciembre).',
           },
           tooltips: {
             useProjection: 'Proyecta el año completo a partir de los meses observados para dar guía antes.',
             estimatedAnnualIrpf: 'Estimación progresiva (estatal + autonómica) sobre una base general simplificada.',
             alreadyCovered: 'Importes ya pagados/retendidos que reducen el resultado anual.',
-            settlement: 'Positivo = posible pago; negativo = posible devolución.',
+            plannedModelo130: 'Estimación de anticipos de Modelo 130 no registrados como pagos. Se incluye para evitar doble conteo.',
+            settlement: 'Positivo = posible pago (tras anticipos planificados); negativo = posible devolución.',
             monthly: 'Aportación mensual sugerida al “bote” anual de Renta.',
             stateQuota: 'Cuota calculada con la escala estatal para la base imponible.',
             autonomicQuota: 'Cuota calculada con la escala autonómica seleccionada.',
@@ -1201,7 +1208,8 @@ export const resources = {
             breakdown: 'Muestra el desglose por tramos (estatal y autonómico).',
           },
           estimatedAnnualIrpf: 'IRPF anual estimado',
-          alreadyCovered: 'Cubierto (retenciones + Modelo 130)',
+          alreadyCovered: 'Cubierto (retenciones + Modelo 130 pagado)',
+          plannedModelo130: 'Modelo 130 planificado (no pagado)',
           settlement: 'Resultado estimado (a pagar/devolver)',
           monthly: 'Ahorro mensual sugerido',
           monthsLeft: '{{count}} meses ({{start}}–{{end}})',
@@ -1783,7 +1791,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Можна витратити + витрати (гроші). Корисно, якщо витрати оплачуються з іншого рахунку.',
           canSpendWithRentaSave:
-            'Якщо планування Renta очікує додаткову сплату: max(0, Можна витратити − рекомендований місячний резерв). Для неактивних місяців показує “-”. Інакше “-”.',
+            'Якщо планування Renta очікує додаткову сплату: max(0, Можна витратити − рекомендований місячний резерв). Це додаткове заощадження понад квартальний/Modelo 130 резерв, який уже враховано в “Можна витратити”. Для неактивних місяців показує “-”. Інакше “-”.',
         },
         table: {
           month: 'Місяць',
@@ -1800,14 +1808,17 @@ export const resources = {
           lowConfidence: 'Низька надійність проєкції (лише {{count}} місяців даних).',
           help: {
             alreadyCovered: 'Включає утриманий IRPF з рахунків + платежі Modelo 130 (як платежі державі).',
-            settlement: 'Оцінка річного IRPF − вже покрито.',
+            plannedModelo130:
+              'Запланований авансовий IRPF через Modelo 130 (за вашою ставкою Modelo 130), який ще не записано як платіж. Використовується, щоб уникнути подвійного рахунку.',
+            settlement: 'Оцінка річного IRPF − вже покрито − запланований Modelo 130 (планування).',
             monthly: 'Якщо результат > 0: розподіл на заплановані місяці податкового року (від січня або місяця старту до грудня).',
           },
           tooltips: {
             useProjection: 'Проєктує результат за весь рік з уже введених місяців для ранньої підказки.',
             estimatedAnnualIrpf: 'Прогресивна оцінка (державна + регіональна) на спрощеній загальній базі.',
             alreadyCovered: 'Суми вже сплачені/утримані, що зменшують річний результат.',
-            settlement: 'Додатне = можлива сплата; від’ємне = можливе повернення.',
+            plannedModelo130: 'Оцінка авансів Modelo 130, які ще не записані як платежі. Враховується для уникнення подвійного рахунку.',
+            settlement: 'Додатне = можлива сплата (після планових авансів); від’ємне = можливе повернення.',
             monthly: 'Рекомендований місячний внесок у річний резерв Renta.',
             stateQuota: 'Податок за державною шкалою для бази.',
             autonomicQuota: 'Податок за регіональною (автономною) шкалою.',
@@ -1815,7 +1826,8 @@ export const resources = {
             breakdown: 'Деталі по тримах (державні та регіональні).',
           },
           estimatedAnnualIrpf: 'Оцінка річного IRPF',
-          alreadyCovered: 'Вже покрито (утримання + Modelo 130)',
+          alreadyCovered: 'Вже покрито (утримання + Modelo 130 сплачено)',
+          plannedModelo130: 'Запланований Modelo 130 (ще не сплачено)',
           settlement: 'Оцінка результату (сплата/повернення)',
           monthly: 'Рекомендований місячний резерв',
           monthsLeft: '{{count}} місяців ({{start}}–{{end}})',
@@ -2395,7 +2407,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'يمكن الإنفاق + cash out (expenses). مفيد إذا كانت المصروفات تُدفع من حساب آخر.',
           canSpendWithRentaSave:
-            'إذا كان تخطيط Renta يتوقع دفعة إضافية: max(0, يمكن الإنفاق − الاحتياطي الشهري المقترح). تُعرض كـ “-” للأشهر غير النشطة. وإلا “-”.',
+            'إذا كان تخطيط Renta يتوقع دفعة إضافية: max(0, يمكن الإنفاق − الاحتياطي الشهري المقترح). هذا ادخار إضافي فوق احتياطي الربع/Modelo 130 الموجود بالفعل ضمن “يمكن الإنفاق”. تُعرض كـ “-” للأشهر غير النشطة. وإلا “-”.',
         },
         table: {
           month: 'الشهر',
@@ -2412,14 +2424,17 @@ export const resources = {
           lowConfidence: 'إسقاط منخفض الثقة (فقط بيانات {{count}} شهرًا).',
           help: {
             alreadyCovered: 'يشمل IRPF المحتجز على الفواتير + مدفوعات Modelo 130 (كمدفوعات دولة).',
-            settlement: 'IRPF السنوي المُقدّر − المغطّى بالفعل.',
+            plannedModelo130:
+              'دفعات IRPF مقدَّرة عبر Modelo 130 (حسب معدل Modelo 130 لديك) لكنها غير مسجلة بعد كمدفوعات. تُستخدم لتجنب العدّ المزدوج.',
+            settlement: 'IRPF السنوي المُقدّر − المغطّى بالفعل − Modelo 130 المقدَّر (للتخطيط).',
             monthly: 'إذا كانت النتيجة > 0: تُوزّع على الأشهر المخططة من السنة الضريبية (من يناير أو شهر البدء حتى ديسمبر).',
           },
           tooltips: {
             useProjection: 'يُسقط نتيجة السنة كاملة اعتمادًا على الأشهر المُلاحظة لتوفير إرشاد مبكر.',
             estimatedAnnualIrpf: 'تقدير تصاعدي (حكومي + إقليمي) على قاعدة عامة مبسطة.',
             alreadyCovered: 'مبالغ مدفوعة/محتجزة تقلل نتيجة التسوية السنوية.',
-            settlement: 'قيمة موجبة = قد تدفع؛ قيمة سالبة = قد تسترد.',
+            plannedModelo130: 'تقدير دفعات Modelo 130 غير المسجلة كمدفوعات بعد. تُدرج لتجنب العدّ المزدوج.',
+            settlement: 'قيمة موجبة = قد تدفع (بعد الدفعات المقدَّرة)؛ قيمة سالبة = قد تسترد.',
             monthly: 'مساهمة شهرية مقترحة لاحتياطي Renta السنوي.',
             stateQuota: 'ضريبة محسوبة وفق السلم الحكومي للقاعدة الخاضعة.',
             autonomicQuota: 'ضريبة محسوبة وفق السلم الإقليمي المختار.',
@@ -2427,7 +2442,8 @@ export const resources = {
             breakdown: 'تفاصيل حسب الشرائح (حكومي وإقليمي).',
           },
           estimatedAnnualIrpf: 'IRPF سنوي مُقدّر',
-          alreadyCovered: 'مغطّى بالفعل (الاستقطاعات + Modelo 130)',
+          alreadyCovered: 'مغطّى بالفعل (الاستقطاعات + Modelo 130 المدفوع)',
+          plannedModelo130: 'Modelo 130 مقدَّر (غير مدفوع بعد)',
           settlement: 'النتيجة المُقدّرة (دفع/استرداد)',
           monthly: 'الاحتياطي الشهري المقترح',
           monthsLeft: '{{count}} أشهر ({{start}}–{{end}})',
@@ -3009,7 +3025,7 @@ export const resources = {
           canSpendIgnoringExpenses:
             'Poți cheltui + cash out (cheltuieli). Util dacă cheltuielile sunt plătite din alt cont.',
           canSpendWithRentaSave:
-            'Dacă planificarea Renta prevede o plată suplimentară: max(0, Poți cheltui − rezerva lunară sugerată). Pentru luni inactive: “-”. Altfel “-”.',
+            'Dacă planificarea Renta prevede o plată suplimentară: max(0, Poți cheltui − rezerva lunară sugerată). Este economisire incrementală peste rezerva trimestrială/Modelo 130 deja inclusă în “Poți cheltui”. Pentru luni inactive: “-”. Altfel “-”.',
         },
         table: {
           month: 'Lună',
@@ -3026,14 +3042,17 @@ export const resources = {
           lowConfidence: 'Proiecție cu încredere scăzută (doar {{count}} luni de date).',
           help: {
             alreadyCovered: 'Include IRPF reținut pe facturi + plăți Modelo 130 (ca plăți către stat).',
-            settlement: 'IRPF anual estimat − acoperit.',
+            plannedModelo130:
+              'Avans IRPF planificat prin Modelo 130 (pe baza ratei tale Modelo 130) care nu este încă înregistrat ca plată. Folosit pentru a evita dublarea.',
+            settlement: 'IRPF anual estimat − acoperit − Modelo 130 planificat (planificare).',
             monthly: 'Dacă rezultatul > 0: se împarte pe lunile planificate ale anului fiscal (din ianuarie sau luna de start până în decembrie).',
           },
           tooltips: {
             useProjection: 'Proiectează rezultatul pe tot anul folosind lunile observate pentru ghidaj mai devreme.',
             estimatedAnnualIrpf: 'Estimare progresivă (stat + regional) pe o bază generală simplificată.',
             alreadyCovered: 'Sume deja plătite/reținute care reduc decontul anual.',
-            settlement: 'Pozitiv = posibil de plată; negativ = posibil de restituit.',
+            plannedModelo130: 'Estimare avansuri Modelo 130 încă neînregistrate ca plăți. Inclus pentru a evita dublarea.',
+            settlement: 'Pozitiv = posibil de plată (după avansuri planificate); negativ = posibil de restituit.',
             monthly: 'Contribuție lunară sugerată pentru “rezerva” anuală Renta.',
             stateQuota: 'Taxă calculată cu scara progresivă de stat.',
             autonomicQuota: 'Taxă calculată cu scara progresivă regională selectată.',
@@ -3041,7 +3060,8 @@ export const resources = {
             breakdown: 'Detalii pe tranșe (stat și regional).',
           },
           estimatedAnnualIrpf: 'IRPF anual estimat',
-          alreadyCovered: 'Acoperit (rețineri + Modelo 130)',
+          alreadyCovered: 'Acoperit (rețineri + Modelo 130 plătit)',
+          plannedModelo130: 'Modelo 130 planificat (neplătit încă)',
           settlement: 'Rezultat estimat (de plată/de restituit)',
           monthly: 'Rezervă lunară sugerată',
           monthsLeft: '{{count}} luni ({{start}}–{{end}})',

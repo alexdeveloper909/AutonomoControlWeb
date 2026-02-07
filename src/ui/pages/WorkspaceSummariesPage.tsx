@@ -93,6 +93,7 @@ type RentaEstimate = {
   estimatedAnnualIrpf: number
   irpfWithheld: number
   modelo130Paid: number
+  plannedModelo130Remaining?: number | null
   estimatedSettlement: number
   monthsLeft: number
   suggestedMonthlyReserve: number
@@ -140,6 +141,7 @@ const asRentaEstimate = (v: unknown): RentaEstimate | null => {
   const estimatedAnnualIrpf = asNumber(o.estimatedAnnualIrpf)
   const irpfWithheld = asNumber(o.irpfWithheld)
   const modelo130Paid = asNumber(o.modelo130Paid)
+  const plannedModelo130Remaining = asNumber(o.plannedModelo130Remaining)
   const estimatedSettlement = asNumber(o.estimatedSettlement)
   const monthsLeft = asNumber(o.monthsLeft)
   const suggestedMonthlyReserve = asNumber(o.suggestedMonthlyReserve)
@@ -182,6 +184,7 @@ const asRentaEstimate = (v: unknown): RentaEstimate | null => {
     estimatedAnnualIrpf,
     irpfWithheld,
     modelo130Paid,
+    plannedModelo130Remaining,
     estimatedSettlement,
     monthsLeft,
     suggestedMonthlyReserve,
@@ -506,22 +509,6 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 <TextField
                   label={
                     <FieldLabel
-                      label={t('summaries.renta.alreadyCovered')}
-                      tooltip={t('summaries.renta.tooltips.alreadyCovered', { defaultValue: '' })}
-                    />
-                  }
-                  value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
-                  helperText={helper('summaries.renta.help.alreadyCovered')}
-                  size="small"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                />
-              </Stack>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label={
-                    <FieldLabel
                       label={t('summaries.renta.settlement')}
                       tooltip={t('summaries.renta.tooltips.settlement', { defaultValue: '' })}
                     />
@@ -532,28 +519,62 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label={
                     <FieldLabel
-                      label={t('summaries.renta.monthly')}
-                      tooltip={t('summaries.renta.tooltips.monthly', { defaultValue: '' })}
+                      label={t('summaries.renta.alreadyCovered')}
+                      tooltip={t('summaries.renta.tooltips.alreadyCovered', { defaultValue: '' })}
+                    />
+                  }
+                  value={rentaSelected ? money.format(rentaSelected.irpfWithheld + rentaSelected.modelo130Paid) : '—'}
+                  helperText={helper('summaries.renta.help.alreadyCovered')}
+                  size="small"
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+                <TextField
+                  label={
+                    <FieldLabel
+                      label={t('summaries.renta.plannedModelo130')}
+                      tooltip={t('summaries.renta.tooltips.plannedModelo130', { defaultValue: '' })}
                     />
                   }
                   value={
                     rentaSelected
-                      ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', {
-                          count: rentaPlanSpan?.monthsPlanned ?? rentaSelected.monthsLeft,
-                          start: rentaPlanSpan?.startLabel ?? '',
-                          end: rentaPlanSpan?.endLabel ?? '',
-                        })})`
+                      ? money.format(Math.max(0, rentaSelected.plannedModelo130Remaining ?? 0))
                       : '—'
                   }
-                  helperText={helper('summaries.renta.help.monthly')}
+                  helperText={helper('summaries.renta.help.plannedModelo130')}
                   size="small"
                   fullWidth
                   InputProps={{ readOnly: true }}
                 />
               </Stack>
+
+              <TextField
+                label={
+                  <FieldLabel
+                    label={t('summaries.renta.monthly')}
+                    tooltip={t('summaries.renta.tooltips.monthly', { defaultValue: '' })}
+                  />
+                }
+                value={
+                  rentaSelected
+                    ? `${money.format(rentaSelected.suggestedMonthlyReserve)} (${t('summaries.renta.monthsLeft', {
+                        count: rentaPlanSpan?.monthsPlanned ?? rentaSelected.monthsLeft,
+                        start: rentaPlanSpan?.startLabel ?? '',
+                        end: rentaPlanSpan?.endLabel ?? '',
+                      })})`
+                    : '—'
+                }
+                helperText={helper('summaries.renta.help.monthly')}
+                size="small"
+                fullWidth
+                InputProps={{ readOnly: true }}
+              />
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
