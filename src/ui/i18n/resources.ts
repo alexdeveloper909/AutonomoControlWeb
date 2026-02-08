@@ -626,6 +626,69 @@ export const resources = {
         monthKey: 'Month (YYYY-MM)',
         recordType: 'Record type',
       },
+      landing: {
+        nav: { signIn: 'Sign in' },
+        hero: {
+          title: 'Take control of your finances as an Autónomo',
+          subtitle:
+            'Track income, expenses, and taxes. Get automated quarterly estimates for IVA and IRPF — so you always know what you owe and what you can spend.',
+          cta: 'Get started',
+        },
+        features: {
+          title: 'Everything you need to manage your Autónomo finances',
+          subtitle: 'Built specifically for self-employed professionals in Spain.',
+          tax: {
+            title: 'Tax Management',
+            description:
+              'Automatic IVA and IRPF calculations. Quarterly estimates for Modelo 303 and Modelo 130 so you are always prepared for filing.',
+          },
+          summaries: {
+            title: 'Monthly & Quarterly Summaries',
+            description:
+              'Cash flow guidance, recommended tax reserves, and filing-ready totals — updated automatically as you add records.',
+          },
+          tracking: {
+            title: 'Income & Expense Tracking',
+            description:
+              'Record invoices and expenses with full VAT recovery, deductibility, and categorization. All in one place.',
+          },
+          renta: {
+            title: 'Annual Renta Planning',
+            description:
+              'Progressive IRPF estimate for your annual tax return (Renta). Includes a monthly saving suggestion so there are no surprises.',
+          },
+          balance: {
+            title: 'Balance After Tax',
+            description:
+              'See your real spending power after tax reserves. "Can spend" guidance helps you make confident financial decisions.',
+          },
+          sharing: {
+            title: 'Workspace Sharing',
+            description:
+              'Share your workspace read-only with your accountant or business partner. Collaborate without risking accidental changes.',
+          },
+        },
+        howItWorks: {
+          title: 'How it works',
+          step1: {
+            title: 'Sign up',
+            description: 'Create an account with Google or email — it only takes a few seconds.',
+          },
+          step2: {
+            title: 'Set up your workspace',
+            description:
+              'Configure your tax year, IVA and IRPF rates, expense categories, and optional Renta planning.',
+          },
+          step3: {
+            title: 'Track & plan',
+            description:
+              'Add income, expenses, and payments. View automated monthly and quarterly summaries with tax reserves and cash flow guidance.',
+          },
+        },
+        footer: {
+          cta: 'Ready to simplify your Autónomo finances?',
+        },
+      },
     },
   },
   es: {
@@ -1258,6 +1321,69 @@ export const resources = {
         monthKey: 'Mes (YYYY-MM)',
         recordType: 'Tipo de registro',
       },
+      landing: {
+        nav: { signIn: 'Iniciar sesión' },
+        hero: {
+          title: 'Toma el control de tus finanzas como Autónomo',
+          subtitle:
+            'Registra ingresos, gastos e impuestos. Obtén estimaciones trimestrales automáticas de IVA e IRPF — para saber siempre lo que debes y lo que puedes gastar.',
+          cta: 'Comenzar',
+        },
+        features: {
+          title: 'Todo lo que necesitas para gestionar tus finanzas de Autónomo',
+          subtitle: 'Diseñado específicamente para profesionales autónomos en España.',
+          tax: {
+            title: 'Gestión fiscal',
+            description:
+              'Cálculos automáticos de IVA e IRPF. Estimaciones trimestrales para el Modelo 303 y el Modelo 130 para que siempre estés preparado.',
+          },
+          summaries: {
+            title: 'Resúmenes mensuales y trimestrales',
+            description:
+              'Guía de flujo de caja, reservas fiscales recomendadas y totales listos para declaración — actualizados automáticamente.',
+          },
+          tracking: {
+            title: 'Seguimiento de ingresos y gastos',
+            description:
+              'Registra facturas y gastos con recuperación de IVA, deducibilidad y categorización. Todo en un solo lugar.',
+          },
+          renta: {
+            title: 'Planificación anual de la Renta',
+            description:
+              'Estimación progresiva del IRPF para tu declaración anual (Renta). Incluye una sugerencia de ahorro mensual para evitar sorpresas.',
+          },
+          balance: {
+            title: 'Saldo después de impuestos',
+            description:
+              'Consulta tu capacidad de gasto real después de las reservas fiscales. La guía "puedes gastar" te ayuda a tomar decisiones con confianza.',
+          },
+          sharing: {
+            title: 'Compartir espacio de trabajo',
+            description:
+              'Comparte tu espacio de trabajo en modo solo lectura con tu asesor o socio. Colabora sin riesgo de cambios accidentales.',
+          },
+        },
+        howItWorks: {
+          title: 'Cómo funciona',
+          step1: {
+            title: 'Regístrate',
+            description: 'Crea una cuenta con Google o correo electrónico — solo toma unos segundos.',
+          },
+          step2: {
+            title: 'Configura tu espacio de trabajo',
+            description:
+              'Configura tu año fiscal, tipos de IVA e IRPF, categorías de gastos y planificación opcional de la Renta.',
+          },
+          step3: {
+            title: 'Registra y planifica',
+            description:
+              'Añade ingresos, gastos y pagos. Consulta resúmenes automáticos mensuales y trimestrales con reservas fiscales y guía de flujo de caja.',
+          },
+        },
+        footer: {
+          cta: '¿Listo para simplificar tus finanzas de Autónomo?',
+        },
+      },
     },
   },
   uk: {
@@ -1887,6 +2013,69 @@ export const resources = {
         monthKey: 'Місяць (YYYY-MM)',
         recordType: 'Тип запису',
       },
+      landing: {
+        nav: { signIn: 'Увійти' },
+        hero: {
+          title: 'Візьміть під контроль фінанси як Autónomo',
+          subtitle:
+            'Відстежуйте доходи, витрати та податки. Отримуйте автоматичні квартальні оцінки IVA та IRPF — щоб завжди знати, скільки потрібно сплатити і скільки можна витратити.',
+          cta: 'Розпочати',
+        },
+        features: {
+          title: 'Все необхідне для управління фінансами Autónomo',
+          subtitle: 'Створено спеціально для самозайнятих професіоналів в Іспанії.',
+          tax: {
+            title: 'Управління податками',
+            description:
+              'Автоматичні розрахунки IVA та IRPF. Квартальні оцінки для Modelo 303 і Modelo 130, щоб ви завжди були готові до подання.',
+          },
+          summaries: {
+            title: 'Місячні та квартальні зведення',
+            description:
+              'Орієнтири грошового потоку, рекомендовані податкові резерви та підсумки для подання — оновлюються автоматично.',
+          },
+          tracking: {
+            title: 'Відстеження доходів і витрат',
+            description:
+              'Записуйте рахунки-фактури та витрати з відшкодуванням ПДВ, відрахуванням та категоризацією. Все в одному місці.',
+          },
+          renta: {
+            title: 'Річне планування Renta',
+            description:
+              'Прогресивна оцінка IRPF для річної податкової декларації (Renta). Включає щомісячну пропозицію заощаджень, щоб уникнути сюрпризів.',
+          },
+          balance: {
+            title: 'Баланс після податків',
+            description:
+              'Перегляньте реальну купівельну спроможність після податкових резервів. Орієнтир «можете витратити» допоможе приймати впевнені фінансові рішення.',
+          },
+          sharing: {
+            title: 'Спільний доступ до робочого простору',
+            description:
+              'Поділіться робочим простором у режимі лише для читання з бухгалтером або партнером. Співпрацюйте без ризику випадкових змін.',
+          },
+        },
+        howItWorks: {
+          title: 'Як це працює',
+          step1: {
+            title: 'Зареєструйтеся',
+            description: 'Створіть акаунт через Google або електронну пошту — це займає лише кілька секунд.',
+          },
+          step2: {
+            title: 'Налаштуйте робочий простір',
+            description:
+              'Налаштуйте податковий рік, ставки IVA та IRPF, категорії витрат і необов\'язкове планування Renta.',
+          },
+          step3: {
+            title: 'Відстежуйте та плануйте',
+            description:
+              'Додавайте доходи, витрати та платежі. Переглядайте автоматичні місячні та квартальні зведення з податковими резервами та орієнтирами грошового потоку.',
+          },
+        },
+        footer: {
+          cta: 'Готові спростити фінанси Autónomo?',
+        },
+      },
     },
   },
   ar: {
@@ -2512,6 +2701,69 @@ export const resources = {
         recordsMonthFilter: 'السجلات (تصفية بالشهر)',
         monthKey: 'الشهر (YYYY-MM)',
         recordType: 'نوع السجل',
+      },
+      landing: {
+        nav: { signIn: 'تسجيل الدخول' },
+        hero: {
+          title: 'تحكّم في أموالك كمستقل (Autónomo)',
+          subtitle:
+            'تتبّع الدخل والمصروفات والضرائب. احصل على تقديرات ربع سنوية تلقائية لـ IVA و IRPF — لتعرف دائمًا ما عليك دفعه وما يمكنك إنفاقه.',
+          cta: 'ابدأ الآن',
+        },
+        features: {
+          title: 'كل ما تحتاجه لإدارة أموالك كمستقل',
+          subtitle: 'مصمّم خصيصًا للمهنيين المستقلين في إسبانيا.',
+          tax: {
+            title: 'إدارة الضرائب',
+            description:
+              'حسابات تلقائية لـ IVA و IRPF. تقديرات ربع سنوية للنموذج 303 والنموذج 130 لتكون مستعدًا دائمًا للتقديم.',
+          },
+          summaries: {
+            title: 'ملخصات شهرية وربع سنوية',
+            description:
+              'إرشادات التدفق النقدي واحتياطيات ضريبية موصى بها وإجماليات جاهزة للتقديم — يتم تحديثها تلقائيًا.',
+          },
+          tracking: {
+            title: 'تتبع الدخل والمصروفات',
+            description:
+              'سجّل الفواتير والمصروفات مع استرداد ضريبة القيمة المضافة وقابلية الخصم والتصنيف. الكل في مكان واحد.',
+          },
+          renta: {
+            title: 'التخطيط السنوي للرنتا',
+            description:
+              'تقدير تدريجي لـ IRPF لإقرارك الضريبي السنوي (Renta). يتضمن اقتراح ادخار شهري لتجنب المفاجآت.',
+          },
+          balance: {
+            title: 'الرصيد بعد الضرائب',
+            description:
+              'اطّلع على قدرتك الشرائية الحقيقية بعد الاحتياطيات الضريبية. إرشاد "يمكنك إنفاق" يساعدك على اتخاذ قرارات مالية واثقة.',
+          },
+          sharing: {
+            title: 'مشاركة مساحة العمل',
+            description:
+              'شارك مساحة عملك للقراءة فقط مع محاسبك أو شريكك. تعاون دون المخاطرة بتغييرات عرضية.',
+          },
+        },
+        howItWorks: {
+          title: 'كيف يعمل',
+          step1: {
+            title: 'سجّل حسابك',
+            description: 'أنشئ حسابًا باستخدام Google أو البريد الإلكتروني — يستغرق ثوانٍ فقط.',
+          },
+          step2: {
+            title: 'أعدّ مساحة عملك',
+            description:
+              'حدد السنة الضريبية ومعدلات IVA و IRPF وفئات المصروفات والتخطيط الاختياري للرنتا.',
+          },
+          step3: {
+            title: 'تتبّع وخطّط',
+            description:
+              'أضف الدخل والمصروفات والمدفوعات. اطّلع على ملخصات شهرية وربع سنوية تلقائية مع احتياطيات ضريبية وإرشادات التدفق النقدي.',
+          },
+        },
+        footer: {
+          cta: 'مستعد لتبسيط أموالك كمستقل؟',
+        },
       },
     },
   },
@@ -3141,6 +3393,69 @@ export const resources = {
         recordsMonthFilter: 'Înregistrări (filtru lună)',
         monthKey: 'Lună (YYYY-MM)',
         recordType: 'Tip înregistrare',
+      },
+      landing: {
+        nav: { signIn: 'Autentificare' },
+        hero: {
+          title: 'Preia controlul finanțelor tale ca Autónomo',
+          subtitle:
+            'Urmărește veniturile, cheltuielile și taxele. Obține estimări trimestriale automate pentru IVA și IRPF — ca să știi mereu cât datorezi și cât poți cheltui.',
+          cta: 'Începe acum',
+        },
+        features: {
+          title: 'Tot ce ai nevoie pentru a-ți gestiona finanțele de Autónomo',
+          subtitle: 'Creat special pentru profesioniștii independenți din Spania.',
+          tax: {
+            title: 'Gestiunea taxelor',
+            description:
+              'Calcule automate IVA și IRPF. Estimări trimestriale pentru Modelo 303 și Modelo 130, ca să fii mereu pregătit pentru depunere.',
+          },
+          summaries: {
+            title: 'Rezumate lunare și trimestriale',
+            description:
+              'Ghid de flux de numerar, rezerve fiscale recomandate și totaluri pregătite pentru depunere — actualizate automat.',
+          },
+          tracking: {
+            title: 'Urmărirea veniturilor și cheltuielilor',
+            description:
+              'Înregistrează facturi și cheltuieli cu recuperare TVA, deductibilitate și clasificare. Totul într-un singur loc.',
+          },
+          renta: {
+            title: 'Planificarea anuală Renta',
+            description:
+              'Estimare progresivă IRPF pentru declarația anuală (Renta). Include o sugestie de economisire lunară pentru a evita surprizele.',
+          },
+          balance: {
+            title: 'Sold după taxe',
+            description:
+              'Vezi puterea reală de cheltuire după rezervele fiscale. Ghidul „poți cheltui" te ajută să iei decizii financiare cu încredere.',
+          },
+          sharing: {
+            title: 'Partajarea spațiului de lucru',
+            description:
+              'Partajează spațiul de lucru doar pentru citire cu contabilul sau partenerul tău. Colaborează fără riscul modificărilor accidentale.',
+          },
+        },
+        howItWorks: {
+          title: 'Cum funcționează',
+          step1: {
+            title: 'Creează un cont',
+            description: 'Creează un cont cu Google sau email — durează doar câteva secunde.',
+          },
+          step2: {
+            title: 'Configurează spațiul de lucru',
+            description:
+              'Configurează anul fiscal, cotele IVA și IRPF, categoriile de cheltuieli și planificarea opțională Renta.',
+          },
+          step3: {
+            title: 'Urmărește și planifică',
+            description:
+              'Adaugă venituri, cheltuieli și plăți. Vizualizează rezumate automate lunare și trimestriale cu rezerve fiscale și ghid de flux de numerar.',
+          },
+        },
+        footer: {
+          cta: 'Gata să-ți simplifici finanțele de Autónomo?',
+        },
       },
     },
   },
