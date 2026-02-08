@@ -13,7 +13,7 @@ export function WorkspaceTransfersRoutes(props: { workspaceId: string; api: Auto
         path="new"
         element={
           props.readOnly ? (
-            <Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />
+            <Navigate to={`/workspaces/${props.workspaceId}/balance`} replace />
           ) : (
             <WorkspaceTransfersCreatePage workspaceId={props.workspaceId} api={props.api} />
           )
@@ -23,14 +23,14 @@ export function WorkspaceTransfersRoutes(props: { workspaceId: string; api: Auto
         path=":eventDate/:recordId/edit"
         element={
           props.readOnly ? (
-            <Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />
+            <Navigate to={`/workspaces/${props.workspaceId}/balance`} replace />
           ) : (
             <WorkspaceTransfersEditPage workspaceId={props.workspaceId} api={props.api} />
           )
         }
       />
       <Route path="created" element={<WorkspaceTransfersCreatedPage workspaceId={props.workspaceId} />} />
-      <Route path="*" element={<Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />} />
+      <Route path="*" element={<Navigate to={`/workspaces/${props.workspaceId}/balance`} replace />} />
     </Routes>
   )
 }

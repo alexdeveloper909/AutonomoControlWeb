@@ -35,10 +35,10 @@ export function WorkspaceTransfersCreatedPage(props: { workspaceId: string }) {
       ) : null}
 
       <Stack direction="row" spacing={2}>
-        <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers`}>
+        <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/balance`}>
           {t('transfersCreated.backTo')}
         </Button>
-        <Button variant="text" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
+        <Button variant="text" component={RouterLink} to={`/workspaces/${props.workspaceId}/balance/new`}>
           {t('transfersCreated.addAnother')}
         </Button>
       </Stack>

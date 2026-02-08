@@ -74,7 +74,7 @@ export function WorkspaceTransfersCreatePage(props: {
   const [error, setError] = useState<string | null>(null)
   const [initializedFromRecord, setInitializedFromRecord] = useState(false)
 
-  const backToPath = `/workspaces/${props.workspaceId}/transfers`
+  const backToPath = `/workspaces/${props.workspaceId}/balance`
 
   useEffect(() => {
     if (!editing) return
@@ -137,7 +137,7 @@ export function WorkspaceTransfersCreatePage(props: {
         }
         navigate(backToPath, { replace: true })
       } else {
-        navigate(`/workspaces/${props.workspaceId}/transfers/created`, { replace: true, state: { record: res } })
+        navigate(`/workspaces/${props.workspaceId}/balance/created`, { replace: true, state: { record: res } })
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))

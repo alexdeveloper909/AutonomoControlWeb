@@ -17,6 +17,14 @@ import type { Workspace } from '../../domain/workspace'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 
+function LegacyTransfersRedirect(props: { basePath: string }) {
+  const location = useLocation()
+  const legacyPrefix = `${props.basePath}/transfers`
+  const suffix = location.pathname.startsWith(legacyPrefix) ? location.pathname.slice(legacyPrefix.length) : ''
+  const next = `${props.basePath}/balance${suffix}${location.search}${location.hash}`
+  return <Navigate to={next} replace />
+}
+
 export function WorkspaceLayoutPage() {
   const params = useParams()
   const workspaceId = params.workspaceId
@@ -119,7 +127,7 @@ export function WorkspaceLayoutPage() {
           <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
             <ListItemText primary={t('workspace.statePayments')} />
           </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/transfers`} selected={section === 'transfers'}>
+          <ListItemButton component={RouterLink} to={`${basePath}/balance`} selected={section === 'balance'}>
             <ListItemText primary={t('workspace.transfers')} />
           </ListItemButton>
           <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
@@ -143,7 +151,8 @@ export function WorkspaceLayoutPage() {
         <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
-        <Route path="transfers/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="balance/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="transfers/*" element={<LegacyTransfersRedirect basePath={basePath} />} />
         <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />

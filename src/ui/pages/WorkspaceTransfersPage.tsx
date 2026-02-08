@@ -189,12 +189,40 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
         title={t('transfers.title')}
         right={
           props.readOnly ? null : (
-            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/transfers/new`}>
+            <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/balance/new`}>
               {t('transfers.add')}
             </Button>
           )
         }
       />
+
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'flex-start' }}>
+          <Stack spacing={1} sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">{t('transfers.explainerTitle')}</Typography>
+            <Stack component="ul" spacing={0.5} sx={{ pl: 2, m: 0 }}>
+              {([
+                t('transfers.explainer1', { defaultValue: '' }),
+                t('transfers.explainer2', { defaultValue: '' }),
+                t('transfers.explainer3', { defaultValue: '' }),
+                t('transfers.explainer4', { defaultValue: '' }),
+              ] as const)
+                .filter((s) => Boolean(s && s.trim()))
+                .map((text) => (
+                  <Typography key={text} component="li" variant="body2" color="text.secondary">
+                    {text}
+                  </Typography>
+                ))}
+            </Stack>
+          </Stack>
+
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
+            <Button variant="outlined" size="small" component={RouterLink} to={`/workspaces/${props.workspaceId}/summaries`}>
+              {t('transfers.openSummaries')}
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
@@ -294,7 +322,7 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
                       <TableCell align="right" padding="checkbox">
                         <MoreActionsMenu
                           onEdit={() =>
-                            navigate(`/workspaces/${props.workspaceId}/transfers/${record.eventDate}/${record.recordId}/edit`)
+                            navigate(`/workspaces/${props.workspaceId}/balance/${record.eventDate}/${record.recordId}/edit`)
                           }
                           onDelete={() =>
                             setDeleteTarget({

@@ -6,7 +6,6 @@ export function WorkspaceTransfersEditPage(props: { workspaceId: string; api: Au
   const params = useParams()
   const eventDate = params.eventDate
   const recordId = params.recordId
-  if (!eventDate || !recordId) return <Navigate to={`/workspaces/${props.workspaceId}/transfers`} replace />
+  if (!eventDate || !recordId) return <Navigate to={`/workspaces/${props.workspaceId}/balance`} replace />
   return <WorkspaceTransfersCreatePage workspaceId={props.workspaceId} api={props.api} mode="edit" eventDate={eventDate} recordId={recordId} />
 }
-
