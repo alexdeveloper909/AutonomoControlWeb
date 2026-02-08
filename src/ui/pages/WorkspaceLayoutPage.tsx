@@ -36,10 +36,8 @@ export function WorkspaceLayoutPage() {
   const [error, setError] = useState<string | null>(null)
   const { t } = useTranslation()
 
-  if (!workspaceId) return <Navigate to="/workspaces" replace />
-  const basePath = `/workspaces/${workspaceId}`
-
   useEffect(() => {
+    if (!workspaceId) return
     let cancelled = false
     const load = async () => {
       setError(null)
@@ -57,6 +55,9 @@ export function WorkspaceLayoutPage() {
       cancelled = true
     }
   }, [api, workspaceId])
+
+  if (!workspaceId) return <Navigate to="/workspaces" replace />
+  const basePath = `/workspaces/${workspaceId}`
 
   if (error) {
     return (

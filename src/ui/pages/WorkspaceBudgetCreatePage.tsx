@@ -91,7 +91,7 @@ export function WorkspaceBudgetCreatePage(props: {
     const e = parseEuroAmount(earned)
     if (e === null) return t('budgetCreate.validation.earnedNumber')
     return null
-  }, [earned, monthKey, plannedSpend, t])
+  }, [earned, editing, initializedFromRecord, monthKey, plannedSpend, t])
 
   const submit = async () => {
     setError(null)

@@ -14,7 +14,7 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { TransferOp, TransferPayload } from '../../domain/records'
+import type { RecordResponse, TransferOp, TransferPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -22,6 +22,8 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+
+const errorMessage = (err: unknown): string => (err instanceof Error ? err.message : String(err))
 
 const todayIso = (): string => {
   const d = new Date()
@@ -35,12 +37,16 @@ const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
 const asTransferPayload = (payload: unknown): TransferPayload | null => {
   if (!payload || typeof payload !== 'object') return null
-  const p = payload as Partial<TransferPayload>
-  if (typeof p.date !== 'string') return null
-  if (typeof p.operation !== 'string') return null
-  if (typeof p.amount !== 'number') return null
-  if (p.note != null && typeof p.note !== 'string') return null
-  return p as TransferPayload
+  const p = payload as Record<string, unknown>
+  const date = p.date
+  const operation = p.operation
+  const amount = p.amount
+  const note = p.note
+  if (typeof date !== 'string') return null
+  if (operation !== 'Inflow' && operation !== 'Outflow') return null
+  if (typeof amount !== 'number') return null
+  if (note != null && typeof note !== 'string') return null
+  return { date, operation, amount, note: note ?? undefined }
 }
 
 export function WorkspaceTransfersCreatePage(props: {
@@ -56,7 +62,7 @@ export function WorkspaceTransfersCreatePage(props: {
   const mode = props.mode ?? 'create'
   const editing = mode === 'edit'
 
-  const recordQuery = useQuery({
+  const recordQuery = useQuery<RecordResponse, unknown>({
     queryKey:
       editing && props.eventDate && props.recordId
         ? queryKeys.record(props.workspaceId, 'TRANSFER', props.eventDate, props.recordId)
@@ -100,7 +106,7 @@ export function WorkspaceTransfersCreatePage(props: {
     if (a === null) return t('transfersCreate.validation.amountNumber')
     if (a < 0) return t('transfersCreate.validation.amountNonNegative')
     return null
-  }, [amount, date, t])
+  }, [amount, date, editing, initializedFromRecord, t])
 
   const submit = async () => {
     setError(null)
@@ -113,7 +119,10 @@ export function WorkspaceTransfersCreatePage(props: {
     setSubmitting(true)
     try {
       const a = parseEuroAmount(amount)
-      if (a === null) throw new Error(t('transfersCreate.validation.amountNumber'))
+      if (a === null) {
+        setError(t('transfersCreate.validation.amountNumber'))
+        return
+      }
 
       const payload: TransferPayload = {
         date,
@@ -140,7 +149,7 @@ export function WorkspaceTransfersCreatePage(props: {
         navigate(`/workspaces/${props.workspaceId}/balance/created`, { replace: true, state: { record: res } })
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(errorMessage(e))
     } finally {
       setSubmitting(false)
     }
@@ -162,7 +171,7 @@ export function WorkspaceTransfersCreatePage(props: {
 
       {error ? <ErrorAlert message={error} /> : null}
       {recordQuery.error ? (
-        <ErrorAlert message={recordQuery.error instanceof Error ? recordQuery.error.message : String(recordQuery.error)} />
+        <ErrorAlert message={errorMessage(recordQuery.error)} />
       ) : null}
 
       <Paper variant="outlined" sx={{ p: 2 }}>
@@ -177,7 +186,7 @@ export function WorkspaceTransfersCreatePage(props: {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               required
               fullWidth
               error={Boolean(date) && !isIsoDate(date)}

@@ -75,7 +75,7 @@ Notes:
 - Sorting: `sort=eventDateDesc` (server-side).
 - Pagination: `limit` controls page size (UI uses `20`). If the response includes `nextToken`, pass it back to fetch the next page (when `nextToken` is provided, `limit` is required).
 - Response shape:
-  ```json
+  ```jsonc
   { "items": [ /* RecordResponse */ ], "nextToken": "optional-opaque" }
   ```
 

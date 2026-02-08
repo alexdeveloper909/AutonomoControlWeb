@@ -147,7 +147,7 @@ export function WorkspaceExpensesCreatePage(props: {
     const override = amountPaidOverride.trim() ? parseEuroAmount(amountPaidOverride) : null
     if (override === null && amountPaidOverride.trim()) return t('expensesCreate.validation.amountPaidOverrideNumber')
     return null
-  }, [amountPaidOverride, baseExclVat, category, deductibleShare, documentDate, paymentDate, t, vendor])
+  }, [amountPaidOverride, baseExclVat, category, deductibleShare, documentDate, editing, initializedFromRecord, paymentDate, t, vendor])
 
   const submit = async () => {
     setError(null)

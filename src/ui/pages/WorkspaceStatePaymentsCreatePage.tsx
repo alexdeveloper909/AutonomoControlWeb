@@ -97,7 +97,7 @@ export function WorkspaceStatePaymentsCreatePage(props: {
     if (a === null) return t('statePaymentsCreate.validation.amountNumber')
     if (a < 0) return t('statePaymentsCreate.validation.amountNonNegative')
     return null
-  }, [amount, paymentDate, t])
+  }, [amount, editing, initializedFromRecord, paymentDate, t])
 
   const submit = async () => {
     setError(null)

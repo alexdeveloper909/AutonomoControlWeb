@@ -116,7 +116,7 @@ export function WorkspaceIncomeCreatePage(props: {
     const override = amountReceivedOverride.trim() ? parseEuroAmount(amountReceivedOverride) : null
     if (override === null && amountReceivedOverride.trim()) return t('incomeCreate.validation.amountReceivedOverrideNumber')
     return null
-  }, [amountReceivedOverride, baseExclVat, client, invoiceDate, number, paymentDate, t])
+  }, [amountReceivedOverride, baseExclVat, client, editing, initializedFromRecord, invoiceDate, number, paymentDate, t])
 
   const submit = async () => {
     setError(null)

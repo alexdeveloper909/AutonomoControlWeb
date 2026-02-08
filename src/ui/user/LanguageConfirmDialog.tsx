@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { AppLanguage } from '../../domain/language'
 import { LanguageSelect } from './LanguageSelect'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,15 @@ import { isAppLanguage } from '../../domain/language'
 import { ErrorAlert } from '../components/ErrorAlert'
 
 export function LanguageConfirmDialog(props: {
+  open: boolean
+  initialLanguage: AppLanguage
+  onConfirm: (lang: AppLanguage) => Promise<void>
+}) {
+  if (!props.open) return null
+  return <LanguageConfirmDialogInner key={props.initialLanguage} {...props} />
+}
+
+function LanguageConfirmDialogInner(props: {
   open: boolean
   initialLanguage: AppLanguage
   onConfirm: (lang: AppLanguage) => Promise<void>
@@ -21,13 +30,6 @@ export function LanguageConfirmDialog(props: {
   const [draft, setDraft] = useState<AppLanguage>(props.initialLanguage)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!props.open) return
-    setDraft(props.initialLanguage)
-    setSaving(false)
-    setError(null)
-  }, [props.initialLanguage, props.open])
 
   const confirm = async () => {
     setError(null)
