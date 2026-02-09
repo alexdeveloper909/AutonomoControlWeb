@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   Container,
   Grid,
@@ -20,17 +21,31 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined'
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined'
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined'
+import MoneyOffOutlinedIcon from '@mui/icons-material/MoneyOffOutlined'
+import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined'
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 /* ---------- feature card data ---------- */
 
-const featureKeys = [
+const GITHUB_REPO_URL = 'https://github.com/alexdeveloper909/AutonomoControlWeb'
+
+interface FeatureEntry {
+  key: string
+  Icon: typeof ReceiptLongOutlinedIcon
+  href?: string
+}
+
+const featureKeys: readonly FeatureEntry[] = [
   { key: 'tax', Icon: ReceiptLongOutlinedIcon },
   { key: 'summaries', Icon: BarChartOutlinedIcon },
   { key: 'tracking', Icon: AccountBalanceWalletOutlinedIcon },
   { key: 'renta', Icon: SavingsOutlinedIcon },
   { key: 'balance', Icon: AccountBalanceOutlinedIcon },
   { key: 'sharing', Icon: PeopleOutlinedIcon },
-] as const
+  { key: 'free', Icon: MoneyOffOutlinedIcon },
+  { key: 'openSource', Icon: CodeOutlinedIcon, href: GITHUB_REPO_URL },
+  { key: 'encryption', Icon: LockOutlinedIcon },
+]
 
 /* ---------- component ---------- */
 
@@ -88,25 +103,43 @@ export function LandingPage() {
           </Typography>
 
           <Grid container spacing={3}>
-            {featureKeys.map(({ key, Icon }) => (
-              <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card variant="outlined" sx={{ height: '100%' }}>
-                  <CardContent>
-                    <Stack spacing={1.5}>
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
-                        <Icon />
-                      </Avatar>
-                      <Typography variant="h6" fontWeight={600}>
-                        {t(`landing.features.${key}.title`)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {t(`landing.features.${key}.description`)}
-                      </Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+            {featureKeys.map(({ key, Icon, href }) => {
+              const cardInner = (
+                <CardContent>
+                  <Stack spacing={1.5}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
+                      <Icon />
+                    </Avatar>
+                    <Typography variant="h6" fontWeight={600}>
+                      {t(`landing.features.${key}.title`)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t(`landing.features.${key}.description`)}
+                    </Typography>
+                  </Stack>
+                </CardContent>
+              )
+
+              return (
+                <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card variant="outlined" sx={{ height: '100%' }}>
+                    {href ? (
+                      <CardActionArea
+                        component="a"
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ height: '100%' }}
+                      >
+                        {cardInner}
+                      </CardActionArea>
+                    ) : (
+                      cardInner
+                    )}
+                  </Card>
+                </Grid>
+              )
+            })}
           </Grid>
         </Container>
       </Box>

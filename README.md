@@ -121,6 +121,7 @@ And set matching runtime release (example):
 
 ## MVP screens
 
+- `/` → public **landing page** (no auth required): hero section, feature highlights, how-it-works steps, and CTA to sign in. Component: `src/ui/pages/LandingPage.tsx`.
 - `/login` → starts Cognito Hosted UI login (Google if configured)
 - `/workspaces` → list/create workspaces (POST `/workspaces`)
 - `/workspaces/:workspaceId` → workspace area with app shell + **left navigation** (services grouped by domain)

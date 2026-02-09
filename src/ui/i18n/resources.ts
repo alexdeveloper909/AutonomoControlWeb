@@ -667,6 +667,21 @@ export const resources = {
             description:
               'Share your workspace read-only with your accountant or business partner. Collaborate without risking accidental changes.',
           },
+          free: {
+            title: 'Completely Free, No Ads',
+            description:
+              'AutonomoControl is 100% free to use with no advertisements. No premium tiers, no hidden fees — just the tools you need.',
+          },
+          openSource: {
+            title: 'Open Source',
+            description:
+              'The code is publicly available on GitHub. Inspect it, suggest improvements, or learn from it. Click to view the repository.',
+          },
+          encryption: {
+            title: 'Encrypted & Private',
+            description:
+              'Your financial data is encrypted at rest. Only you can see your records — they are stored in a way that is unreadable to anyone else.',
+          },
         },
         howItWorks: {
           title: 'How it works',
@@ -1362,6 +1377,21 @@ export const resources = {
             description:
               'Comparte tu espacio de trabajo en modo solo lectura con tu asesor o socio. Colabora sin riesgo de cambios accidentales.',
           },
+          free: {
+            title: 'Totalmente gratis, sin anuncios',
+            description:
+              'AutonomoControl es 100% gratuito y sin publicidad. Sin planes premium ni costes ocultos — solo las herramientas que necesitas.',
+          },
+          openSource: {
+            title: 'Código abierto',
+            description:
+              'El código está disponible públicamente en GitHub. Inspecciónalo, sugiere mejoras o aprende de él. Haz clic para ver el repositorio.',
+          },
+          encryption: {
+            title: 'Cifrado y privado',
+            description:
+              'Tus datos financieros están cifrados en reposo. Solo tú puedes ver tus registros — se almacenan de forma ilegible para cualquier otra persona.',
+          },
         },
         howItWorks: {
           title: 'Cómo funciona',
@@ -2054,6 +2084,21 @@ export const resources = {
             description:
               'Поділіться робочим простором у режимі лише для читання з бухгалтером або партнером. Співпрацюйте без ризику випадкових змін.',
           },
+          free: {
+            title: 'Повністю безкоштовно, без реклами',
+            description:
+              'AutonomoControl на 100% безкоштовний і без реклами. Без преміум-планів, без прихованих платежів — лише потрібні інструменти.',
+          },
+          openSource: {
+            title: 'Відкритий код',
+            description:
+              'Код доступний публічно на GitHub. Переглядайте, пропонуйте покращення або навчайтесь. Натисніть, щоб переглянути репозиторій.',
+          },
+          encryption: {
+            title: 'Зашифровано та приватно',
+            description:
+              'Ваші фінансові дані зашифровані у сховищі. Тільки ви можете бачити свої записи — вони зберігаються у нечитабельному для інших вигляді.',
+          },
         },
         howItWorks: {
           title: 'Як це працює',
@@ -2742,6 +2787,21 @@ export const resources = {
             title: 'مشاركة مساحة العمل',
             description:
               'شارك مساحة عملك للقراءة فقط مع محاسبك أو شريكك. تعاون دون المخاطرة بتغييرات عرضية.',
+          },
+          free: {
+            title: 'مجاني بالكامل، بدون إعلانات',
+            description:
+              'AutonomoControl مجاني 100% وبدون إعلانات. لا خطط مدفوعة ولا رسوم خفية — فقط الأدوات التي تحتاجها.',
+          },
+          openSource: {
+            title: 'مفتوح المصدر',
+            description:
+              'الكود متاح للعامة على GitHub. تفحّصه أو اقترح تحسينات أو تعلّم منه. انقر لعرض المستودع.',
+          },
+          encryption: {
+            title: 'مشفّر وخاص',
+            description:
+              'بياناتك المالية مشفّرة أثناء التخزين. أنت وحدك من يمكنه رؤية سجلاتك — تُخزَّن بطريقة غير قابلة للقراءة من قبل أي شخص آخر.',
           },
         },
         howItWorks: {
@@ -3434,6 +3494,21 @@ export const resources = {
             title: 'Partajarea spațiului de lucru',
             description:
               'Partajează spațiul de lucru doar pentru citire cu contabilul sau partenerul tău. Colaborează fără riscul modificărilor accidentale.',
+          },
+          free: {
+            title: 'Complet gratuit, fără reclame',
+            description:
+              'AutonomoControl este 100% gratuit și fără reclame. Fără planuri premium, fără costuri ascunse — doar instrumentele de care ai nevoie.',
+          },
+          openSource: {
+            title: 'Cod deschis',
+            description:
+              'Codul este disponibil public pe GitHub. Inspectează-l, sugerează îmbunătățiri sau învață din el. Clic pentru a vizualiza depozitul.',
+          },
+          encryption: {
+            title: 'Criptat și privat',
+            description:
+              'Datele tale financiare sunt criptate în repaus. Doar tu poți vedea înregistrările — sunt stocate într-un mod ilizibil pentru oricine altcineva.',
           },
         },
         howItWorks: {
