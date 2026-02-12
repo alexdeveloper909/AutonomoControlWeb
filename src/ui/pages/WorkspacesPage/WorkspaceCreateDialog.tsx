@@ -19,7 +19,6 @@ import type { Workspace } from '../../../domain/workspace'
 import { defaultRentaPlanningSettings, type IrpfTerritory, type WorkspaceSettings } from '../../../domain/settings'
 import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../../components/ErrorAlert'
-import { ExpenseCategoriesEditor } from '../../components/ExpenseCategoriesEditor'
 import { useTranslation } from 'react-i18next'
 import { FieldLabel } from '../../components/FieldLabel'
 
@@ -33,7 +32,6 @@ const defaultSettings = (): WorkspaceSettings => {
     irpfRate: 0.2,
     obligacion130: true,
     openingBalance: 0,
-    expenseCategories: ['Software/SaaS', 'Equipment', 'Other'],
     rentaPlanning: defaultRentaPlanningSettings(year),
   }
 }
@@ -91,7 +89,6 @@ export function WorkspaceCreateDialog(props: {
         settings: {
           ...settings,
           openingBalance,
-          expenseCategories: settings.expenseCategories.map((c) => c.trim()).filter(Boolean),
           rentaPlanning: settings.rentaPlanning
             ? { ...settings.rentaPlanning, taxYear: settings.year }
             : defaultRentaPlanningSettings(settings.year),
@@ -194,16 +191,6 @@ export function WorkspaceCreateDialog(props: {
               setSettings((s) => ({ ...s, openingBalance: parsed }))
             }}
             fullWidth
-          />
-
-          <Typography variant="subtitle2">{t('workspaceCreate.expenseCategories')}</Typography>
-          <ExpenseCategoriesEditor
-            categories={settings.expenseCategories}
-            onChange={(next) => setSettings((s) => ({ ...s, expenseCategories: next }))}
-            placeholder={t('workspaceCreate.categoryPlaceholder')}
-            removeLabel={t('workspaceCreate.remove')}
-            addLabel={t('workspaceCreate.addCategory')}
-            disabled={saving}
           />
 
           <Divider />

@@ -22,7 +22,6 @@ import type { Workspace } from '../../domain/workspace'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { useTranslation } from 'react-i18next'
-import { ExpenseCategoriesEditor } from '../components/ExpenseCategoriesEditor'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../queries/queryKeys'
 import { FieldLabel } from '../components/FieldLabel'
@@ -50,26 +49,11 @@ export function WorkspaceSettingsDialog(props: {
   const canConfirmDelete = useMemo(() => deleteConfirm.trim() === props.workspace.name.trim(), [deleteConfirm, props.workspace.name])
   const readOnly = useMemo(() => props.workspace.accessMode === 'READ_ONLY', [props.workspace.accessMode])
 
-  const normalizeCategories = (cats: string[]): string[] => {
-    const out: string[] = []
-    const seen = new Set<string>()
-    for (const raw of cats) {
-      const v = raw.trim()
-      if (!v) continue
-      const k = v.toLowerCase()
-      if (seen.has(k)) continue
-      seen.add(k)
-      out.push(v)
-    }
-    return out
-  }
-
   const editableSnapshot = (s: WorkspaceSettings): string =>
     JSON.stringify({
       ivaStd: s.ivaStd,
       irpfRate: s.irpfRate,
       obligacion130: s.obligacion130,
-      expenseCategories: normalizeCategories(s.expenseCategories),
       rentaPlanning: s.rentaPlanning,
     })
 
@@ -129,7 +113,6 @@ export function WorkspaceSettingsDialog(props: {
         irpfRate: draft.irpfRate,
         obligacion130: draft.obligacion130,
         openingBalance: settings.openingBalance ?? null,
-        expenseCategories: normalizeCategories(draft.expenseCategories),
         rentaPlanning: draft.rentaPlanning,
       })
       const saved = await props.api.putWorkspaceSettings(props.workspace.workspaceId, payload)
@@ -236,16 +219,6 @@ export function WorkspaceSettingsDialog(props: {
                 placeholder={t('common.na')}
                 fullWidth
                 disabled
-              />
-
-              <Typography variant="subtitle2">{t('workspaceCreate.expenseCategories')}</Typography>
-              <ExpenseCategoriesEditor
-                categories={draft.expenseCategories}
-                onChange={(next) => setDraft((s) => (s ? { ...s, expenseCategories: next } : s))}
-                placeholder={t('workspaceCreate.categoryPlaceholder')}
-                removeLabel={t('workspaceCreate.remove')}
-                addLabel={t('workspaceCreate.addCategory')}
-                disabled={readOnly || saving}
               />
 
               <Divider />

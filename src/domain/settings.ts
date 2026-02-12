@@ -43,7 +43,6 @@ export type WorkspaceSettings = {
   irpfRate: number
   obligacion130: boolean
   openingBalance: number | null
-  expenseCategories: string[]
   rentaPlanning: RentaPlanningSettings | null
 }
 
@@ -122,6 +121,5 @@ export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings 
   irpfRate: s.irpfRate,
   obligacion130: s.obligacion130,
   openingBalance: s.openingBalance ?? null,
-  expenseCategories: Array.isArray(s.expenseCategories) ? s.expenseCategories.slice() : [],
   rentaPlanning: cleanRentaPlanning((s as unknown as Record<string, unknown>).rentaPlanning, s.year),
 })

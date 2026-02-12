@@ -126,6 +126,24 @@ export const resources = {
         budget: 'Budget',
         summaries: 'Summaries',
       },
+      expenseCategories: {
+        defaults: {
+          healthInsurance: 'Health insurance',
+          homeOfficeUtilityBills: 'Home office utility bills',
+          homeOfficeRentalExpense: 'Home office rental expense',
+          personalNonDeductible: 'Personal/Non-deductible',
+          professionalExpenses: 'Professional expenses',
+          socialSecurityAndProfFees: 'Social security & prof. fees',
+          transportationAndAccommodation: 'Transportation & accommodation',
+          foodAndDrinksIncludingLunch: 'Food and drinks (including lunch)',
+          purchaseOfGoods: 'Purchase of goods',
+          businessLunchWithClients: 'Business lunch with clients',
+          gasolineAndVehicleExpenses: 'Gasoline and vehicle expenses',
+          computerHardwareAndSoftware: 'Computer hardware & software',
+          furnitureAndOtherTangibleAssets: 'Furniture & other tangible assets',
+          other: 'Other',
+        },
+      },
       workspaceDetails: {
         name: 'Name',
         id: 'Workspace id',
@@ -289,7 +307,7 @@ export const resources = {
           documentDate: 'Date on the receipt/invoice. Used for grouping if Payment date is empty.',
           paymentDate: 'Set when you actually pay. This moves the expense into the paid month/quarter (cash basis).',
           vendor: 'Who you paid (supplier).',
-          category: 'Used for reporting and filtering (typically one of your workspace categories).',
+          category: 'Used for reporting and filtering (choose from the default list, or type your own).',
           baseExclVat: 'Net amount before IVA.',
           amountPaidOverride: 'Override cash paid (e.g., partial payment, discounts, or split payments).',
           ivaRate: 'VAT rate on the document.',
@@ -692,7 +710,7 @@ export const resources = {
           step2: {
             title: 'Set up your workspace',
             description:
-              'Configure your tax year, IVA and IRPF rates, expense categories, and optional Renta planning.',
+              'Configure your tax year, IVA and IRPF rates, and optional Renta planning.',
           },
           step3: {
             title: 'Track & plan',
@@ -831,6 +849,24 @@ export const resources = {
         transfers: 'Saldo',
         budget: 'Presupuesto',
         summaries: 'Resúmenes',
+      },
+      expenseCategories: {
+        defaults: {
+          healthInsurance: 'Seguro médico',
+          homeOfficeUtilityBills: 'Facturas de suministros del despacho en casa',
+          homeOfficeRentalExpense: 'Gasto de alquiler del despacho en casa',
+          personalNonDeductible: 'Personal / No deducible',
+          professionalExpenses: 'Gastos profesionales',
+          socialSecurityAndProfFees: 'Seguridad Social y cuotas profesionales',
+          transportationAndAccommodation: 'Transporte y alojamiento',
+          foodAndDrinksIncludingLunch: 'Comida y bebidas (incluido el almuerzo)',
+          purchaseOfGoods: 'Compra de mercancías',
+          businessLunchWithClients: 'Comida de negocios con clientes',
+          gasolineAndVehicleExpenses: 'Gasolina y gastos del vehículo',
+          computerHardwareAndSoftware: 'Hardware y software informático',
+          furnitureAndOtherTangibleAssets: 'Mobiliario y otros activos tangibles',
+          other: 'Otros',
+        },
       },
       workspaceDetails: {
         name: 'Nombre',
@@ -1402,7 +1438,7 @@ export const resources = {
           step2: {
             title: 'Configura tu espacio de trabajo',
             description:
-              'Configura tu año fiscal, tipos de IVA e IRPF, categorías de gastos y planificación opcional de la Renta.',
+              'Configura tu año fiscal, tipos de IVA e IRPF y planificación opcional de la Renta.',
           },
           step3: {
             title: 'Registra y planifica',
@@ -1538,6 +1574,24 @@ export const resources = {
         transfers: 'Баланс',
         budget: 'Бюджет',
         summaries: 'Підсумки',
+      },
+      expenseCategories: {
+        defaults: {
+          healthInsurance: 'Медичне страхування',
+          homeOfficeUtilityBills: 'Комунальні рахунки домашнього офісу',
+          homeOfficeRentalExpense: 'Витрати на оренду домашнього офісу',
+          personalNonDeductible: 'Особисте / Не підлягає відрахуванню',
+          professionalExpenses: 'Професійні витрати',
+          socialSecurityAndProfFees: 'Соціальне страхування та проф. внески',
+          transportationAndAccommodation: 'Транспорт і проживання',
+          foodAndDrinksIncludingLunch: 'Їжа та напої (включно з обідом)',
+          purchaseOfGoods: 'Закупівля товарів',
+          businessLunchWithClients: 'Діловий обід із клієнтами',
+          gasolineAndVehicleExpenses: 'Витрати на пальне та автомобіль',
+          computerHardwareAndSoftware: "Комп'ютерне обладнання та ПЗ",
+          furnitureAndOtherTangibleAssets: 'Меблі та інші матеріальні активи',
+          other: 'Інше',
+        },
       },
       workspaceDetails: {
         name: 'Назва',
@@ -1702,7 +1756,7 @@ export const resources = {
           documentDate: 'Дата на документі/чеку. Використовується для групування, якщо дату оплати не вказано.',
           paymentDate: 'Вкажіть, коли ви фактично сплатили. Це переносить витрату в місяць/квартал оплати (касовий метод).',
           vendor: 'Кому ви заплатили (постачальник).',
-          category: 'Для звітів і фільтрів (зазвичай одна з категорій вашого робочого простору).',
+          category: 'Для звітів і фільтрів (оберіть зі списку за замовчуванням або введіть власну).',
           baseExclVat: 'Сума без ПДВ.',
           amountPaidOverride: 'Перевизначте фактично сплачену суму (часткова оплата, знижка або розділені платежі).',
           ivaRate: 'Ставка IVA у документі.',
@@ -2109,7 +2163,7 @@ export const resources = {
           step2: {
             title: 'Налаштуйте робочий простір',
             description:
-              'Налаштуйте податковий рік, ставки IVA та IRPF, категорії витрат і необов\'язкове планування Renta.',
+              'Налаштуйте податковий рік, ставки IVA та IRPF і необов\'язкове планування Renta.',
           },
           step3: {
             title: 'Відстежуйте та плануйте',
@@ -2245,6 +2299,24 @@ export const resources = {
         transfers: 'الرصيد',
         budget: 'الميزانية',
         summaries: 'الملخصات',
+      },
+      expenseCategories: {
+        defaults: {
+          healthInsurance: 'التأمين الصحي',
+          homeOfficeUtilityBills: 'فواتير خدمات المرافق لمكتب المنزل',
+          homeOfficeRentalExpense: 'مصروف إيجار مكتب المنزل',
+          personalNonDeductible: 'شخصي / غير قابل للخصم',
+          professionalExpenses: 'مصروفات مهنية',
+          socialSecurityAndProfFees: 'الضمان الاجتماعي والرسوم المهنية',
+          transportationAndAccommodation: 'النقل والإقامة',
+          foodAndDrinksIncludingLunch: 'الطعام والشراب (بما في ذلك الغداء)',
+          purchaseOfGoods: 'شراء البضائع',
+          businessLunchWithClients: 'غداء عمل مع العملاء',
+          gasolineAndVehicleExpenses: 'مصروفات الوقود والمركبة',
+          computerHardwareAndSoftware: 'أجهزة وبرمجيات الكمبيوتر',
+          furnitureAndOtherTangibleAssets: 'الأثاث والأصول المادية الأخرى',
+          other: 'أخرى',
+        },
       },
       workspaceDetails: {
         name: 'الاسم',
@@ -2408,7 +2480,7 @@ export const resources = {
           documentDate: 'تاريخ الفاتورة/الإيصال. يُستخدم للتجميع إذا كان تاريخ الدفع فارغًا.',
           paymentDate: 'حدده عند الدفع فعليًا. ينقل المصروف إلى شهر/ربع الدفع (أساس نقدي).',
           vendor: 'الجهة التي دفعت لها (المورّد).',
-          category: 'تُستخدم للتقارير والتصفية (عادةً إحدى فئات مساحة العمل).',
+          category: 'تُستخدم للتقارير والتصفية (اختر من القائمة الافتراضية أو اكتب فئتك).',
           baseExclVat: 'المبلغ الصافي قبل IVA.',
           amountPaidOverride: 'تجاوز المبلغ النقدي المدفوع (دفعة جزئية، خصم، أو دفعات مقسمة).',
           ivaRate: 'معدل IVA في المستند.',
@@ -2813,7 +2885,7 @@ export const resources = {
           step2: {
             title: 'أعدّ مساحة عملك',
             description:
-              'حدد السنة الضريبية ومعدلات IVA و IRPF وفئات المصروفات والتخطيط الاختياري للرنتا.',
+              'حدد السنة الضريبية ومعدلات IVA و IRPF والتخطيط الاختياري للرنتا.',
           },
           step3: {
             title: 'تتبّع وخطّط',
@@ -2949,6 +3021,24 @@ export const resources = {
         transfers: 'Sold',
         budget: 'Buget',
         summaries: 'Sumare',
+      },
+      expenseCategories: {
+        defaults: {
+          healthInsurance: 'Asigurare de sănătate',
+          homeOfficeUtilityBills: 'Facturi utilități pentru biroul de acasă',
+          homeOfficeRentalExpense: 'Cheltuială cu chiria biroului de acasă',
+          personalNonDeductible: 'Personal / Nedeductibil',
+          professionalExpenses: 'Cheltuieli profesionale',
+          socialSecurityAndProfFees: 'Asigurări sociale și taxe profesionale',
+          transportationAndAccommodation: 'Transport și cazare',
+          foodAndDrinksIncludingLunch: 'Mâncare și băuturi (inclusiv prânzul)',
+          purchaseOfGoods: 'Achiziție de bunuri',
+          businessLunchWithClients: 'Prânz de afaceri cu clienți',
+          gasolineAndVehicleExpenses: 'Cheltuieli cu combustibilul și vehiculul',
+          computerHardwareAndSoftware: 'Hardware și software pentru computer',
+          furnitureAndOtherTangibleAssets: 'Mobilier și alte active corporale',
+          other: 'Altele',
+        },
       },
       workspaceDetails: {
         name: 'Nume',
@@ -3113,7 +3203,7 @@ export const resources = {
           documentDate: 'Data de pe bon/factură. Este folosită pentru grupare dacă Data plății este goală.',
           paymentDate: 'Setează când plătești efectiv. Mută cheltuiala în luna/trimestrul plății (bază de numerar).',
           vendor: 'Cui ai plătit (furnizor).',
-          category: 'Folosită pentru rapoarte și filtrare (de obicei una dintre categoriile spațiului).',
+          category: 'Folosită pentru rapoarte și filtrare (alege din lista implicită sau tastează propria categorie).',
           baseExclVat: 'Suma netă înainte de IVA/TVA.',
           amountPaidOverride: 'Suprascrie numerarul plătit (plată parțială, reduceri sau plăți împărțite).',
           ivaRate: 'Rata de IVA din document.',
@@ -3520,7 +3610,7 @@ export const resources = {
           step2: {
             title: 'Configurează spațiul de lucru',
             description:
-              'Configurează anul fiscal, cotele IVA și IRPF, categoriile de cheltuieli și planificarea opțională Renta.',
+              'Configurează anul fiscal, cotele IVA și IRPF și planificarea opțională Renta.',
           },
           step3: {
             title: 'Urmărește și planifică',

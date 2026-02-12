@@ -3,7 +3,6 @@ import {
   Autocomplete,
   Button,
   Checkbox,
-  CircularProgress,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -26,6 +25,7 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+import { defaultExpenseCategories } from '../../domain/expenseCategories'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -65,11 +65,6 @@ export function WorkspaceExpensesCreatePage(props: {
   const mode = props.mode ?? 'create'
   const editing = mode === 'edit'
 
-  const settingsQuery = useQuery({
-    queryKey: queryKeys.workspaceSettings(props.workspaceId),
-    queryFn: () => props.api.getWorkspaceSettings(props.workspaceId),
-  })
-
   const recordQuery = useQuery({
     queryKey:
       editing && props.eventDate && props.recordId
@@ -96,20 +91,7 @@ export function WorkspaceExpensesCreatePage(props: {
 
   const backToExpensesPath = `/workspaces/${props.workspaceId}/expenses`
 
-  const categoryOptions = useMemo(() => {
-    const cats = settingsQuery.data?.expenseCategories ?? []
-    const out: string[] = []
-    const seen = new Set<string>()
-    for (const raw of cats) {
-      const v = raw.trim()
-      if (!v) continue
-      const k = v.toLowerCase()
-      if (seen.has(k)) continue
-      seen.add(k)
-      out.push(v)
-    }
-    return out.sort((a, b) => a.localeCompare(b))
-  }, [settingsQuery.data?.expenseCategories])
+  const categoryOptions = useMemo(() => defaultExpenseCategories(t), [t])
 
   useEffect(() => {
     if (!editing) return
@@ -294,7 +276,6 @@ export function WorkspaceExpensesCreatePage(props: {
                     ...params.InputProps,
                     endAdornment: (
                       <>
-                        {settingsQuery.isFetching ? <CircularProgress color="inherit" size={16} /> : null}
                         {params.InputProps.endAdornment}
                       </>
                     ),
