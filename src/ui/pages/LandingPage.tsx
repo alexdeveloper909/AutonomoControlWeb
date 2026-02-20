@@ -56,7 +56,7 @@ export function LandingPage() {
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       {/* ---- Top bar ---- */}
-      <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <AppBar position="sticky">
         <Toolbar>
           <Typography variant="h6" sx={{ flex: 1, fontWeight: 700 }}>
             AutonomoControl
@@ -73,8 +73,8 @@ export function LandingPage() {
           py: { xs: 8, md: 12 },
           background:
             theme.palette.mode === 'dark'
-              ? `linear-gradient(160deg, ${theme.palette.primary.dark}22 0%, ${theme.palette.background.default} 60%)`
-              : `linear-gradient(160deg, ${theme.palette.primary.light}33 0%, ${theme.palette.background.default} 60%)`,
+              ? `linear-gradient(160deg, rgba(61,110,245,0.12) 0%, ${theme.palette.background.default} 60%)`
+              : `linear-gradient(160deg, rgba(61,110,245,0.10) 0%, ${theme.palette.background.default} 60%)`,
         }}
       >
         <Container maxWidth="md">
@@ -122,7 +122,7 @@ export function LandingPage() {
 
               return (
                 <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Card variant="outlined" sx={{ height: '100%' }}>
+                  <Card variant="outlined" sx={{ height: '100%', '&:hover': { borderColor: 'primary.main', boxShadow: 2 } }}>
                     {href ? (
                       <CardActionArea
                         component="a"
@@ -145,7 +145,12 @@ export function LandingPage() {
       </Box>
 
       {/* ---- How it works ---- */}
-      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'action.hover' }}>
+      <Box
+        sx={{
+          py: { xs: 6, md: 10 },
+          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+        }}
+      >
         <Container maxWidth="md">
           <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
             {t('landing.howItWorks.title')}
