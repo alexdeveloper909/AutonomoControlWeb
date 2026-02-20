@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { Button, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, Stack, Typography, IconButton, Chip } from '@mui/material'
+import { Button, Chip, Divider, IconButton, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, Stack, Typography } from '@mui/material'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../auth/useAuth'
@@ -111,33 +111,47 @@ export function WorkspaceLayoutPage() {
         </Stack>
       }
       nav={
-        <List
-          component="nav"
-          subheader={
-            <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
-              {t('workspace.finance')}
-            </ListSubheader>
-          }
-        >
-          <ListItemButton component={RouterLink} to={`${basePath}/income`} selected={section === 'income'}>
-            <ListItemText primary={t('workspace.income')} />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/expenses`} selected={section === 'expenses'}>
-            <ListItemText primary={t('workspace.expenses')} />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
-            <ListItemText primary={t('workspace.statePayments')} />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/balance`} selected={section === 'balance'}>
-            <ListItemText primary={t('workspace.transfers')} />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
-            <ListItemText primary={t('workspace.budget')} />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to={`${basePath}/summaries`} selected={section === 'summaries'}>
-            <ListItemText primary={t('workspace.summaries')} />
-          </ListItemButton>
-        </List>
+        <>
+          <List
+            component="nav"
+            subheader={
+              <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
+                {t('workspace.finance')}
+              </ListSubheader>
+            }
+          >
+            <ListItemButton component={RouterLink} to={`${basePath}/income`} selected={section === 'income'}>
+              <ListItemText primary={t('workspace.income')} />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/expenses`} selected={section === 'expenses'}>
+              <ListItemText primary={t('workspace.expenses')} />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
+              <ListItemText primary={t('workspace.statePayments')} />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/summaries`} selected={section === 'summaries'}>
+              <ListItemText primary={t('workspace.summaries')} />
+            </ListItemButton>
+          </List>
+
+          <Divider sx={{ mx: 1 }} />
+
+          <List
+            component="nav"
+            subheader={
+              <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
+                {t('workspace.planning')}
+              </ListSubheader>
+            }
+          >
+            <ListItemButton component={RouterLink} to={`${basePath}/balance`} selected={section === 'balance'}>
+              <ListItemText primary={t('workspace.transfers')} />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
+              <ListItemText primary={t('workspace.budget')} />
+            </ListItemButton>
+          </List>
+        </>
       }
     >
       <WorkspaceSettingsDialog
