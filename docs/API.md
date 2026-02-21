@@ -30,6 +30,8 @@ All authenticated requests include:
 - `GET /workspaces/{workspaceId}/records?quarter=YYYY-Q1&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `POST /workspaces/{workspaceId}/records`
+- `GET /workspaces/{workspaceId}/regular-spendings`
+- `GET /workspaces/{workspaceId}/regular-spendings/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
 - `POST /workspaces/{workspaceId}/summaries/renta`
@@ -50,6 +52,7 @@ The API record types used in the web client are:
 - `STATE_PAYMENT`
 - `TRANSFER`
 - `BUDGET` (BudgetEntry)
+- `REGULAR_SPENDING` (RegularSpending)
 
 ## Example payloads
 
@@ -90,6 +93,7 @@ When creating records, the UI invalidates caches so the next navigation refetche
 
 - `INVOICE` / `EXPENSE` / `STATE_PAYMENT`: invalidate the matching record list cache and `Summaries`.
 - `TRANSFER` / `BUDGET`: invalidate the matching record list cache; do **not** invalidate `Summaries`.
+- `REGULAR_SPENDING`: invalidate the regular spendings definitions cache; do **not** invalidate `Summaries`.
 
 ## Add expense (EXPENSE)
 
@@ -174,6 +178,42 @@ BudgetEntry example:
   "earned": 2500.0,
   "description": "Summer budget",
   "budgetGoal": "Save for tax"
+}
+```
+
+## Add regular spending (REGULAR_SPENDING)
+
+The Regular spendings screen uses a dedicated form and submits:
+
+- `POST /workspaces/{workspaceId}/records`
+- Body:
+  - `recordType: "REGULAR_SPENDING"`
+  - `payload` fields: `name`, `startDate`, `cadence` (`MONTHLY` | `QUARTERLY` | `YEARLY`), `amount`
+
+## List regular spendings (definitions)
+
+The Regular spendings list and dashboard use:
+
+- `GET /workspaces/{workspaceId}/regular-spendings`
+
+Returns all `REGULAR_SPENDING` records for the workspace (no year filter needed).
+
+## List regular spending occurrences
+
+The dashboard chart and upcoming list use:
+
+- `GET /workspaces/{workspaceId}/regular-spendings/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD`
+
+Returns computed occurrences (payout dates + amounts) for the requested date range.
+
+RegularSpending example:
+
+```json
+{
+  "name": "Gym",
+  "startDate": "2026-03-01",
+  "cadence": "MONTHLY",
+  "amount": 29.99
 }
 ```
 

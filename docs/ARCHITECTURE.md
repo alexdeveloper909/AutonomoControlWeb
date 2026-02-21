@@ -78,7 +78,7 @@ Data fetching + caching:
 
 ## Why a “raw JSON payload” MVP?
 
-The API supports multiple record types with non-trivial payload schemas (Invoice/Expense/Transfer/etc). The MVP
+The API supports multiple record types with non-trivial payload schemas (Invoice/Expense/Transfer/RegularSpending/etc). The MVP
 uses a JSON editor to:
 
 - validate end-to-end auth + CORS + API wiring quickly

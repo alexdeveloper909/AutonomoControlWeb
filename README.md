@@ -167,6 +167,10 @@ Screens (Finance):
   - Add entry (`/workspaces/:workspaceId/balance/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add budget entry (`/workspaces/:workspaceId/budget/new`) → `src/ui/pages/WorkspaceBudgetCreatePage.tsx` (creates a `BUDGET` record)
+- Regular spendings (`/workspaces/:workspaceId/regular-spendings`) → `src/ui/pages/WorkspaceRegularSpendingsDashboardPage.tsx` (dashboard: chart, upcoming list, monthly totals)
+  - Add regular spending (`/workspaces/:workspaceId/regular-spendings/new`) → `src/ui/pages/WorkspaceRegularSpendingsCreatePage.tsx` (creates a `REGULAR_SPENDING` record)
+  - Edit (`/workspaces/:workspaceId/regular-spendings/:eventDate/:recordId/edit`) → `src/ui/pages/WorkspaceRegularSpendingsEditPage.tsx`
+  - Definitions list (`/workspaces/:workspaceId/regular-spendings/list`) → `src/ui/pages/WorkspaceRegularSpendingsListPage.tsx` (table with 3-dots actions)
 - Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; table view + details dialog; optional raw JSON; month table includes “Can spend” and “Can spend (with expenses)” columns)
 
 For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
@@ -179,6 +183,8 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Add state payment: open a workspace → State payments → “Add State Payment” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=STATE_PAYMENT`)
 - Add balance entry: open a workspace → Balance → “Add entry” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=TRANSFER`)
 - Add budget entry: open a workspace → Budget → “Add Budget Entry” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=BUDGET`)
+- Add regular spending: open a workspace → Regular spendings → “Add regular spending” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=REGULAR_SPENDING`)
+- View regular spendings dashboard: open a workspace → Regular spendings → see chart (30/60/90 days), upcoming list, and monthly totals
 - View summaries: open a workspace → “Summaries” → Month/Quarter tabs show tables; click a row for full details; “Show raw JSON” toggles debug output
 
 ## Development notes
@@ -190,7 +196,7 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 
 ## Client-side caching (TanStack Query)
 
-The Finance left-navigation tabs (Income, Expenses, State payments, Balance, Budget, Summaries) use TanStack Query
+The Finance left-navigation tabs (Income, Expenses, State payments, Balance, Budget, Regular spendings, Summaries) use TanStack Query
 to cache API responses and avoid refetching when switching between tabs.
 
 - Query client setup: `src/ui/app/queryClient.ts`
@@ -199,6 +205,7 @@ to cache API responses and avoid refetching when switching between tabs.
 Caching behavior:
 
 - Record lists are cached per `workspaceId` + `recordType` + `year`.
+- Regular spendings definitions are cached per `workspaceId`. Occurrences are cached per `workspaceId` + date range.
 - Summaries are cached per `workspaceId`.
 - Queries default to `staleTime=Infinity` (no automatic refetch on tab switch); the UI “Refresh” buttons clear cache for the current view.
 
@@ -210,3 +217,6 @@ Cache invalidation on create:
 - After creating `TRANSFER` or `BUDGET`:
   - Invalidate that record list cache.
   - Do **not** invalidate `Summaries` cache (these features do not affect summaries).
+- After creating `REGULAR_SPENDING`:
+  - Invalidate the regular spendings definitions cache.
+  - Do **not** invalidate `Summaries` cache (regular spendings are planning-only).
