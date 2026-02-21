@@ -25,16 +25,17 @@ import { LoadingScreen } from '../components/LoadingScreen'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter, resolveLocale } from '../lib/intl'
+import { toLocalIsoDate } from '../lib/date'
 
 type RangeDays = 30 | 60 | 90
-
-const toIsoDate = (d: Date): string => d.toISOString().slice(0, 10)
 
 const addDays = (d: Date, n: number): Date => {
   const r = new Date(d)
   r.setDate(r.getDate() + n)
   return r
 }
+
+const maxDate = (a: Date, b: Date): Date => (a.getTime() >= b.getTime() ? a : b)
 
 const startOfMonth = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), 1)
 
@@ -79,7 +80,7 @@ function BarChart(props: {
     const cursor = new Date(from + 'T00:00:00')
     const end = new Date(to + 'T00:00:00')
     while (cursor <= end) {
-      const key = toIsoDate(cursor)
+      const key = toLocalIsoDate(cursor)
       const dayEntries = map.get(key)
       if (dayEntries) {
         result.push({ date: key, total: dayEntries.reduce((s, e) => s + e.amount, 0), entries: dayEntries })
@@ -235,12 +236,21 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
   const [range, setRange] = useState<RangeDays>(30)
 
   const today = useMemo(() => new Date(), [])
-  const from = useMemo(() => toIsoDate(today), [today])
-  const to = useMemo(() => toIsoDate(addDays(today, range)), [today, range])
+
+  // Chart/list range (user-selectable).
+  const from = useMemo(() => toLocalIsoDate(today), [today])
+  const to = useMemo(() => toLocalIsoDate(addDays(today, range)), [today, range])
+
+  // Occurrences query range (supports full month totals regardless of chart range).
+  const occFrom = useMemo(() => toLocalIsoDate(startOfMonth(today)), [today])
+  const occTo = useMemo(
+    () => toLocalIsoDate(maxDate(endOfNextMonth(today), addDays(today, range))),
+    [today, range],
+  )
 
   const occQuery = useQuery({
-    queryKey: queryKeys.regularSpendingOccurrences(props.workspaceId, from, to),
-    queryFn: () => props.api.listRegularSpendingOccurrences(props.workspaceId, { from, to }),
+    queryKey: queryKeys.regularSpendingOccurrences(props.workspaceId, occFrom, occTo),
+    queryFn: () => props.api.listRegularSpendingOccurrences(props.workspaceId, { from: occFrom, to: occTo }),
   })
 
   const defsQuery = useQuery({
@@ -248,23 +258,28 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
     queryFn: () => props.api.listRegularSpendings(props.workspaceId),
   })
 
-  const occurrences = occQuery.data?.items ?? []
+  const occurrences = useMemo(() => occQuery.data?.items ?? [], [occQuery.data])
   const hasDefs = (defsQuery.data?.items.length ?? 0) > 0
 
+  const occurrencesInRange = useMemo(
+    () => occurrences.filter((o) => o.payoutDate >= from && o.payoutDate <= to),
+    [occurrences, from, to],
+  )
+
   const upcomingItems = useMemo(
-    () => [...occurrences].sort((a, b) => a.payoutDate.localeCompare(b.payoutDate)).slice(0, UPCOMING_CAP),
-    [occurrences],
+    () => [...occurrencesInRange].sort((a, b) => a.payoutDate.localeCompare(b.payoutDate)).slice(0, UPCOMING_CAP),
+    [occurrencesInRange],
   )
 
   const totalThisMonth = useMemo(() => {
-    const mStart = toIsoDate(startOfMonth(today))
-    const mEnd = toIsoDate(endOfMonth(today))
+    const mStart = toLocalIsoDate(startOfMonth(today))
+    const mEnd = toLocalIsoDate(endOfMonth(today))
     return occurrences.filter((o) => o.payoutDate >= mStart && o.payoutDate <= mEnd).reduce((s, o) => s + o.amount, 0)
   }, [occurrences, today])
 
   const totalNextMonth = useMemo(() => {
-    const mStart = toIsoDate(startOfNextMonth(today))
-    const mEnd = toIsoDate(endOfNextMonth(today))
+    const mStart = toLocalIsoDate(startOfNextMonth(today))
+    const mEnd = toLocalIsoDate(endOfNextMonth(today))
     return occurrences.filter((o) => o.payoutDate >= mStart && o.payoutDate <= mEnd).reduce((s, o) => s + o.amount, 0)
   }, [occurrences, today])
 
@@ -348,10 +363,17 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
             </Stack>
             {occQuery.isPending ? (
               <Typography color="text.secondary">{t('common.loading')}</Typography>
-            ) : occurrences.length === 0 ? (
+            ) : occurrencesInRange.length === 0 ? (
               <Alert severity="info">{t('regularSpendings.upcomingEmpty')}</Alert>
             ) : (
-              <BarChart items={occurrences} from={from} to={to} money={money} locale={resolveLocale(i18n.language)} totalLabel={t('regularSpendings.tooltipTotal')} />
+              <BarChart
+                items={occurrencesInRange}
+                from={from}
+                to={to}
+                money={money}
+                locale={resolveLocale(i18n.language)}
+                totalLabel={t('regularSpendings.tooltipTotal')}
+              />
             )}
           </Paper>
 
@@ -359,7 +381,7 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
           <Paper variant="outlined" sx={{ p: 2 }}>
             <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
               <Typography variant="subtitle2">{t('regularSpendings.upcoming')}</Typography>
-              {occurrences.length > UPCOMING_CAP ? (
+              {occurrencesInRange.length > UPCOMING_CAP ? (
                 <Button size="small" component={RouterLink} to={`${basePath}/list`}>
                   {t('regularSpendings.viewAll')}
                 </Button>

@@ -11,10 +11,11 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+import { toLocalIsoDate } from '../lib/date'
 
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s))
 
-const todayIso = (): string => new Date().toISOString().slice(0, 10)
+const todayIso = (): string => toLocalIsoDate(new Date())
 
 const asRegularSpendingPayload = (payload: unknown): RegularSpendingPayload | null => {
   if (!payload || typeof payload !== 'object') return null
