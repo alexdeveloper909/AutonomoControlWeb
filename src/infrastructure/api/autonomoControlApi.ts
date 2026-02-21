@@ -1,6 +1,6 @@
 import type { Workspace } from '../../domain/workspace'
 import { cleanWorkspaceSettings, type WorkspaceSettings } from '../../domain/settings'
-import type { RecordResponse, RecordType, RecordPayload } from '../../domain/records'
+import type { RecordResponse, RecordType, RecordPayload, RegularSpendingOccurrencesResponse } from '../../domain/records'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
 import { isAppLanguage } from '../../domain/language'
@@ -261,5 +261,21 @@ export class AutonomoControlApi {
       headers: this.authHeaders(),
       body: settings,
     })
+  }
+
+  async listRegularSpendings(workspaceId: string): Promise<ListResponse<RecordResponse>> {
+    const url = new URL(`/workspaces/${workspaceId}/regular-spendings`, this.baseUrl)
+    const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })
+    return { items: res.items, nextToken: res.nextToken ?? null }
+  }
+
+  async listRegularSpendingOccurrences(
+    workspaceId: string,
+    params: { from: string; to: string },
+  ): Promise<RegularSpendingOccurrencesResponse> {
+    const url = new URL(`/workspaces/${workspaceId}/regular-spendings/occurrences`, this.baseUrl)
+    url.searchParams.set('from', params.from)
+    url.searchParams.set('to', params.to)
+    return jsonFetch<RegularSpendingOccurrencesResponse>(url.toString(), { headers: this.authHeaders() })
   }
 }

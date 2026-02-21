@@ -1,4 +1,4 @@
-export type RecordType = 'INVOICE' | 'EXPENSE' | 'STATE_PAYMENT' | 'TRANSFER' | 'BUDGET'
+export type RecordType = 'INVOICE' | 'EXPENSE' | 'STATE_PAYMENT' | 'TRANSFER' | 'BUDGET' | 'REGULAR_SPENDING'
 
 export type IvaRate = 'ZERO' | 'SUPER_REDUCED' | 'REDUCED' | 'STANDARD'
 export type RetencionRate = 'ZERO' | 'NEW_PROFESSIONAL' | 'STANDARD'
@@ -54,12 +54,35 @@ export type BudgetEntryPayload = {
   budgetGoal?: string
 }
 
+export type RegularSpendingCadence = 'MONTHLY' | 'QUARTERLY' | 'YEARLY'
+
+export type RegularSpendingPayload = {
+  name: string
+  startDate: string
+  cadence: RegularSpendingCadence
+  amount: number
+}
+
+export type RegularSpendingOccurrence = {
+  recordId: string
+  name: string
+  payoutDate: string
+  amount: number
+}
+
+export type RegularSpendingOccurrencesResponse = {
+  from: string
+  to: string
+  items: RegularSpendingOccurrence[]
+}
+
 export type RecordPayload =
   | InvoicePayload
   | ExpensePayload
   | StatePaymentPayload
   | TransferPayload
   | BudgetEntryPayload
+  | RegularSpendingPayload
 
 export type RecordResponse = {
   workspaceId: string

@@ -12,4 +12,8 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'record', recordType, eventDate, recordId] as const,
 
   summaries: (workspaceId: string) => ['workspaces', workspaceId, 'summaries'] as const,
+
+  regularSpendings: (workspaceId: string) => ['workspaces', workspaceId, 'regularSpendings'] as const,
+  regularSpendingOccurrences: (workspaceId: string, from: string, to: string) =>
+    ['workspaces', workspaceId, 'regularSpendingOccurrences', from, to] as const,
 } as const

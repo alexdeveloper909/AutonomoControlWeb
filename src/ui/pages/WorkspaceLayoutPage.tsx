@@ -11,6 +11,7 @@ import { WorkspaceExpensesRoutes } from './WorkspaceExpensesRoutes'
 import { WorkspaceStatePaymentsRoutes } from './WorkspaceStatePaymentsRoutes'
 import { WorkspaceTransfersRoutes } from './WorkspaceTransfersRoutes'
 import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
+import { WorkspaceRegularSpendingsRoutes } from './WorkspaceRegularSpendingsRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 import { useTranslation } from 'react-i18next'
 import type { Workspace } from '../../domain/workspace'
@@ -150,6 +151,9 @@ export function WorkspaceLayoutPage() {
             <ListItemButton component={RouterLink} to={`${basePath}/budget`} selected={section === 'budget'}>
               <ListItemText primary={t('workspace.budget')} />
             </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/regular-spendings`} selected={section === 'regular-spendings'}>
+              <ListItemText primary={t('workspace.regularSpendings')} />
+            </ListItemButton>
           </List>
         </>
       }
@@ -169,6 +173,7 @@ export function WorkspaceLayoutPage() {
         <Route path="balance/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="transfers/*" element={<LegacyTransfersRedirect basePath={basePath} />} />
         <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="regular-spendings/*" element={<WorkspaceRegularSpendingsRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />
         <Route path="*" element={<Navigate to={`${basePath}/income`} replace />} />
