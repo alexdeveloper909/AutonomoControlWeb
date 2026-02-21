@@ -528,6 +528,7 @@ export const resources = {
         range90: '90 days',
         totalThisMonth: 'Total this month',
         totalNextMonth: 'Total next month',
+        tooltipTotal: 'Total',
         cadence: {
           MONTHLY: 'Monthly',
           QUARTERLY: 'Quarterly',
@@ -1329,6 +1330,7 @@ export const resources = {
         range90: '90 días',
         totalThisMonth: 'Total este mes',
         totalNextMonth: 'Total mes siguiente',
+        tooltipTotal: 'Total',
         cadence: {
           MONTHLY: 'Mensual',
           QUARTERLY: 'Trimestral',
@@ -2129,6 +2131,7 @@ export const resources = {
         range90: '90 днів',
         totalThisMonth: 'Усього цього місяця',
         totalNextMonth: 'Усього наступного місяця',
+        tooltipTotal: 'Усього',
         cadence: {
           MONTHLY: 'Щомісяця',
           QUARTERLY: 'Щоквартально',
@@ -2926,6 +2929,7 @@ export const resources = {
         range90: '90 يومًا',
         totalThisMonth: 'إجمالي هذا الشهر',
         totalNextMonth: 'إجمالي الشهر القادم',
+        tooltipTotal: 'المجموع',
         cadence: {
           MONTHLY: 'شهري',
           QUARTERLY: 'ربع سنوي',
@@ -3726,6 +3730,7 @@ export const resources = {
         range90: '90 zile',
         totalThisMonth: 'Total luna aceasta',
         totalNextMonth: 'Total luna viitoare',
+        tooltipTotal: 'Total',
         cadence: {
           MONTHLY: 'Lunar',
           QUARTERLY: 'Trimestrial',

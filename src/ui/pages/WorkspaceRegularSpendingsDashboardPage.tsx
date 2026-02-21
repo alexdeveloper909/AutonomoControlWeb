@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Chip,
+  Divider,
   List,
   ListItem,
   ListItemText,
@@ -23,7 +24,7 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
-import { decimalFormatter } from '../lib/intl'
+import { decimalFormatter, resolveLocale } from '../lib/intl'
 
 type RangeDays = 30 | 60 | 90
 
@@ -45,20 +46,44 @@ const endOfNextMonth = (d: Date): Date => new Date(d.getFullYear(), d.getMonth()
 
 const UPCOMING_CAP = 15
 
-function BarChart(props: { items: RegularSpendingOccurrence[]; from: string; to: string; money: Intl.NumberFormat }) {
-  const { items, from, to, money } = props
-  const buckets = useMemo(() => {
-    const map = new Map<string, number>()
+type Bucket = { date: string; total: number; entries: { name: string; amount: number }[] }
+
+function BarChart(props: {
+  items: RegularSpendingOccurrence[]
+  from: string
+  to: string
+  money: Intl.NumberFormat
+  locale: string
+  totalLabel: string
+}) {
+  const { items, from, to, money, locale, totalLabel } = props
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }),
+    [locale],
+  )
+  const labelDateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }),
+    [locale],
+  )
+
+  const buckets = useMemo<Bucket[]>(() => {
+    const map = new Map<string, { name: string; amount: number }[]>()
     for (const item of items) {
-      map.set(item.payoutDate, (map.get(item.payoutDate) ?? 0) + item.amount)
+      const list = map.get(item.payoutDate) ?? []
+      list.push({ name: item.name, amount: item.amount })
+      map.set(item.payoutDate, list)
     }
-    const result: { date: string; total: number }[] = []
+    const result: Bucket[] = []
     const cursor = new Date(from + 'T00:00:00')
     const end = new Date(to + 'T00:00:00')
     while (cursor <= end) {
       const key = toIsoDate(cursor)
-      const total = map.get(key) ?? 0
-      if (total > 0) result.push({ date: key, total })
+      const dayEntries = map.get(key)
+      if (dayEntries) {
+        result.push({ date: key, total: dayEntries.reduce((s, e) => s + e.amount, 0), entries: dayEntries })
+      }
       cursor.setDate(cursor.getDate() + 1)
     }
     return result
@@ -67,40 +92,131 @@ function BarChart(props: { items: RegularSpendingOccurrence[]; from: string; to:
   if (buckets.length === 0) return null
 
   const maxTotal = Math.max(...buckets.map((b) => b.total))
-  const barWidth = Math.max(6, Math.min(24, Math.floor(600 / buckets.length) - 2))
-  const chartWidth = buckets.length * (barWidth + 2) + 40
-  const chartHeight = 140
-  const topPad = 10
-  const bottomPad = 40
+  const barWidth = Math.max(10, Math.min(36, Math.floor(700 / buckets.length) - 4))
+  const gap = Math.max(2, Math.min(6, Math.floor(barWidth / 3)))
+  const yAxisWidth = 64
+  const rightPad = 12
+  const topPad = 12
+  const bottomPad = 52
+  const chartHeight = 180
+  const svgWidth = Math.max(yAxisWidth + buckets.length * (barWidth + gap) + rightPad, 240)
+
+  const gridCount = 4
+  const step = maxTotal > 0 ? Math.ceil(maxTotal / gridCount) : 1
+  const niceMax = step * gridCount
+  const gridValues = Array.from({ length: gridCount + 1 }, (_, i) => step * i)
+
+  const labelStep = buckets.length <= 12 ? 1 : buckets.length <= 24 ? 2 : Math.ceil(buckets.length / 10)
+
+  const tooltipContent = (b: Bucket) => (
+    <Box>
+      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+        {dateFormatter.format(new Date(b.date + 'T00:00:00'))}
+      </Typography>
+      {b.entries.map((entry, j) => (
+        <Stack key={j} direction="row" justifyContent="space-between" spacing={2} sx={{ mt: 0.25 }}>
+          <Typography variant="body2" noWrap sx={{ maxWidth: 160 }}>{entry.name}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{money.format(entry.amount)} €</Typography>
+        </Stack>
+      ))}
+      {b.entries.length > 1 && (
+        <>
+          <Divider sx={{ my: 0.5 }} />
+          <Stack direction="row" justifyContent="space-between" spacing={2}>
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>{totalLabel}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{money.format(b.total)} €</Typography>
+          </Stack>
+        </>
+      )}
+    </Box>
+  )
 
   return (
     <Box sx={{ overflowX: 'auto', pb: 1 }}>
-      <svg width={Math.max(chartWidth, 200)} height={chartHeight + topPad + bottomPad} role="img">
-        {buckets.map((b, i) => {
-          const barHeight = maxTotal > 0 ? (b.total / maxTotal) * chartHeight : 0
-          const x = 20 + i * (barWidth + 2)
-          const y = topPad + chartHeight - barHeight
+      <svg width={svgWidth} height={chartHeight + topPad + bottomPad} role="img">
+        {gridValues.map((val, i) => {
+          const y = topPad + chartHeight - (niceMax > 0 ? (val / niceMax) * chartHeight : 0)
           return (
-            <Tooltip key={b.date} title={`${b.date}: ${money.format(b.total)}`} arrow>
-              <g>
-                <rect x={x} y={y} width={barWidth} height={barHeight} rx={2} fill="var(--mui-palette-primary-main, #1976d2)" opacity={0.85} />
+            <g key={`grid-${i}`}>
+              <line
+                x1={yAxisWidth}
+                x2={svgWidth - rightPad}
+                y1={y}
+                y2={y}
+                stroke="var(--mui-palette-divider, #e0e0e0)"
+                strokeWidth={1}
+                strokeDasharray={i === 0 ? undefined : '3 3'}
+              />
+              {i > 0 && (
+                <text x={yAxisWidth - 8} y={y + 4} textAnchor="end" fontSize={10} fill="var(--mui-palette-text-secondary, #999)">
+                  {money.format(val)}
+                </text>
+              )}
+            </g>
+          )
+        })}
+
+        {buckets.map((b, i) => {
+          const barH = niceMax > 0 ? (b.total / niceMax) * chartHeight : 0
+          const x = yAxisWidth + i * (barWidth + gap)
+          const y = topPad + chartHeight - barH
+          const isHovered = hoveredIdx === i
+          return (
+            <Tooltip
+              key={b.date}
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    boxShadow: 8,
+                    borderRadius: 2,
+                    p: 1.5,
+                    maxWidth: 300,
+                  },
+                },
+                arrow: { sx: { color: 'background.paper' } },
+              }}
+              title={tooltipContent(b)}
+            >
+              <g
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                style={{ cursor: 'pointer' }}
+              >
+                <rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={Math.max(barH, 2)}
+                  rx={3}
+                  fill={isHovered ? 'var(--mui-palette-primary-dark, #1565c0)' : 'var(--mui-palette-primary-main, #1976d2)'}
+                  opacity={isHovered ? 1 : 0.8}
+                  style={{ transition: 'fill 0.15s, opacity 0.15s' }}
+                />
+                <rect x={x} y={topPad} width={barWidth} height={chartHeight} fill="transparent" />
               </g>
             </Tooltip>
           )
         })}
+
         {buckets.map((b, i) => {
-          if (buckets.length > 20 && i % Math.ceil(buckets.length / 10) !== 0) return null
-          const x = 20 + i * (barWidth + 2) + barWidth / 2
+          if (i % labelStep !== 0) return null
+          const x = yAxisWidth + i * (barWidth + gap) + barWidth / 2
+          const y = topPad + chartHeight + 14
+          const d = new Date(b.date + 'T00:00:00')
           return (
             <text
               key={`label-${b.date}`}
               x={x}
-              y={topPad + chartHeight + 14}
-              textAnchor="middle"
-              fontSize={9}
+              y={y}
+              textAnchor="end"
+              fontSize={10}
               fill="var(--mui-palette-text-secondary, #666)"
+              transform={`rotate(-45, ${x}, ${y})`}
             >
-              {b.date.slice(5)}
+              {labelDateFormatter.format(d)}
             </text>
           )
         })}
@@ -235,7 +351,7 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
             ) : occurrences.length === 0 ? (
               <Alert severity="info">{t('regularSpendings.upcomingEmpty')}</Alert>
             ) : (
-              <BarChart items={occurrences} from={from} to={to} money={money} />
+              <BarChart items={occurrences} from={from} to={to} money={money} locale={resolveLocale(i18n.language)} totalLabel={t('regularSpendings.tooltipTotal')} />
             )}
           </Paper>
 
