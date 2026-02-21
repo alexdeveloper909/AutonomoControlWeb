@@ -75,6 +75,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
         deleteTarget.record.recordId,
       )
       queryClient.invalidateQueries({ queryKey: queryKeys.regularSpendings(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.regularSpendingOccurrencesAll(props.workspaceId) })
       setDeleteTarget(null)
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e))

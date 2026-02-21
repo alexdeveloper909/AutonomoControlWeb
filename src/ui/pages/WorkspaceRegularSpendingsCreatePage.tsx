@@ -117,6 +117,7 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
         : await props.api.createRecord(props.workspaceId, { recordType: 'REGULAR_SPENDING', payload })
 
       queryClient.invalidateQueries({ queryKey: queryKeys.regularSpendings(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.regularSpendingOccurrencesAll(props.workspaceId) })
 
       if (editing) {
         if (props.eventDate && props.recordId) {
