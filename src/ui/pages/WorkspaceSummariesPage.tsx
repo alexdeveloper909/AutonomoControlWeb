@@ -10,6 +10,9 @@ import {
   FormControlLabel,
   Grid,
   LinearProgress,
+  List,
+  ListItem,
+  ListItemText,
   Paper,
   Stack,
   Switch,
@@ -456,8 +459,31 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={1}>
+          <Typography variant="subtitle2">{t('summaries.help.title')}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {t('summaries.description')}
+            {t('summaries.help.intro')}
+          </Typography>
+
+          <List dense disablePadding sx={{ pl: 2 }}>
+            <ListItem component="li" disableGutters sx={{ display: 'list-item', py: 0 }}>
+              <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={t('summaries.help.bullets.expenses')} />
+            </ListItem>
+            <ListItem component="li" disableGutters sx={{ display: 'list-item', py: 0 }}>
+              <ListItemText
+                primaryTypographyProps={{ variant: 'body2' }}
+                primary={t('summaries.help.bullets.statePayments')}
+              />
+            </ListItem>
+            <ListItem component="li" disableGutters sx={{ display: 'list-item', py: 0 }}>
+              <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={t('summaries.help.bullets.income')} />
+            </ListItem>
+          </List>
+
+          <Typography variant="body2" color="text.secondary">
+            {t('summaries.help.outro', {
+              canSpend: t('summaries.fields.canSpendIgnoringExpenses'),
+              canSpendWithRentaSave: t('summaries.fields.canSpendWithRentaSave'),
+            })}
           </Typography>
         </Stack>
       </Paper>

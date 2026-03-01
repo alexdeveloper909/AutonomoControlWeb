@@ -598,6 +598,17 @@ export const resources = {
       summaries: {
         title: 'Summaries',
         description: 'Month and quarter summaries based on your current workspace settings.',
+        help: {
+          title: 'How to get complete month summaries',
+          intro: 'To see a full month row, make sure you recorded:',
+          bullets: {
+            expenses: 'Expenses for the month',
+            statePayments: 'State payments (Social Security, taxes, etc.)',
+            income: 'Income (invoices)',
+          },
+          outro:
+            'When the month is complete, treat “{{canSpend}}” as an estimate of your salary after tax. If you plan for an annual Renta settlement, use “{{canSpendWithRentaSave}}” as your spending budget.',
+        },
         monthTab: 'Month summaries',
         quarterTab: 'Quarter summaries',
         rentaTab: 'Renta estimate',
@@ -1400,6 +1411,17 @@ export const resources = {
       summaries: {
         title: 'Resúmenes',
         description: 'Resúmenes mensuales y trimestrales basados en la configuración actual del espacio de trabajo.',
+        help: {
+          title: 'Cómo obtener resúmenes mensuales completos',
+          intro: 'Para ver una fila mensual completa, asegúrate de registrar:',
+          bullets: {
+            expenses: 'Gastos del mes',
+            statePayments: 'Pagos al Estado (Seguridad Social, impuestos, etc.)',
+            income: 'Ingresos (facturas)',
+          },
+          outro:
+            'Cuando el mes esté completo, usa “{{canSpend}}” como una estimación de tu salario neto tras impuestos. Si quieres planificar la liquidación anual de la Renta, usa “{{canSpendWithRentaSave}}” como tu presupuesto de gasto.',
+        },
         monthTab: 'Resúmenes mensuales',
         quarterTab: 'Resúmenes trimestrales',
         rentaTab: 'Estimación de Renta',
@@ -2201,6 +2223,17 @@ export const resources = {
       summaries: {
         title: 'Підсумки',
         description: 'Місячні та квартальні підсумки на основі поточних налаштувань робочого простору.',
+        help: {
+          title: 'Як отримати повні місячні підсумки',
+          intro: 'Щоб бачити повний рядок за місяць, переконайтеся, що внесли:',
+          bullets: {
+            expenses: 'Витрати за місяць',
+            statePayments: 'Платежі державі (соцстрахування, податки тощо)',
+            income: 'Доходи (інвойси)',
+          },
+          outro:
+            'Коли місяць заповнений, сприймайте “{{canSpend}}” як оцінку зарплати після податків. Якщо плануєте річний розрахунок Renta, використовуйте “{{canSpendWithRentaSave}}” як бюджет для витрат.',
+        },
         monthTab: 'Місячні підсумки',
         quarterTab: 'Квартальні підсумки',
         rentaTab: 'Оцінка Renta',
@@ -2999,6 +3032,17 @@ export const resources = {
       summaries: {
         title: 'الملخصات',
         description: 'ملخصات شهرية وربع سنوية بناءً على إعدادات مساحة العمل الحالية.',
+        help: {
+          title: 'كيفية الحصول على ملخصات شهرية كاملة',
+          intro: 'لرؤية صف شهري كامل، تأكد من تسجيل:',
+          bullets: {
+            expenses: 'المصروفات للشهر',
+            statePayments: 'مدفوعات الدولة (الضمان الاجتماعي، الضرائب، إلخ)',
+            income: 'الدخل (الفواتير)',
+          },
+          outro:
+            'عند اكتمال بيانات الشهر، اعتبر “{{canSpend}}” تقديرًا للراتب بعد الضريبة. وإذا كنت تخطط لتسوية Renta السنوية، استخدم “{{canSpendWithRentaSave}}” كميزانية للإنفاق.',
+        },
         monthTab: 'ملخصات شهرية',
         quarterTab: 'ملخصات ربع سنوية',
         rentaTab: 'تقدير Renta',
@@ -3800,6 +3844,17 @@ export const resources = {
       summaries: {
         title: 'Sumare',
         description: 'Sumare lunare și trimestriale pe baza setărilor curente ale spațiului de lucru.',
+        help: {
+          title: 'Cum obții sumare lunare complete',
+          intro: 'Pentru a vedea un rând lunar complet, asigură-te că ai înregistrat:',
+          bullets: {
+            expenses: 'Cheltuielile lunii',
+            statePayments: 'Plăți către stat (asigurări sociale, taxe etc.)',
+            income: 'Venituri (facturi)',
+          },
+          outro:
+            'Când luna este completă, tratează “{{canSpend}}” ca o estimare a salariului după taxe. Dacă planifici o regularizare anuală Renta, folosește “{{canSpendWithRentaSave}}” ca buget de cheltuieli.',
+        },
         monthTab: 'Sumare lunare',
         quarterTab: 'Sumare trimestriale',
         rentaTab: 'Estimare Renta',
