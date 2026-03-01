@@ -57,7 +57,8 @@ export const resources = {
       },
       workspaceCreate: {
         title: 'Create workspace',
-        defaultName: 'My workspace',
+        defaultName: 'Tax year {{year}}',
+        taxYearHint: 'Tip: create one workspace per tax year.',
         name: 'Name',
         settings: 'Settings',
         year: 'Year',
@@ -869,7 +870,8 @@ export const resources = {
       },
       workspaceCreate: {
         title: 'Crear espacio de trabajo',
-        defaultName: 'Mi espacio de trabajo',
+        defaultName: 'Año fiscal {{year}}',
+        taxYearHint: 'Consejo: crea un espacio de trabajo por año fiscal.',
         name: 'Nombre',
         settings: 'Ajustes',
         year: 'Año',
@@ -1684,7 +1686,8 @@ export const resources = {
       },
       workspaceCreate: {
         title: 'Створити робочий простір',
-        defaultName: 'Мій робочий простір',
+        defaultName: 'Податковий рік {{year}}',
+        taxYearHint: 'Порада: створюйте один робочий простір на кожен податковий рік.',
         name: 'Назва',
         settings: 'Налаштування',
         year: 'Рік',
@@ -2496,7 +2499,8 @@ export const resources = {
       },
       workspaceCreate: {
         title: 'إنشاء مساحة عمل',
-        defaultName: 'مساحة عملي',
+        defaultName: 'سنة ضريبية {{year}}',
+        taxYearHint: 'نصيحة: أنشئ مساحة عمل واحدة لكل سنة ضريبية.',
         name: 'الاسم',
         settings: 'الإعدادات',
         year: 'السنة',
@@ -3305,7 +3309,8 @@ export const resources = {
       },
       workspaceCreate: {
         title: 'Creează spațiu de lucru',
-        defaultName: 'Spațiul meu de lucru',
+        defaultName: 'An fiscal {{year}}',
+        taxYearHint: 'Sugestie: creează un spațiu de lucru pentru fiecare an fiscal.',
         name: 'Nume',
         settings: 'Setări',
         year: 'An',

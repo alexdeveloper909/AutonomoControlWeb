@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CircularProgress,
   Button,
@@ -43,11 +43,29 @@ export function WorkspaceCreateDialog(props: {
   onCreated: (workspace: Workspace) => void
 }) {
   const { t } = useTranslation()
-  const [name, setName] = useState(() => t('workspaceCreate.defaultName'))
+  const [name, setName] = useState(() => {
+    const defaults = defaultSettings()
+    return t('workspaceCreate.defaultName', { year: defaults.year })
+  })
   const [settings, setSettings] = useState<WorkspaceSettings>(() => defaultSettings())
+  const [nameIsDefault, setNameIsDefault] = useState(true)
   const [openingBalanceInput, setOpeningBalanceInput] = useState<string>('0')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  const defaultNameForYear = (year: number) => t('workspaceCreate.defaultName', { year })
+
+  useEffect(() => {
+    if (!props.open) return
+    const defaults = defaultSettings()
+    setName(defaultNameForYear(defaults.year))
+    setNameIsDefault(true)
+    setSettings(defaults)
+    setOpeningBalanceInput('0')
+    setError(null)
+    setSaving(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.open])
 
   const isValidNumberInput = (value: string) => value === '' || /^-?\d*(\.\d*)?$/.test(value)
 
@@ -116,7 +134,17 @@ export function WorkspaceCreateDialog(props: {
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error ? <ErrorAlert message={error} /> : null}
 
-          <TextField label={t('workspaceCreate.name')} value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField
+            label={t('workspaceCreate.name')}
+            value={name}
+            onChange={(e) => {
+              const next = e.target.value
+              setName(next)
+              setNameIsDefault(next.trim() === defaultNameForYear(settings.year))
+            }}
+            helperText={t('workspaceCreate.taxYearHint')}
+            fullWidth
+          />
 
           <Typography variant="subtitle2">{t('workspaceCreate.settings')}</Typography>
           <Stack direction="row" spacing={2}>
@@ -124,7 +152,17 @@ export function WorkspaceCreateDialog(props: {
               label={t('workspaceCreate.year')}
               type="number"
               value={settings.year}
-              onChange={(e) => setSettings((s) => ({ ...s, year: Number(e.target.value) }))}
+              onChange={(e) => {
+                const nextYear = Number(e.target.value)
+                setSettings((s) => {
+                  const prevYear = s.year
+                  const startDateIsDefault = s.startDate === `${prevYear}-01-01`
+                  return { ...s, year: nextYear, startDate: startDateIsDefault ? `${nextYear}-01-01` : s.startDate }
+                })
+                if (nameIsDefault) {
+                  setName(defaultNameForYear(nextYear))
+                }
+              }}
               fullWidth
             />
             <TextField
