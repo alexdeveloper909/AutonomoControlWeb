@@ -1,11 +1,17 @@
 import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
 import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import RepeatOutlinedIcon from '@mui/icons-material/RepeatOutlined'
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export function MoreActionsMenu(props: { onEdit: () => void; onDelete: () => void; disabled?: boolean }) {
+export function MoreActionsMenu(props: {
+  onEdit: () => void
+  onDelete: () => void
+  onRepeat?: () => void
+  disabled?: boolean
+}) {
   const { t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
@@ -39,6 +45,19 @@ export function MoreActionsMenu(props: { onEdit: () => void; onDelete: () => voi
           </ListItemIcon>
           <ListItemText>{t('common.edit')}</ListItemText>
         </MenuItem>
+        {props.onRepeat ? (
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null)
+              props.onRepeat?.()
+            }}
+          >
+            <ListItemIcon>
+              <RepeatOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t('common.repeat')}</ListItemText>
+          </MenuItem>
+        ) : null}
         <MenuItem
           onClick={() => {
             setAnchorEl(null)
@@ -54,4 +73,3 @@ export function MoreActionsMenu(props: { onEdit: () => void; onDelete: () => voi
     </>
   )
 }
-

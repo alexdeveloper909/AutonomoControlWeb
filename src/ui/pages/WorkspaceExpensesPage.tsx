@@ -1,6 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   LinearProgress,
@@ -14,6 +18,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
@@ -27,12 +32,32 @@ import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
 import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { EuroTextField } from '../components/EuroTextField'
+import { parseEuroAmount } from '../lib/money'
 
 const PAGE_SIZE = 20
 
 const currentYear = (): string => {
   const d = new Date()
   return String(d.getFullYear())
+}
+
+const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
+
+const addMonthsIsoDate = (isoDate: string, months: number): string | null => {
+  if (!isIsoDate(isoDate)) return null
+  const [y, m, d] = isoDate.split('-').map((x) => Number(x))
+  if (!y || !m || !d) return null
+
+  const totalMonths = (y * 12 + (m - 1)) + months
+  const year = Math.floor(totalMonths / 12)
+  const monthIndex = totalMonths % 12
+  const month = monthIndex + 1
+
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const day = Math.min(d, daysInMonth)
+
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 const asExpensePayload = (payload: unknown): ExpensePayload | null => {
@@ -45,6 +70,8 @@ const asExpensePayload = (payload: unknown): ExpensePayload | null => {
   if (typeof p.ivaRate !== 'string') return null
   if (typeof p.vatRecoverableFlag !== 'boolean') return null
   if (typeof p.deductibleShare !== 'number') return null
+  if (p.paymentDate != null && typeof p.paymentDate !== 'string') return null
+  if (p.amountPaidOverride != null && typeof p.amountPaidOverride !== 'number') return null
   return p as ExpensePayload
 }
 
@@ -59,6 +86,11 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
   const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [repeatTarget, setRepeatTarget] = useState<{ record: RecordResponse; payload: ExpensePayload } | null>(null)
+  const [repeatDate, setRepeatDate] = useState('')
+  const [repeatBaseExclVatInput, setRepeatBaseExclVatInput] = useState('')
+  const [repeatSubmitting, setRepeatSubmitting] = useState(false)
+  const [repeatError, setRepeatError] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
     queryKey,
@@ -101,6 +133,14 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
 
   const colSpan = props.readOnly ? 7 : 8
 
+  useEffect(() => {
+    if (!repeatTarget) return
+    setRepeatError(null)
+    setRepeatSubmitting(false)
+    setRepeatDate(addMonthsIsoDate(repeatTarget.record.eventDate, 1) ?? repeatTarget.record.eventDate)
+    setRepeatBaseExclVatInput(String(repeatTarget.payload.baseExclVat))
+  }, [repeatTarget])
+
   const confirmDelete = async () => {
     if (!deleteTarget) return
     setDeleteError(null)
@@ -114,6 +154,47 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
       setDeleteError(e instanceof Error ? e.message : String(e))
     } finally {
       setDeleteSubmitting(false)
+    }
+  }
+
+  const repeatValidationError = useMemo(() => {
+    if (!repeatTarget) return null
+    if (!isIsoDate(repeatDate)) return t('expensesCreate.validation.documentDate')
+    const baseInput = repeatBaseExclVatInput.trim()
+    const base = baseInput ? parseEuroAmount(baseInput) : repeatTarget.payload.baseExclVat
+    if (base == null) return t('expensesCreate.validation.baseNumber')
+    return null
+  }, [repeatBaseExclVatInput, repeatDate, repeatTarget, t])
+
+  const confirmRepeat = async () => {
+    if (!repeatTarget) return
+    setRepeatError(null)
+    if (repeatValidationError) {
+      setRepeatError(repeatValidationError)
+      return
+    }
+
+    setRepeatSubmitting(true)
+    try {
+      const baseInput = repeatBaseExclVatInput.trim()
+      const base = baseInput ? parseEuroAmount(baseInput) : repeatTarget.payload.baseExclVat
+      if (base == null) throw new Error(t('expensesCreate.validation.baseNumber'))
+
+      const payload: ExpensePayload = {
+        ...repeatTarget.payload,
+        documentDate: repeatDate,
+        paymentDate: repeatDate,
+        baseExclVat: base,
+      }
+
+      await props.api.createRecord(props.workspaceId, { recordType: 'EXPENSE', payload })
+      queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'EXPENSE') })
+      queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      setRepeatTarget(null)
+    } catch (e) {
+      setRepeatError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setRepeatSubmitting(false)
     }
   }
 
@@ -232,6 +313,13 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
                           onEdit={() =>
                             navigate(`/workspaces/${props.workspaceId}/expenses/${record.eventDate}/${record.recordId}/edit`)
                           }
+                          onRepeat={
+                            payload
+                              ? () => {
+                                  setRepeatTarget({ record, payload })
+                                }
+                              : undefined
+                          }
                           onDelete={() =>
                             setDeleteTarget({
                               record,
@@ -270,6 +358,50 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
+
+      <Dialog
+        open={Boolean(repeatTarget)}
+        onClose={repeatSubmitting ? () => {} : () => setRepeatTarget(null)}
+        disableEscapeKeyDown={repeatSubmitting}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>{t('expenses.repeatDialogTitle')}</DialogTitle>
+        <DialogContent>
+          {repeatSubmitting ? <LinearProgress /> : null}
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {repeatError ? <ErrorAlert message={repeatError} /> : null}
+
+            <TextField
+              label={t('records.date')}
+              type="date"
+              value={repeatDate}
+              onChange={(e) => setRepeatDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              required
+              fullWidth
+              error={Boolean(repeatDate) && !isIsoDate(repeatDate)}
+              disabled={repeatSubmitting}
+            />
+
+            <EuroTextField
+              label={t('records.baseExclVat')}
+              value={repeatBaseExclVatInput}
+              onChange={(e) => setRepeatBaseExclVatInput(e.target.value)}
+              fullWidth
+              disabled={repeatSubmitting}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRepeatTarget(null)} disabled={repeatSubmitting}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="contained" onClick={confirmRepeat} disabled={repeatSubmitting || Boolean(repeatValidationError)}>
+            {t('common.repeat')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }
