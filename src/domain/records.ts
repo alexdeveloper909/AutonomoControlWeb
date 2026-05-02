@@ -48,10 +48,42 @@ export type TransferPayload = {
 
 export type BudgetEntryPayload = {
   monthKey: string
-  plannedSpend: number
+  spent: number
   earned: number
+  targetSpend?: number
+  notes?: string
+  exceptionalSpend?: number
+  exceptionalNotes?: string
   description?: string
   budgetGoal?: string
+  plannedSpend?: number
+}
+
+export const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | null => {
+  if (!payload || typeof payload !== 'object') return null
+  const p = payload as Partial<BudgetEntryPayload>
+  if (typeof p.monthKey !== 'string') return null
+  const spent = typeof p.spent === 'number' ? p.spent : typeof p.plannedSpend === 'number' ? p.plannedSpend : null
+  if (spent === null) return null
+  if (typeof p.earned !== 'number') return null
+  if (p.targetSpend != null && typeof p.targetSpend !== 'number') return null
+  if (p.notes != null && typeof p.notes !== 'string') return null
+  if (p.exceptionalSpend != null && typeof p.exceptionalSpend !== 'number') return null
+  if (p.exceptionalNotes != null && typeof p.exceptionalNotes !== 'string') return null
+  if (p.description != null && typeof p.description !== 'string') return null
+  if (p.budgetGoal != null && typeof p.budgetGoal !== 'string') return null
+  return {
+    monthKey: p.monthKey,
+    spent,
+    earned: p.earned,
+    targetSpend: p.targetSpend,
+    notes: p.notes,
+    exceptionalSpend: p.exceptionalSpend,
+    exceptionalNotes: p.exceptionalNotes,
+    description: p.description,
+    budgetGoal: p.budgetGoal,
+    plannedSpend: p.plannedSpend,
+  }
 }
 
 export type RegularSpendingCadence = 'MONTHLY' | 'QUARTERLY' | 'YEARLY'

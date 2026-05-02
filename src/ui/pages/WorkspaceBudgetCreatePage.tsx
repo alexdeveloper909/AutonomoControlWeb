@@ -4,6 +4,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import type { BudgetEntryPayload } from '../../domain/records'
+import { asBudgetEntryPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -19,17 +20,6 @@ const monthKeyToday = (): string => {
 }
 
 const isMonthKey = (s: string): boolean => /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
-
-const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | null => {
-  if (!payload || typeof payload !== 'object') return null
-  const p = payload as Partial<BudgetEntryPayload>
-  if (typeof p.monthKey !== 'string') return null
-  if (typeof p.plannedSpend !== 'number') return null
-  if (typeof p.earned !== 'number') return null
-  if (p.description != null && typeof p.description !== 'string') return null
-  if (p.budgetGoal != null && typeof p.budgetGoal !== 'string') return null
-  return p as BudgetEntryPayload
-}
 
 export function WorkspaceBudgetCreatePage(props: {
   workspaceId: string
@@ -54,7 +44,7 @@ export function WorkspaceBudgetCreatePage(props: {
   })
 
   const [monthKey, setMonthKey] = useState(monthKeyToday())
-  const [plannedSpend, setPlannedSpend] = useState('2000')
+  const [spent, setSpent] = useState('2000')
   const [earned, setEarned] = useState('2500')
   const [description, setDescription] = useState('')
   const [budgetGoal, setBudgetGoal] = useState('')
@@ -76,7 +66,7 @@ export function WorkspaceBudgetCreatePage(props: {
       return
     }
     setMonthKey(payload.monthKey)
-    setPlannedSpend(String(payload.plannedSpend))
+    setSpent(String(payload.spent))
     setEarned(String(payload.earned))
     setDescription(payload.description ?? '')
     setBudgetGoal(payload.budgetGoal ?? '')
@@ -86,12 +76,12 @@ export function WorkspaceBudgetCreatePage(props: {
   const validationError = useMemo(() => {
     if (editing && !initializedFromRecord) return null
     if (!isMonthKey(monthKey)) return t('budgetCreate.validation.month')
-    const ps = parseEuroAmount(plannedSpend)
-    if (ps === null) return t('budgetCreate.validation.plannedSpendNumber')
+    const ps = parseEuroAmount(spent)
+    if (ps === null) return t('budgetCreate.validation.spentNumber')
     const e = parseEuroAmount(earned)
     if (e === null) return t('budgetCreate.validation.earnedNumber')
     return null
-  }, [earned, editing, initializedFromRecord, monthKey, plannedSpend, t])
+  }, [earned, editing, initializedFromRecord, monthKey, spent, t])
 
   const submit = async () => {
     setError(null)
@@ -103,14 +93,14 @@ export function WorkspaceBudgetCreatePage(props: {
 
     setSubmitting(true)
     try {
-      const ps = parseEuroAmount(plannedSpend)
+      const ps = parseEuroAmount(spent)
       const e = parseEuroAmount(earned)
-      if (ps === null) throw new Error(t('budgetCreate.validation.plannedSpendNumber'))
+      if (ps === null) throw new Error(t('budgetCreate.validation.spentNumber'))
       if (e === null) throw new Error(t('budgetCreate.validation.earnedNumber'))
 
       const payload: BudgetEntryPayload = {
         monthKey,
-        plannedSpend: ps,
+        spent: ps,
         earned: e,
         description: description.trim() ? description.trim() : undefined,
         budgetGoal: budgetGoal.trim() ? budgetGoal.trim() : undefined,
@@ -174,7 +164,7 @@ export function WorkspaceBudgetCreatePage(props: {
             required
             fullWidth
             error={Boolean(monthKey) && !isMonthKey(monthKey)}
-            disabled={inputsDisabled}
+            disabled={inputsDisabled || editing}
             helperText={t('budgetCreate.help.month', { defaultValue: '' }) || undefined}
           />
 
@@ -182,16 +172,16 @@ export function WorkspaceBudgetCreatePage(props: {
             <EuroTextField
               label={
                 <FieldLabel
-                  label={t('budgetCreate.plannedSpend')}
-                  tooltip={t('budgetCreate.tooltips.plannedSpend', { defaultValue: '' })}
+                  label={t('budgetCreate.spent')}
+                  tooltip={t('budgetCreate.tooltips.spent', { defaultValue: '' })}
                 />
               }
-              value={plannedSpend}
-              onChange={(e) => setPlannedSpend(e.target.value)}
+              value={spent}
+              onChange={(e) => setSpent(e.target.value)}
               required
               fullWidth
               disabled={inputsDisabled}
-              helperText={t('budgetCreate.help.plannedSpend', { defaultValue: '' }) || undefined}
+              helperText={t('budgetCreate.help.spent', { defaultValue: '' }) || undefined}
             />
             <EuroTextField
               label={<FieldLabel label={t('budgetCreate.earned')} tooltip={t('budgetCreate.tooltips.earned', { defaultValue: '' })} />}

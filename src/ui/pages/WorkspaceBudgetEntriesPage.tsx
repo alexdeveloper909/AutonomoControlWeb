@@ -19,7 +19,8 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { BudgetEntryPayload, RecordResponse } from '../../domain/records'
+import type { RecordResponse } from '../../domain/records'
+import { asBudgetEntryPayload } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { queryKeys } from '../queries/queryKeys'
@@ -33,17 +34,6 @@ const PAGE_SIZE = 20
 const currentYear = (): string => {
   const d = new Date()
   return String(d.getFullYear())
-}
-
-const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | null => {
-  if (!payload || typeof payload !== 'object') return null
-  const p = payload as Partial<BudgetEntryPayload>
-  if (typeof p.monthKey !== 'string') return null
-  if (typeof p.plannedSpend !== 'number') return null
-  if (typeof p.earned !== 'number') return null
-  if (p.description != null && typeof p.description !== 'string') return null
-  if (p.budgetGoal != null && typeof p.budgetGoal !== 'string') return null
-  return p as BudgetEntryPayload
 }
 
 export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
@@ -196,7 +186,7 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
               <TableRow>
                 <TableCell>{t('records.eventDate')}</TableCell>
                 <TableCell>{t('records.month')}</TableCell>
-                <TableCell align="right">{t('records.plannedSpend')}</TableCell>
+                <TableCell align="right">{t('records.spent')}</TableCell>
                 <TableCell align="right">{t('records.earned')}</TableCell>
                 <TableCell>{t('records.description')}</TableCell>
                 <TableCell>{t('records.goal')}</TableCell>
@@ -210,7 +200,7 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.monthKey ?? t('common.na')}</TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.plannedSpend) : t('common.na')}
+                      {payload ? money.format(payload.spent) : t('common.na')}
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       {payload ? money.format(payload.earned) : t('common.na')}

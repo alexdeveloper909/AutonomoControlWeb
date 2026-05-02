@@ -132,7 +132,10 @@ The Budget screen uses a dedicated form and submits:
 - `POST /workspaces/{workspaceId}/records`
 - Body:
   - `recordType: "BUDGET"`
-  - `payload` fields: `monthKey` (YYYY-MM), `plannedSpend`, `earned`, optional `description`, `budgetGoal`
+  - `payload` fields: `monthKey` (YYYY-MM), `spent`, `earned`, optional `description`, `budgetGoal`
+  - Reads remain compatible with legacy records that contain `plannedSpend`; new writes use `spent`.
+  - The Web payload type also tolerates optional `targetSpend`, `notes`, `exceptionalSpend`, and `exceptionalNotes` for API compatibility.
+  - `earned` is user-entered monthly after-tax available money. It is not gross income and is not derived automatically.
 
 ## List budget entries (BUDGET) with sorting + pagination
 
@@ -174,7 +177,7 @@ BudgetEntry example:
 ```json
 {
   "monthKey": "2024-07",
-  "plannedSpend": 2000.0,
+  "spent": 2000.0,
   "earned": 2500.0,
   "description": "Summer budget",
   "budgetGoal": "Save for tax"

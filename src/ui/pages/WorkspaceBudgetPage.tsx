@@ -10,7 +10,7 @@ export function WorkspaceBudgetPage(props: { workspaceId: string; api: AutonomoC
     JSON.stringify(
       {
         monthKey: `${new Date().getFullYear()}-01`,
-        plannedSpend: 2000.0,
+        spent: 2000.0,
         earned: 2500.0,
         description: 'Budget plan',
         budgetGoal: 'Save for tax',
