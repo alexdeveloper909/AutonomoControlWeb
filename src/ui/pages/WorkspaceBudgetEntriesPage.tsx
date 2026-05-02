@@ -401,7 +401,7 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
                       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                         <Chip
                           size="small"
-                          color={!budget ? 'default' : budget.targetSpend === null ? 'warning' : budget.overUnderTarget! > 0 ? 'error' : 'success'}
+                          color={!budget ? 'default' : budget.targetSpend === null ? 'warning' : budget.overUnderTarget! > 0 ? 'warning' : 'success'}
                           variant={!budget ? 'outlined' : 'filled'}
                           label={status}
                         />
