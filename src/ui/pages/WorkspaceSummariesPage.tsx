@@ -52,6 +52,10 @@ type MonthSummary = {
   cashIn: number
   cashOutExpenses: number
   cashOutState: number
+  cashOutOperating: number
+  cashOutTaxSettlements: number
+  netCashFlow: number
+  canSpendAfterPlannedTaxes: number
   canSpendThisMonth: number
   canSpendIgnoringExpenses: number
 }
@@ -71,6 +75,31 @@ type QuarterSummary = {
   irpfReserve: number
   ivaSettlementEstimate: number
   recommendedTaxReserve: number
+  cashIn: number
+  cashOutExpenses: number
+  cashOutState: number
+  cashOutOperating: number
+  cashOutTaxSettlements: number
+  netCashFlow: number
+  canSpendAfterPlannedTaxes: number
+  modelo130DueThisQuarter: number
+}
+
+type IvaQuarterEstimate = {
+  quarterKey: { year: number; quarter: number }
+  outputVat: number
+  inputVatDeductible: number
+  rawVatResult: number
+  creditBroughtForward: number
+  vatPayable: number
+  creditCarriedForward: number
+  q4RefundCandidate: number
+  q4Action: 'CARRY_FORWARD' | 'REQUEST_REFUND' | null
+}
+
+type IvaYearEstimate = {
+  year: number
+  quarters: IvaQuarterEstimate[]
 }
 
 type RentaBreakdownItem = {
@@ -215,6 +244,10 @@ const asMonthSummary = (v: unknown): MonthSummary | null => {
   const cashIn = asNumber(o.cashIn)
   const cashOutExpenses = asNumber(o.cashOutExpenses)
   const cashOutState = asNumber(o.cashOutState)
+  const cashOutOperatingRaw = asNumber(o.cashOutOperating)
+  const cashOutTaxSettlements = asNumber(o.cashOutTaxSettlements) ?? 0
+  const netCashFlowRaw = asNumber(o.netCashFlow)
+  const canSpendAfterPlannedTaxes = asNumber(o.canSpendAfterPlannedTaxes) ?? asNumber(o.canSpendThisMonth)
   const canSpendThisMonth = asNumber(o.canSpendThisMonth)
   const canSpendIgnoringExpenses = asNumber(o.canSpendIgnoringExpenses)
 
@@ -234,11 +267,14 @@ const asMonthSummary = (v: unknown): MonthSummary | null => {
     cashIn == null ||
     cashOutExpenses == null ||
     cashOutState == null ||
+    canSpendAfterPlannedTaxes == null ||
     canSpendThisMonth == null ||
     canSpendIgnoringExpenses == null
   ) {
     return null
   }
+  const cashOutOperating = cashOutOperatingRaw ?? cashOutState
+  const netCashFlow = netCashFlowRaw ?? cashIn - cashOutExpenses - cashOutState
 
   return {
     monthKey,
@@ -256,6 +292,10 @@ const asMonthSummary = (v: unknown): MonthSummary | null => {
     cashIn,
     cashOutExpenses,
     cashOutState,
+    cashOutOperating,
+    cashOutTaxSettlements,
+    netCashFlow,
+    canSpendAfterPlannedTaxes,
     canSpendThisMonth,
     canSpendIgnoringExpenses,
   }
@@ -281,6 +321,14 @@ const asQuarterSummary = (v: unknown): QuarterSummary | null => {
   const irpfReserve = asNumber(o.irpfReserve)
   const ivaSettlementEstimate = asNumber(o.ivaSettlementEstimate)
   const recommendedTaxReserve = asNumber(o.recommendedTaxReserve)
+  const cashIn = asNumber(o.cashIn) ?? 0
+  const cashOutExpenses = asNumber(o.cashOutExpenses) ?? 0
+  const cashOutState = asNumber(o.cashOutState) ?? 0
+  const cashOutOperating = asNumber(o.cashOutOperating) ?? cashOutState
+  const cashOutTaxSettlements = asNumber(o.cashOutTaxSettlements) ?? 0
+  const netCashFlow = asNumber(o.netCashFlow) ?? cashIn - cashOutExpenses - cashOutState
+  const canSpendAfterPlannedTaxes = asNumber(o.canSpendAfterPlannedTaxes) ?? 0
+  const modelo130DueThisQuarter = asNumber(o.modelo130DueThisQuarter) ?? 0
 
   if (
     year == null ||
@@ -317,7 +365,64 @@ const asQuarterSummary = (v: unknown): QuarterSummary | null => {
     irpfReserve,
     ivaSettlementEstimate,
     recommendedTaxReserve,
+    cashIn,
+    cashOutExpenses,
+    cashOutState,
+    cashOutOperating,
+    cashOutTaxSettlements,
+    netCashFlow,
+    canSpendAfterPlannedTaxes,
+    modelo130DueThisQuarter,
   }
+}
+
+const asIvaQuarterEstimate = (v: unknown): IvaQuarterEstimate | null => {
+  const o = asRecord(v)
+  if (!o) return null
+  const quarterKeyRecord = asRecord(o.quarterKey)
+  const year = quarterKeyRecord ? asNumber(quarterKeyRecord.year) : null
+  const quarter = quarterKeyRecord ? asNumber(quarterKeyRecord.quarter) : null
+  const outputVat = asNumber(o.outputVat)
+  const inputVatDeductible = asNumber(o.inputVatDeductible)
+  const rawVatResult = asNumber(o.rawVatResult)
+  const creditBroughtForward = asNumber(o.creditBroughtForward)
+  const vatPayable = asNumber(o.vatPayable)
+  const creditCarriedForward = asNumber(o.creditCarriedForward)
+  const q4RefundCandidate = asNumber(o.q4RefundCandidate)
+  const q4Action = o.q4Action === 'CARRY_FORWARD' || o.q4Action === 'REQUEST_REFUND' ? o.q4Action : null
+  if (
+    year == null ||
+    quarter == null ||
+    outputVat == null ||
+    inputVatDeductible == null ||
+    rawVatResult == null ||
+    creditBroughtForward == null ||
+    vatPayable == null ||
+    creditCarriedForward == null ||
+    q4RefundCandidate == null
+  ) {
+    return null
+  }
+  return {
+    quarterKey: { year, quarter },
+    outputVat,
+    inputVatDeductible,
+    rawVatResult,
+    creditBroughtForward,
+    vatPayable,
+    creditCarriedForward,
+    q4RefundCandidate,
+    q4Action,
+  }
+}
+
+const asIvaYearEstimate = (v: unknown): IvaYearEstimate | null => {
+  const o = asRecord(v)
+  if (!o) return null
+  const year = asNumber(o.year)
+  const quartersRaw = Array.isArray(o.quarters) ? o.quarters : null
+  if (year == null || !quartersRaw) return null
+  return { year, quarters: quartersRaw.map(asIvaQuarterEstimate).filter(Boolean) as IvaQuarterEstimate[] }
 }
 
 const parseList = <T,>(list: unknown[] | null, parser: (v: unknown) => T | null): { items: T[]; invalidCount: number } => {
@@ -370,7 +475,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const { t, i18n } = useTranslation()
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const pct = useMemo(() => new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 2 }), [i18n.language])
-  const [tab, setTab] = useState<'month' | 'quarter' | 'renta'>('month')
+  const [tab, setTab] = useState<'month' | 'quarter' | 'renta' | 'iva'>('month')
 
   const [selectedMonth, setSelectedMonth] = useState<MonthSummary | null>(null)
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterSummary | null>(null)
@@ -381,12 +486,13 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
     queryKey: queryKeys.summaries(props.workspaceId),
     queryFn: async () => {
       const settings = await props.api.getWorkspaceSettings(props.workspaceId)
-      const [m, q, r] = await Promise.all([
+      const [m, q, r, iva] = await Promise.all([
         props.api.monthSummaries(props.workspaceId, settings),
         props.api.quarterSummaries(props.workspaceId, settings),
         props.api.rentaSummary(props.workspaceId, settings),
+        props.api.ivaSummary(props.workspaceId, settings),
       ])
-      return { settings, month: m.items, quarter: q.items, renta: r.renta, rentaProjected: r.rentaProjected ?? null }
+      return { settings, month: m.items, quarter: q.items, renta: r.renta, rentaProjected: r.rentaProjected ?? null, iva: iva.iva }
     },
   })
 
@@ -395,11 +501,13 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
   const quarterSummaries = data?.quarter ?? null
   const rentaRaw = data?.renta ?? null
   const rentaProjectedRaw = (data as { rentaProjected?: unknown | null } | null)?.rentaProjected ?? null
+  const ivaRaw = (data as { iva?: unknown | null } | null)?.iva ?? null
 
   const monthParsed = useMemo(() => parseList(monthSummaries, asMonthSummary), [monthSummaries])
   const quarterParsed = useMemo(() => parseList(quarterSummaries, asQuarterSummary), [quarterSummaries])
   const rentaParsed = useMemo(() => (rentaRaw ? asRentaEstimate(rentaRaw) : null), [rentaRaw])
   const rentaProjectedParsed = useMemo(() => (rentaProjectedRaw ? asRentaEstimate(rentaProjectedRaw) : null), [rentaProjectedRaw])
+  const ivaParsed = useMemo(() => (ivaRaw ? asIvaYearEstimate(ivaRaw) : null), [ivaRaw])
   const showRentaSaveColumn = settings?.rentaPlanning?.enabled === true
   const rentaSelected = useMemo(() => {
     if (!useRentaProjection) return rentaParsed
@@ -490,17 +598,79 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
       <Paper variant="outlined" sx={{ px: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter' | 'renta')} sx={{ flex: 1 }}>
+          <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter' | 'renta' | 'iva')} sx={{ flex: 1 }}>
             <Tab label={t('summaries.monthTab')} value="month" />
             <Tab label={t('summaries.quarterTab')} value="quarter" />
             <Tab label={t('summaries.rentaTab')} value="renta" />
+            <Tab label={t('summaries.ivaTab')} value="iva" />
           </Tabs>
         </Stack>
       </Paper>
 
       {isFetching ? <LinearProgress /> : null}
 
-      {tab === 'renta' ? (
+      {tab === 'iva' ? (
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            <Stack spacing={0.5}>
+              <Typography variant="subtitle2">{t('summaries.iva.title')}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('summaries.iva.note')}
+              </Typography>
+            </Stack>
+            {ivaRaw && !ivaParsed ? <Alert severity="warning">{t('summaries.iva.invalidEstimate')}</Alert> : null}
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('summaries.table.quarter')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.outputVat')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.inputVatDeductible')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.rawVatResult')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.creditBroughtForward')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.vatPayable')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.creditCarriedForward')}</TableCell>
+                    <TableCell align="right">{t('summaries.iva.q4RefundCandidate')}</TableCell>
+                    <TableCell>{t('summaries.iva.q4Action')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {ivaParsed?.quarters.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('summaries.iva.empty')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                  {ivaParsed?.quarters.map((q) => (
+                    <TableRow key={`${q.quarterKey.year}-Q${q.quarterKey.quarter}`}>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        {q.quarterKey.year}-Q{q.quarterKey.quarter}
+                      </TableCell>
+                      <TableCell align="right">{money.format(q.outputVat)}</TableCell>
+                      <TableCell align="right">{money.format(q.inputVatDeductible)}</TableCell>
+                      <TableCell align="right" sx={{ color: q.rawVatResult < 0 ? 'success.main' : 'text.primary' }}>
+                        {money.format(q.rawVatResult)}
+                      </TableCell>
+                      <TableCell align="right">{money.format(q.creditBroughtForward)}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: q.vatPayable > 0 ? 700 : 400 }}>
+                        {money.format(q.vatPayable)}
+                      </TableCell>
+                      <TableCell align="right">{money.format(q.creditCarriedForward)}</TableCell>
+                      <TableCell align="right" sx={{ color: q.q4RefundCandidate > 0 ? 'success.main' : 'text.secondary' }}>
+                        {money.format(q.q4RefundCandidate)}
+                      </TableCell>
+                      <TableCell>{q.q4Action ? t(`summaries.iva.actions.${q.q4Action}`) : t('common.na')}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </Paper>
+      ) : tab === 'renta' ? (
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Stack spacing={1}>
             <Typography variant="subtitle2">{t('summaries.renta.title')}</Typography>
@@ -683,7 +853,9 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 	                    <TableCell align="right">{t('summaries.fields.seguridadSocialPaid')}</TableCell>
 	                    <TableCell align="right">{t('summaries.fields.profitForIrpf')}</TableCell>
 	                    <TableCell align="right">{t('summaries.fields.recommendedTaxReserve')}</TableCell>
-	                    <TableCell align="right">{t('summaries.fields.canSpendThisMonth')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.canSpendAfterPlannedTaxes')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.netCashFlow')}</TableCell>
+	                    <TableCell align="right">{t('summaries.fields.cashOutTaxSettlements')}</TableCell>
 	                    <TableCell align="right">{t('summaries.fields.canSpendIgnoringExpenses')}</TableCell>
 	                    {showRentaSaveColumn ? (
 	                      <TableCell align="right">
@@ -698,7 +870,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 <TableBody>
                   {monthParsed.items.length === 0 && monthSummaries ? (
                     <TableRow>
-                      <TableCell colSpan={showRentaSaveColumn ? 10 : 9}>
+                      <TableCell colSpan={showRentaSaveColumn ? 12 : 11}>
                         <Typography variant="body2" color="text.secondary">
                           {t('summaries.emptyMonth')}
                         </Typography>
@@ -727,7 +899,9 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 	                      <TableCell align="right">{money.format(m.seguridadSocialPaid)}</TableCell>
 	                      <TableCell align="right">{money.format(m.profitForIrpf)}</TableCell>
 	                      <TableCell align="right">{money.format(m.recommendedTaxReserve)}</TableCell>
-	                      <TableCell align="right">{money.format(m.canSpendThisMonth)}</TableCell>
+	                      <TableCell align="right">{money.format(m.canSpendAfterPlannedTaxes)}</TableCell>
+	                      <TableCell align="right">{money.format(m.netCashFlow)}</TableCell>
+	                      <TableCell align="right">{money.format(m.cashOutTaxSettlements)}</TableCell>
 	                      <TableCell align="right">{money.format(m.canSpendIgnoringExpenses)}</TableCell>
 	                      {showRentaSaveColumn ? (
 	                        <TableCell align="right">
@@ -770,12 +944,14 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                     <TableCell align="right">{t('summaries.fields.seguridadSocialPaidInQuarter')}</TableCell>
                     <TableCell align="right">{t('summaries.fields.profitForIrpf')}</TableCell>
                     <TableCell align="right">{t('summaries.fields.recommendedTaxReserve')}</TableCell>
+                    <TableCell align="right">{t('summaries.fields.modelo130DueThisQuarter')}</TableCell>
+                    <TableCell align="right">{t('summaries.fields.netCashFlow')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {quarterParsed.items.length === 0 && quarterSummaries ? (
                     <TableRow>
-                      <TableCell colSpan={8}>
+                      <TableCell colSpan={10}>
                         <Typography variant="body2" color="text.secondary">
                           {t('summaries.emptyQuarter')}
                         </Typography>
@@ -809,6 +985,8 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                       <TableCell align="right">{money.format(q.seguridadSocialPaidInQuarter)}</TableCell>
                       <TableCell align="right">{money.format(q.profitForIrpf)}</TableCell>
                       <TableCell align="right">{money.format(q.recommendedTaxReserve)}</TableCell>
+                      <TableCell align="right">{money.format(q.modelo130DueThisQuarter)}</TableCell>
+                      <TableCell align="right">{money.format(q.netCashFlow)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -845,6 +1023,10 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 { key: 'cashIn', label: summaryLabel('cashIn'), value: money.format(selectedMonth.cashIn) },
                 { key: 'cashOutExpenses', label: summaryLabel('cashOutExpenses'), value: money.format(selectedMonth.cashOutExpenses) },
                 { key: 'cashOutState', label: summaryLabel('cashOutState'), value: money.format(selectedMonth.cashOutState) },
+                { key: 'cashOutOperating', label: summaryLabel('cashOutOperating'), value: money.format(selectedMonth.cashOutOperating) },
+                { key: 'cashOutTaxSettlements', label: summaryLabel('cashOutTaxSettlements'), value: money.format(selectedMonth.cashOutTaxSettlements) },
+                { key: 'netCashFlow', label: summaryLabel('netCashFlow'), value: money.format(selectedMonth.netCashFlow) },
+                { key: 'canSpendAfterPlannedTaxes', label: summaryLabel('canSpendAfterPlannedTaxes'), value: money.format(selectedMonth.canSpendAfterPlannedTaxes) },
                 { key: 'canSpendThisMonth', label: summaryLabel('canSpendThisMonth'), value: money.format(selectedMonth.canSpendThisMonth) },
                 { key: 'canSpendIgnoringExpenses', label: summaryLabel('canSpendIgnoringExpenses'), value: money.format(selectedMonth.canSpendIgnoringExpenses) },
               ]
@@ -878,6 +1060,14 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 { key: 'irpfReserve', label: summaryLabel('irpfReserve'), value: money.format(selectedQuarter.irpfReserve) },
                 { key: 'ivaSettlementEstimate', label: summaryLabel('ivaSettlementEstimate'), value: money.format(selectedQuarter.ivaSettlementEstimate) },
                 { key: 'recommendedTaxReserve', label: summaryLabel('recommendedTaxReserve'), value: money.format(selectedQuarter.recommendedTaxReserve) },
+                { key: 'cashIn', label: summaryLabel('cashIn'), value: money.format(selectedQuarter.cashIn) },
+                { key: 'cashOutExpenses', label: summaryLabel('cashOutExpenses'), value: money.format(selectedQuarter.cashOutExpenses) },
+                { key: 'cashOutState', label: summaryLabel('cashOutState'), value: money.format(selectedQuarter.cashOutState) },
+                { key: 'cashOutOperating', label: summaryLabel('cashOutOperating'), value: money.format(selectedQuarter.cashOutOperating) },
+                { key: 'cashOutTaxSettlements', label: summaryLabel('cashOutTaxSettlements'), value: money.format(selectedQuarter.cashOutTaxSettlements) },
+                { key: 'netCashFlow', label: summaryLabel('netCashFlow'), value: money.format(selectedQuarter.netCashFlow) },
+                { key: 'canSpendAfterPlannedTaxes', label: summaryLabel('canSpendAfterPlannedTaxes'), value: money.format(selectedQuarter.canSpendAfterPlannedTaxes) },
+                { key: 'modelo130DueThisQuarter', label: summaryLabel('modelo130DueThisQuarter'), value: money.format(selectedQuarter.modelo130DueThisQuarter) },
               ]
             : []
         }

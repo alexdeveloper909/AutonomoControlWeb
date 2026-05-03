@@ -17,7 +17,15 @@ import {
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { cleanWorkspaceSettings, defaultRentaPlanningSettings, type IrpfTerritory, type WorkspaceSettings } from '../../domain/settings'
+import {
+  cleanWorkspaceSettings,
+  defaultIvaDeductionProfile,
+  defaultRentaPlanningSettings,
+  type IrpfTerritory,
+  type Q4NegativeVatAction,
+  type VatDeductionRight,
+  type WorkspaceSettings,
+} from '../../domain/settings'
 import type { Workspace } from '../../domain/workspace'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
@@ -54,6 +62,7 @@ export function WorkspaceSettingsDialog(props: {
       ivaStd: s.ivaStd,
       irpfRate: s.irpfRate,
       obligacion130: s.obligacion130,
+      ivaProfile: s.ivaProfile,
       rentaPlanning: s.rentaPlanning,
     })
 
@@ -65,6 +74,19 @@ export function WorkspaceSettingsDialog(props: {
 
   const ivaInvalid = useMemo(() => (draft ? !Number.isFinite(draft.ivaStd) || draft.ivaStd < 0 || draft.ivaStd > 1 : false), [draft])
   const irpfInvalid = useMemo(() => (draft ? !Number.isFinite(draft.irpfRate) || draft.irpfRate < 0 || draft.irpfRate > 1 : false), [draft])
+  const ivaProfileInvalid = useMemo(() => {
+    if (!draft) return false
+    const p = draft.ivaProfile ?? defaultIvaDeductionProfile()
+    return (
+      !Number.isFinite(p.defaultExpenseVatDeductiblePercentage) ||
+      p.defaultExpenseVatDeductiblePercentage < 0 ||
+      p.defaultExpenseVatDeductiblePercentage > 1 ||
+      !Number.isFinite(p.defaultIrpfDeductiblePercentage) ||
+      p.defaultIrpfDeductiblePercentage < 0 ||
+      p.defaultIrpfDeductiblePercentage > 1 ||
+      (p.openingVatCredit != null && !Number.isFinite(p.openingVatCredit))
+    )
+  }, [draft])
   const rentaForalUnsupported = useMemo(
     () =>
       draft?.rentaPlanning?.enabled === true && (draft.rentaPlanning.residence === 'NAVARRA' || draft.rentaPlanning.residence === 'PAIS_VASCO'),
@@ -114,6 +136,7 @@ export function WorkspaceSettingsDialog(props: {
         obligacion130: draft.obligacion130,
         openingBalance: settings.openingBalance ?? null,
         rentaPlanning: draft.rentaPlanning,
+        ivaProfile: draft.ivaProfile ?? defaultIvaDeductionProfile(),
       })
       const saved = await props.api.putWorkspaceSettings(props.workspace.workspaceId, payload)
       setSettings(saved)
@@ -220,6 +243,170 @@ export function WorkspaceSettingsDialog(props: {
                 fullWidth
                 disabled
               />
+
+              <Divider />
+              <Typography variant="subtitle2">{t('workspaceCreate.ivaProfileTitle')}</Typography>
+
+              <TextField
+                select
+                label={t('workspaceCreate.hasVatDeductionRight')}
+                value={(draft.ivaProfile ?? defaultIvaDeductionProfile()).hasVatDeductionRight}
+                onChange={(e) =>
+                  setDraft((s) =>
+                    s
+                      ? {
+                          ...s,
+                          ivaProfile: {
+                            ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                            hasVatDeductionRight: e.target.value as VatDeductionRight,
+                          },
+                        }
+                      : s,
+                  )
+                }
+                fullWidth
+                disabled={readOnly || saving}
+                helperText={t('workspaceCreate.ivaProfileHelp.hasVatDeductionRight')}
+              >
+                {(['FULL', 'NONE', 'PARTIAL'] as const).map((v) => (
+                  <MenuItem key={v} value={v}>
+                    {t(`workspaceCreate.vatDeductionRights.${v}`)}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={(draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultExpenseVatDeductible}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              ivaProfile: {
+                                ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                                defaultExpenseVatDeductible: e.target.checked,
+                                defaultExpenseVatDeductiblePercentage: e.target.checked ? 1 : 0,
+                              },
+                            }
+                          : s,
+                      )
+                    }
+                    disabled={readOnly || saving}
+                  />
+                }
+                label={t('workspaceCreate.defaultExpenseVatDeductible')}
+              />
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label={t('workspaceCreate.defaultExpenseVatDeductiblePercentage')}
+                  type="number"
+                  inputProps={{ step: '0.01', min: 0, max: 1 }}
+                  value={(draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultExpenseVatDeductiblePercentage}
+                  onChange={(e) =>
+                    setDraft((s) =>
+                      s
+                        ? {
+                            ...s,
+                            ivaProfile: {
+                              ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                              defaultExpenseVatDeductiblePercentage: Number(e.target.value),
+                            },
+                          }
+                        : s,
+                    )
+                  }
+                  fullWidth
+                  disabled={readOnly || saving}
+                  error={
+                    !Number.isFinite((draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultExpenseVatDeductiblePercentage) ||
+                    (draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultExpenseVatDeductiblePercentage < 0 ||
+                    (draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultExpenseVatDeductiblePercentage > 1
+                  }
+                  helperText={t('workspaceCreate.ivaProfileHelp.defaultExpenseVatDeductiblePercentage')}
+                />
+                <TextField
+                  label={t('workspaceCreate.defaultIrpfDeductiblePercentage')}
+                  type="number"
+                  inputProps={{ step: '0.01', min: 0, max: 1 }}
+                  value={(draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultIrpfDeductiblePercentage}
+                  onChange={(e) =>
+                    setDraft((s) =>
+                      s
+                        ? {
+                            ...s,
+                            ivaProfile: {
+                              ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                              defaultIrpfDeductiblePercentage: Number(e.target.value),
+                            },
+                          }
+                        : s,
+                    )
+                  }
+                  fullWidth
+                  disabled={readOnly || saving}
+                  error={
+                    !Number.isFinite((draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultIrpfDeductiblePercentage) ||
+                    (draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultIrpfDeductiblePercentage < 0 ||
+                    (draft.ivaProfile ?? defaultIvaDeductionProfile()).defaultIrpfDeductiblePercentage > 1
+                  }
+                  helperText={t('workspaceCreate.ivaProfileHelp.defaultIrpfDeductiblePercentage')}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label={t('workspaceCreate.openingVatCredit')}
+                  type="number"
+                  inputProps={{ step: '0.01', min: 0 }}
+                  value={(draft.ivaProfile ?? defaultIvaDeductionProfile()).openingVatCredit ?? ''}
+                  onChange={(e) =>
+                    setDraft((s) =>
+                      s
+                        ? {
+                            ...s,
+                            ivaProfile: {
+                              ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                              openingVatCredit: e.target.value === '' ? null : Number(e.target.value),
+                            },
+                          }
+                        : s,
+                    )
+                  }
+                  fullWidth
+                  disabled={readOnly || saving}
+                  helperText={t('workspaceCreate.ivaProfileHelp.openingVatCredit')}
+                />
+                <TextField
+                  select
+                  label={t('workspaceCreate.q4NegativeVatDefaultAction')}
+                  value={(draft.ivaProfile ?? defaultIvaDeductionProfile()).q4NegativeVatDefaultAction}
+                  onChange={(e) =>
+                    setDraft((s) =>
+                      s
+                        ? {
+                            ...s,
+                            ivaProfile: {
+                              ...(s.ivaProfile ?? defaultIvaDeductionProfile()),
+                              q4NegativeVatDefaultAction: e.target.value as Q4NegativeVatAction,
+                            },
+                          }
+                        : s,
+                    )
+                  }
+                  fullWidth
+                  disabled={readOnly || saving}
+                  helperText={t('workspaceCreate.ivaProfileHelp.q4NegativeVatDefaultAction')}
+                >
+                  {(['CARRY_FORWARD', 'REQUEST_REFUND'] as const).map((v) => (
+                    <MenuItem key={v} value={v}>
+                      {t(`workspaceCreate.q4NegativeVatActions.${v}`)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Stack>
 
               <Divider />
               <Typography variant="subtitle2">{t('workspaceCreate.rentaPlanningTitle')}</Typography>
@@ -586,7 +773,7 @@ export function WorkspaceSettingsDialog(props: {
       <DialogActions>
         <Button
           onClick={onSave}
-          disabled={readOnly || loading || saving || !dirty || ivaInvalid || irpfInvalid || rentaForalUnsupported || rentaInicioMissingYear || !draft}
+          disabled={readOnly || loading || saving || !dirty || ivaInvalid || irpfInvalid || ivaProfileInvalid || rentaForalUnsupported || rentaInicioMissingYear || !draft}
           variant="contained"
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
         >

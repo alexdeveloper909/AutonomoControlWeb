@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Alert,
   Autocomplete,
   Button,
   Checkbox,
@@ -13,6 +14,7 @@ import {
   Select,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -26,6 +28,7 @@ import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { defaultExpenseCategories } from '../../domain/expenseCategories'
+import { decimalFormatter } from '../lib/intl'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -36,6 +39,12 @@ const todayIso = (): string => {
 }
 
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
+const ivaRateValues: Record<IvaRate, number> = {
+  ZERO: 0,
+  SUPER_REDUCED: 0.04,
+  REDUCED: 0.1,
+  STANDARD: 0.21,
+}
 
 const asExpensePayload = (payload: unknown): ExpensePayload | null => {
   if (!payload || typeof payload !== 'object') return null
@@ -47,6 +56,8 @@ const asExpensePayload = (payload: unknown): ExpensePayload | null => {
   if (typeof p.ivaRate !== 'string') return null
   if (typeof p.vatRecoverableFlag !== 'boolean') return null
   if (typeof p.deductibleShare !== 'number') return null
+  if (p.ivaDeductiblePercentage != null && typeof p.ivaDeductiblePercentage !== 'number') return null
+  if (p.irpfDeductiblePercentage != null && typeof p.irpfDeductiblePercentage !== 'number') return null
   if (p.paymentDate != null && typeof p.paymentDate !== 'string') return null
   if (p.amountPaidOverride != null && typeof p.amountPaidOverride !== 'number') return null
   return p as ExpensePayload
@@ -59,7 +70,8 @@ export function WorkspaceExpensesCreatePage(props: {
   eventDate?: string
   recordId?: string
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const mode = props.mode ?? 'create'
@@ -82,7 +94,9 @@ export function WorkspaceExpensesCreatePage(props: {
   const [baseExclVat, setBaseExclVat] = useState('200')
   const [ivaRate, setIvaRate] = useState<IvaRate>('STANDARD')
   const [vatRecoverableFlag, setVatRecoverableFlag] = useState(true)
+  const [ivaDeductiblePercentage, setIvaDeductiblePercentage] = useState('1')
   const [deductibleShare, setDeductibleShare] = useState('1')
+  const [irpfDeductiblePercentage, setIrpfDeductiblePercentage] = useState('1')
   const [amountPaidOverride, setAmountPaidOverride] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
@@ -110,7 +124,9 @@ export function WorkspaceExpensesCreatePage(props: {
     setBaseExclVat(String(payload.baseExclVat))
     setIvaRate(payload.ivaRate)
     setVatRecoverableFlag(payload.vatRecoverableFlag)
+    setIvaDeductiblePercentage(String(payload.ivaDeductiblePercentage ?? (payload.vatRecoverableFlag ? 1 : 0)))
     setDeductibleShare(String(payload.deductibleShare))
+    setIrpfDeductiblePercentage(String(payload.irpfDeductiblePercentage ?? payload.deductibleShare))
     setAmountPaidOverride(payload.amountPaidOverride == null ? '' : String(payload.amountPaidOverride))
     setInitializedFromRecord(true)
   }, [editing, initializedFromRecord, recordQuery.data, t])
@@ -126,10 +142,44 @@ export function WorkspaceExpensesCreatePage(props: {
     const share = Number(deductibleShare)
     if (!Number.isFinite(share)) return t('expensesCreate.validation.deductibleShareNumber')
     if (share < 0 || share > 1) return t('expensesCreate.validation.deductibleShareRange')
+    const ivaPct = Number(ivaDeductiblePercentage)
+    if (!Number.isFinite(ivaPct) || ivaPct < 0 || ivaPct > 1) return t('expensesCreate.validation.ivaDeductiblePercentageRange')
+    const irpfPct = Number(irpfDeductiblePercentage)
+    if (!Number.isFinite(irpfPct) || irpfPct < 0 || irpfPct > 1) return t('expensesCreate.validation.irpfDeductiblePercentageRange')
     const override = amountPaidOverride.trim() ? parseEuroAmount(amountPaidOverride) : null
     if (override === null && amountPaidOverride.trim()) return t('expensesCreate.validation.amountPaidOverrideNumber')
     return null
-  }, [amountPaidOverride, baseExclVat, category, deductibleShare, documentDate, editing, initializedFromRecord, paymentDate, t, vendor])
+  }, [
+    amountPaidOverride,
+    baseExclVat,
+    category,
+    deductibleShare,
+    documentDate,
+    editing,
+    initializedFromRecord,
+    irpfDeductiblePercentage,
+    ivaDeductiblePercentage,
+    paymentDate,
+    t,
+    vendor,
+  ])
+
+  const preview = useMemo(() => {
+    const base = parseEuroAmount(baseExclVat)
+    const override = amountPaidOverride.trim() ? parseEuroAmount(amountPaidOverride) : null
+    const ivaPct = Number(ivaDeductiblePercentage)
+    const irpfPct = Number(irpfDeductiblePercentage)
+    if (base == null || !Number.isFinite(ivaPct) || !Number.isFinite(irpfPct)) return null
+    const expenseIva = base * ivaRateValues[ivaRate]
+    const inputVatDeductible = expenseIva * Math.min(1, Math.max(0, ivaPct))
+    const inputVatNonDeductible = expenseIva - inputVatDeductible
+    const irpfExpense = base * Math.min(1, Math.max(0, irpfPct)) + inputVatNonDeductible
+    return {
+      paidAmount: override ?? base + expenseIva,
+      inputVatDeductible,
+      irpfExpense,
+    }
+  }, [amountPaidOverride, baseExclVat, irpfDeductiblePercentage, ivaDeductiblePercentage, ivaRate])
 
   const submit = async () => {
     setError(null)
@@ -154,6 +204,8 @@ export function WorkspaceExpensesCreatePage(props: {
         ivaRate,
         vatRecoverableFlag,
         deductibleShare: Number(deductibleShare),
+        ivaDeductiblePercentage: Number(ivaDeductiblePercentage),
+        irpfDeductiblePercentage: Number(irpfDeductiblePercentage),
         paymentDate: paymentDate.trim() ? paymentDate.trim() : undefined,
         amountPaidOverride: override ?? undefined,
       }
@@ -360,7 +412,10 @@ export function WorkspaceExpensesCreatePage(props: {
               control={
                 <Checkbox
                   checked={vatRecoverableFlag}
-                  onChange={(e) => setVatRecoverableFlag(e.target.checked)}
+                  onChange={(e) => {
+                    setVatRecoverableFlag(e.target.checked)
+                    setIvaDeductiblePercentage(e.target.checked ? '1' : '0')
+                  }}
                   disabled={inputsDisabled}
                 />
               }
@@ -375,6 +430,61 @@ export function WorkspaceExpensesCreatePage(props: {
               <FormHelperText sx={{ mt: -0.5 }}>{t('expensesCreate.help.vatRecoverable', { defaultValue: '' })}</FormHelperText>
             ) : null}
           </FormControl>
+
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">{t('expensesCreate.ivaDeductibilityTitle')}</Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                label={t('expensesCreate.ivaDeductiblePercentage')}
+                value={ivaDeductiblePercentage}
+                onChange={(e) => {
+                  setIvaDeductiblePercentage(e.target.value)
+                  const next = Number(e.target.value)
+                  if (Number.isFinite(next)) setVatRecoverableFlag(next > 0)
+                }}
+                required
+                fullWidth
+                inputMode="decimal"
+                error={
+                  Boolean(ivaDeductiblePercentage) &&
+                  !(Number.isFinite(Number(ivaDeductiblePercentage)) && Number(ivaDeductiblePercentage) >= 0 && Number(ivaDeductiblePercentage) <= 1)
+                }
+                disabled={inputsDisabled}
+                helperText={t('expensesCreate.help.ivaDeductiblePercentage')}
+              />
+              <TextField
+                label={t('expensesCreate.irpfDeductiblePercentage')}
+                value={irpfDeductiblePercentage}
+                onChange={(e) => {
+                  setIrpfDeductiblePercentage(e.target.value)
+                  setDeductibleShare(e.target.value)
+                }}
+                required
+                fullWidth
+                inputMode="decimal"
+                error={
+                  Boolean(irpfDeductiblePercentage) &&
+                  !(Number.isFinite(Number(irpfDeductiblePercentage)) && Number(irpfDeductiblePercentage) >= 0 && Number(irpfDeductiblePercentage) <= 1)
+                }
+                disabled={inputsDisabled}
+                helperText={t('expensesCreate.help.irpfDeductiblePercentage')}
+              />
+            </Stack>
+            <Alert severity="info">
+              {t('expensesCreate.help.ivaIrpfRule1')} {t('expensesCreate.help.ivaIrpfRule2')}
+            </Alert>
+          </Stack>
+
+          {preview ? (
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+              <Stack spacing={0.5}>
+                <Typography variant="subtitle2">{t('expensesCreate.preview.title')}</Typography>
+                <Typography variant="body2">{t('expensesCreate.preview.paidAmount')}: {money.format(preview.paidAmount)}</Typography>
+                <Typography variant="body2">{t('expensesCreate.preview.inputVat')}: {money.format(preview.inputVatDeductible)}</Typography>
+                <Typography variant="body2">{t('expensesCreate.preview.irpfExpense')}: {money.format(preview.irpfExpense)}</Typography>
+              </Stack>
+            </Paper>
+          ) : null}
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToExpensesPath} variant="outlined" disabled={submitting}>

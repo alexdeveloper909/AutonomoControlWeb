@@ -35,6 +35,7 @@ All authenticated requests include:
 - `POST /workspaces/{workspaceId}/summaries/months`
 - `POST /workspaces/{workspaceId}/summaries/quarters`
 - `POST /workspaces/{workspaceId}/summaries/renta`
+- `POST /workspaces/{workspaceId}/summaries/iva`
 
 ## Read-only shared workspaces
 
@@ -65,7 +66,8 @@ The Income screen uses a dedicated form (not the raw JSON editor) and submits:
 - `POST /workspaces/{workspaceId}/records`
 - Body:
   - `recordType: "INVOICE"`
-  - `payload` fields: `invoiceDate`, `number`, `client`, `baseExclVat`, `ivaRate`, `retencion`, optional `paymentDate`, `amountReceivedOverride`
+  - `payload` fields: `invoiceDate`, `number`, `client`, `baseExclVat`, `ivaRate`, `retencion`, `vatTreatment`, optional `paymentDate`, `amountReceivedOverride`
+  - `vatTreatment` defaults to `SPANISH_IVA` for old records and can be `REVERSE_CHARGE_EU`, `EXPORT_OR_NON_EU`, `EXEMPT_WITH_DEDUCTION_RIGHT`, `EXEMPT_WITHOUT_DEDUCTION_RIGHT`, `OUT_OF_SCOPE`, or `UNKNOWN`.
 
 ## List income (INVOICE) with sorting + pagination
 
@@ -102,7 +104,18 @@ The Expenses screen uses a dedicated form and submits:
 - `POST /workspaces/{workspaceId}/records`
 - Body:
   - `recordType: "EXPENSE"`
-  - `payload` fields: `documentDate`, `vendor`, `category`, `baseExclVat`, `ivaRate`, `vatRecoverableFlag`, `deductibleShare`, optional `paymentDate`, `amountPaidOverride`
+  - `payload` fields: `documentDate`, `vendor`, `category`, `baseExclVat`, `ivaRate`, `vatRecoverableFlag`, `deductibleShare`, `ivaDeductiblePercentage`, `irpfDeductiblePercentage`, optional `paymentDate`, `amountPaidOverride`
+  - The legacy fields are still sent for compatibility. The explicit percentage fields are used by newer API/Core versions when present.
+
+## IVA year estimate
+
+The Summaries screen uses:
+
+- `POST /workspaces/{workspaceId}/summaries/iva`
+- Body: current workspace settings
+- Response: `{ "settings": ..., "iva": { "year": 2026, "quarters": [ /* IvaQuarterEstimate */ ] } }`
+
+The IVA Estimate tab displays output IVA, deductible input IVA, raw result, credit brought forward, payable amount, credit carried forward, and Q4 refund/carry-forward candidate fields.
 
 ## List expenses (EXPENSE) with sorting + pagination
 

@@ -263,6 +263,17 @@ export class AutonomoControlApi {
     })
   }
 
+  async ivaSummary(
+    workspaceId: string,
+    settings: WorkspaceSettings,
+  ): Promise<{ settings: WorkspaceSettings; iva: unknown | null }> {
+    return jsonFetch(new URL(`/workspaces/${workspaceId}/summaries/iva`, this.baseUrl).toString(), {
+      method: 'POST',
+      headers: this.authHeaders(),
+      body: settings,
+    })
+  }
+
   async listRegularSpendings(workspaceId: string): Promise<ListResponse<RecordResponse>> {
     const url = new URL(`/workspaces/${workspaceId}/regular-spendings`, this.baseUrl)
     const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })

@@ -2,6 +2,14 @@ export type RecordType = 'INVOICE' | 'EXPENSE' | 'STATE_PAYMENT' | 'TRANSFER' | 
 
 export type IvaRate = 'ZERO' | 'SUPER_REDUCED' | 'REDUCED' | 'STANDARD'
 export type RetencionRate = 'ZERO' | 'NEW_PROFESSIONAL' | 'STANDARD'
+export type VatTreatment =
+  | 'SPANISH_IVA'
+  | 'REVERSE_CHARGE_EU'
+  | 'EXPORT_OR_NON_EU'
+  | 'EXEMPT_WITH_DEDUCTION_RIGHT'
+  | 'EXEMPT_WITHOUT_DEDUCTION_RIGHT'
+  | 'OUT_OF_SCOPE'
+  | 'UNKNOWN'
 export type StatePaymentType =
   | 'Modelo303'
   | 'Modelo130'
@@ -17,6 +25,7 @@ export type InvoicePayload = {
   baseExclVat: number
   ivaRate: IvaRate
   retencion: RetencionRate
+  vatTreatment?: VatTreatment
   paymentDate?: string
   amountReceivedOverride?: number
 }
@@ -29,6 +38,8 @@ export type ExpensePayload = {
   ivaRate: IvaRate
   vatRecoverableFlag: boolean
   deductibleShare: number
+  ivaDeductiblePercentage?: number
+  irpfDeductiblePercentage?: number
   paymentDate?: string
   amountPaidOverride?: number
 }

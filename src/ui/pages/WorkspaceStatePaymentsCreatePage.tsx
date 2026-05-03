@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Alert,
   Button,
   FormControl,
   FormHelperText,
@@ -221,6 +222,11 @@ export function WorkspaceStatePaymentsCreatePage(props: {
               <FormHelperText>{t('statePaymentsCreate.help.type', { defaultValue: '' })}</FormHelperText>
             ) : null}
           </FormControl>
+
+          <Alert severity="info">
+            {t('statePaymentsCreate.semantics.seguridadSocial')} {t('statePaymentsCreate.semantics.modelo130')}{' '}
+            {t('statePaymentsCreate.semantics.modelo303')} {t('statePaymentsCreate.semantics.rentaAnual')}
+          </Alert>
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>

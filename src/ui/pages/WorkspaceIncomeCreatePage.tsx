@@ -14,7 +14,7 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { IvaRate, InvoicePayload, RetencionRate } from '../../domain/records'
+import type { IvaRate, InvoicePayload, RetencionRate, VatTreatment } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -42,6 +42,7 @@ const asInvoicePayload = (payload: unknown): InvoicePayload | null => {
   if (typeof p.baseExclVat !== 'number') return null
   if (typeof p.ivaRate !== 'string') return null
   if (typeof p.retencion !== 'string') return null
+  if (p.vatTreatment != null && typeof p.vatTreatment !== 'string') return null
   if (p.paymentDate != null && typeof p.paymentDate !== 'string') return null
   if (p.amountReceivedOverride != null && typeof p.amountReceivedOverride !== 'number') return null
   return p as InvoicePayload
@@ -75,6 +76,7 @@ export function WorkspaceIncomeCreatePage(props: {
   const [baseExclVat, setBaseExclVat] = useState('1000')
   const [ivaRate, setIvaRate] = useState<IvaRate>('STANDARD')
   const [retencion, setRetencion] = useState<RetencionRate>('STANDARD')
+  const [vatTreatment, setVatTreatment] = useState<VatTreatment>('SPANISH_IVA')
   const [paymentDate, setPaymentDate] = useState('')
   const [amountReceivedOverride, setAmountReceivedOverride] = useState('')
 
@@ -100,6 +102,7 @@ export function WorkspaceIncomeCreatePage(props: {
     setBaseExclVat(String(payload.baseExclVat))
     setIvaRate(payload.ivaRate)
     setRetencion(payload.retencion)
+    setVatTreatment(payload.vatTreatment ?? 'SPANISH_IVA')
     setPaymentDate(payload.paymentDate ?? '')
     setAmountReceivedOverride(payload.amountReceivedOverride == null ? '' : String(payload.amountReceivedOverride))
     setInitializedFromRecord(true)
@@ -140,6 +143,7 @@ export function WorkspaceIncomeCreatePage(props: {
         baseExclVat: base,
         ivaRate,
         retencion,
+        vatTreatment,
         paymentDate: paymentDate.trim() ? paymentDate.trim() : undefined,
         amountReceivedOverride: override ?? undefined,
       }
@@ -326,6 +330,39 @@ export function WorkspaceIncomeCreatePage(props: {
               ) : null}
             </FormControl>
           </Stack>
+
+          <FormControl fullWidth>
+            <InputLabel id="vat-treatment-label">
+              <FieldLabel
+                label={t('incomeCreate.vatTreatment')}
+                tooltip={t('incomeCreate.tooltips.vatTreatment', { defaultValue: '' })}
+              />
+            </InputLabel>
+            <Select
+              labelId="vat-treatment-label"
+              label={t('incomeCreate.vatTreatment')}
+              value={vatTreatment}
+              onChange={(e) => setVatTreatment(e.target.value as VatTreatment)}
+              disabled={inputsDisabled}
+            >
+              {(
+                [
+                  'SPANISH_IVA',
+                  'REVERSE_CHARGE_EU',
+                  'EXPORT_OR_NON_EU',
+                  'EXEMPT_WITH_DEDUCTION_RIGHT',
+                  'EXEMPT_WITHOUT_DEDUCTION_RIGHT',
+                  'OUT_OF_SCOPE',
+                  'UNKNOWN',
+                ] as const
+              ).map((treatment) => (
+                <MenuItem key={treatment} value={treatment}>
+                  {t(`incomeCreate.vatTreatments.${treatment}`)}
+                </MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>{t('incomeCreate.help.vatTreatment')}</FormHelperText>
+          </FormControl>
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToIncomePath} variant="outlined" disabled={submitting}>

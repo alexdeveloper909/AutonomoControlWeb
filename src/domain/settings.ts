@@ -36,6 +36,18 @@ export type RentaPlanningSettings = {
   otherReductions: number | null
 }
 
+export type VatDeductionRight = 'FULL' | 'NONE' | 'PARTIAL'
+export type Q4NegativeVatAction = 'CARRY_FORWARD' | 'REQUEST_REFUND'
+
+export type IvaDeductionProfile = {
+  hasVatDeductionRight: VatDeductionRight
+  defaultExpenseVatDeductible: boolean
+  defaultExpenseVatDeductiblePercentage: number
+  defaultIrpfDeductiblePercentage: number
+  q4NegativeVatDefaultAction: Q4NegativeVatAction
+  openingVatCredit: number | null
+}
+
 export type WorkspaceSettings = {
   year: number
   startDate: string
@@ -44,6 +56,7 @@ export type WorkspaceSettings = {
   obligacion130: boolean
   openingBalance: number | null
   rentaPlanning: RentaPlanningSettings | null
+  ivaProfile: IvaDeductionProfile
 }
 
 const cleanTerritory = (v: unknown): IrpfTerritory => {
@@ -73,6 +86,10 @@ const cleanTerritory = (v: unknown): IrpfTerritory => {
 }
 
 const cleanNumberOrNull = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+const cleanPercentage = (v: unknown, fallback: number): number => {
+  const n = typeof v === 'number' && Number.isFinite(v) ? v : fallback
+  return Math.min(1, Math.max(0, n))
+}
 
 const cleanInicioActividad = (v: unknown, taxYear: number): InicioActividadReductionSettings | null => {
   if (!v || typeof v !== 'object') return null
@@ -99,6 +116,41 @@ export const defaultRentaPlanningSettings = (taxYear: number): RentaPlanningSett
   otherReductions: null,
 })
 
+export const defaultIvaDeductionProfile = (): IvaDeductionProfile => ({
+  hasVatDeductionRight: 'FULL',
+  defaultExpenseVatDeductible: true,
+  defaultExpenseVatDeductiblePercentage: 1,
+  defaultIrpfDeductiblePercentage: 1,
+  q4NegativeVatDefaultAction: 'CARRY_FORWARD',
+  openingVatCredit: null,
+})
+
+const cleanIvaProfile = (v: unknown): IvaDeductionProfile => {
+  const defaults = defaultIvaDeductionProfile()
+  if (!v || typeof v !== 'object') return defaults
+  const o = v as Record<string, unknown>
+  const hasVatDeductionRight =
+    o.hasVatDeductionRight === 'FULL' || o.hasVatDeductionRight === 'NONE' || o.hasVatDeductionRight === 'PARTIAL'
+      ? o.hasVatDeductionRight
+      : defaults.hasVatDeductionRight
+  const q4NegativeVatDefaultAction =
+    o.q4NegativeVatDefaultAction === 'CARRY_FORWARD' || o.q4NegativeVatDefaultAction === 'REQUEST_REFUND'
+      ? o.q4NegativeVatDefaultAction
+      : defaults.q4NegativeVatDefaultAction
+  return {
+    hasVatDeductionRight,
+    defaultExpenseVatDeductible:
+      typeof o.defaultExpenseVatDeductible === 'boolean' ? o.defaultExpenseVatDeductible : defaults.defaultExpenseVatDeductible,
+    defaultExpenseVatDeductiblePercentage: cleanPercentage(
+      o.defaultExpenseVatDeductiblePercentage,
+      defaults.defaultExpenseVatDeductiblePercentage,
+    ),
+    defaultIrpfDeductiblePercentage: cleanPercentage(o.defaultIrpfDeductiblePercentage, defaults.defaultIrpfDeductiblePercentage),
+    q4NegativeVatDefaultAction,
+    openingVatCredit: cleanNumberOrNull(o.openingVatCredit),
+  }
+}
+
 const cleanRentaPlanning = (v: unknown, taxYear: number): RentaPlanningSettings | null => {
   if (!v || typeof v !== 'object') return defaultRentaPlanningSettings(taxYear)
   const o = v as Record<string, unknown>
@@ -122,4 +174,5 @@ export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings 
   obligacion130: s.obligacion130,
   openingBalance: s.openingBalance ?? null,
   rentaPlanning: cleanRentaPlanning((s as unknown as Record<string, unknown>).rentaPlanning, s.year),
+  ivaProfile: cleanIvaProfile((s as unknown as Record<string, unknown>).ivaProfile),
 })
