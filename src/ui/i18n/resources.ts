@@ -756,6 +756,7 @@ export const resources = {
           canSpendThisMonth: 'Can spend (with expenses)',
           canSpendIgnoringExpenses: 'Can spend',
           canSpendWithRentaSave: 'Can spend with save for Renta',
+          modelo130PaidForQuarter: 'Modelo 130 paid for this quarter',
           modelo130DueThisQuarter: 'Modelo 130 due this quarter',
           start: 'Start',
           end: 'End',
@@ -783,6 +784,7 @@ export const resources = {
             'Primary spendable-money metric after planned taxes. Tax settlement payments do not reduce this a second time.',
           canSpendThisMonth: 'Compatibility alias for “Can spend after planned taxes”.',
           canSpendIgnoringExpenses: 'Can spend + cash out (expenses). Useful if expenses are paid from another account.',
+          modelo130PaidForQuarter: 'Modelo 130 payments attributed to this filing quarter, even if the cash payment date is in the next quarter.',
           modelo130DueThisQuarter: 'Cumulative Modelo 130 filing estimate for this quarter, after previous payments and withholdings.',
           canSpendWithRentaSave:
             'If Renta planning expects an additional settlement payment: max(0, Can spend − suggested monthly Renta reserve). This is incremental saving beyond the quarterly/Modelo 130 reserve already included in “Can spend”. Shown as “-” for inactive months. Otherwise “-”.',

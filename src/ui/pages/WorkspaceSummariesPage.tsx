@@ -82,6 +82,7 @@ type QuarterSummary = {
   cashOutTaxSettlements: number
   netCashFlow: number
   canSpendAfterPlannedTaxes: number
+  modelo130PaidForQuarter: number
   modelo130DueThisQuarter: number
 }
 
@@ -328,6 +329,7 @@ const asQuarterSummary = (v: unknown): QuarterSummary | null => {
   const cashOutTaxSettlements = asNumber(o.cashOutTaxSettlements) ?? 0
   const netCashFlow = asNumber(o.netCashFlow) ?? cashIn - cashOutExpenses - cashOutState
   const canSpendAfterPlannedTaxes = asNumber(o.canSpendAfterPlannedTaxes) ?? 0
+  const modelo130PaidForQuarter = asNumber(o.modelo130PaidForQuarter) ?? 0
   const modelo130DueThisQuarter = asNumber(o.modelo130DueThisQuarter) ?? 0
 
   if (
@@ -372,6 +374,7 @@ const asQuarterSummary = (v: unknown): QuarterSummary | null => {
     cashOutTaxSettlements,
     netCashFlow,
     canSpendAfterPlannedTaxes,
+    modelo130PaidForQuarter,
     modelo130DueThisQuarter,
   }
 }
@@ -1067,6 +1070,7 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 { key: 'cashOutTaxSettlements', label: summaryLabel('cashOutTaxSettlements'), value: money.format(selectedQuarter.cashOutTaxSettlements) },
                 { key: 'netCashFlow', label: summaryLabel('netCashFlow'), value: money.format(selectedQuarter.netCashFlow) },
                 { key: 'canSpendAfterPlannedTaxes', label: summaryLabel('canSpendAfterPlannedTaxes'), value: money.format(selectedQuarter.canSpendAfterPlannedTaxes) },
+                { key: 'modelo130PaidForQuarter', label: summaryLabel('modelo130PaidForQuarter'), value: money.format(selectedQuarter.modelo130PaidForQuarter) },
                 { key: 'modelo130DueThisQuarter', label: summaryLabel('modelo130DueThisQuarter'), value: money.format(selectedQuarter.modelo130DueThisQuarter) },
               ]
             : []
