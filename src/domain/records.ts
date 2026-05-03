@@ -48,6 +48,10 @@ export type StatePaymentPayload = {
   paymentDate: string
   type: StatePaymentType
   amount: number
+  taxPeriodQuarter?: {
+    year: number
+    quarter: number
+  }
 }
 
 export type TransferPayload = {
