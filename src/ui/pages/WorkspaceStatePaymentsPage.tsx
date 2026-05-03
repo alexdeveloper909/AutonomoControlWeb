@@ -129,6 +129,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
     <Stack spacing={2}>
       <PageHeader
         title={t('statePayments.title')}
+        description={t('statePayments.description')}
         right={
           props.readOnly ? null : (
             <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/state-payments/new`}>

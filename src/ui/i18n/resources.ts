@@ -408,7 +408,7 @@ export const resources = {
       },
       statePayments: {
         title: 'Tax and Social Security payments',
-        description: 'STATE_PAYMENT records for this workspace (year filter).',
+        description: 'Record actual cash paid to Hacienda or Social Security so summaries can separate tax settlements from deductible operating payments.',
         add: 'Add tax/Social Security payment',
         empty: 'No state payment records found for {{year}}.',
       },
@@ -429,11 +429,13 @@ export const resources = {
           amount: 'Included in raw net cash flow. Tax settlements do not reduce planned spendable money a second time.',
           type: 'Seguridad Social reduces IRPF profit. Modelo 130/303 and Renta are tax settlement payments.',
         },
-        semantics: {
-          seguridadSocial: 'Seguridad Social reduces IRPF profit and monthly spendable money.',
-          modelo130: 'Modelo 130 is an IRPF advance/settlement payment.',
-          modelo303: 'Modelo 303 is a VAT settlement payment.',
-          rentaAnual: 'Renta Anual is the annual IRPF settlement payment.',
+        typeInfo: {
+          Modelo303:
+            'Use this only for IVA actually paid to Hacienda. If Modelo 303 is negative, do not enter it here; it is IVA credit/refund planning, not a cash payment.',
+          Modelo130: 'Use this for IRPF advance payments actually paid through Modelo 130. It helps avoid double-counting future IRPF reserves.',
+          SeguridadSocial: 'Use this for autónomo Social Security quota payments. These reduce IRPF profit and monthly spendable money.',
+          RentaAnual: 'Use this for the annual Renta/IRPF settlement when you actually pay Hacienda.',
+          Other: 'Use this for other state-related payments that should appear as cash out but do not fit the tax categories above.',
         },
         create: 'Create state payment',
         validation: {
@@ -1304,7 +1306,8 @@ export const resources = {
       },
       statePayments: {
         title: 'Pagos al Estado',
-        description: 'Registros STATE_PAYMENT de este espacio de trabajo (filtro por año).',
+        description:
+          'Registra importes realmente pagados a Hacienda o Seguridad Social para separar liquidaciones fiscales de pagos operativos deducibles.',
         add: 'Añadir pago al Estado',
         empty: 'No se encontraron pagos al Estado para {{year}}.',
       },
@@ -1324,6 +1327,14 @@ export const resources = {
           paymentDate: 'Los pagos al Estado siempre se agrupan por fecha de pago (criterio de caja).',
           amount: 'Se incluye en “Cash out (state)”. La Seguridad Social además reduce el beneficio para IRPF.',
           type: 'Seguridad Social se deduce del beneficio para IRPF. Otros tipos igualmente cuentan como salida al Estado.',
+        },
+        typeInfo: {
+          Modelo303:
+            'Úsalo solo para IVA realmente pagado a Hacienda. Si el Modelo 303 sale negativo, no lo registres aquí: es crédito/devolución de IVA, no un pago.',
+          Modelo130: 'Úsalo para anticipos de IRPF realmente pagados con Modelo 130. Ayuda a no contar dos veces futuras reservas de IRPF.',
+          SeguridadSocial: 'Úsalo para la cuota de autónomo de Seguridad Social. Reduce el beneficio para IRPF y el dinero disponible mensual.',
+          RentaAnual: 'Úsalo para la liquidación anual de Renta/IRPF cuando realmente pagas a Hacienda.',
+          Other: 'Úsalo para otros pagos al Estado que deban aparecer como salida de caja y no encajen en las categorías anteriores.',
         },
         create: 'Crear pago al Estado',
         validation: {
@@ -2163,7 +2174,8 @@ export const resources = {
       },
       statePayments: {
         title: 'Платежі державі',
-        description: 'Записи STATE_PAYMENT для цього робочого простору (фільтр за роком).',
+        description:
+          'Записуйте фактичні платежі до Hacienda або Seguridad Social, щоб підсумки відділяли податкові розрахунки від операційних платежів.',
         add: 'Додати платіж',
         empty: 'Платежів державі за {{year}} не знайдено.',
       },
@@ -2183,6 +2195,14 @@ export const resources = {
           paymentDate: 'Платежі державі завжди групуються за датою оплати (касовий метод).',
           amount: 'Входить у “Cash out (state)”. Seguridad Social також зменшує прибуток для IRPF.',
           type: 'Seguridad Social віднімається з прибутку для IRPF. Інші типи теж рахуються як відтік до держави.',
+        },
+        typeInfo: {
+          Modelo303:
+            'Використовуйте лише для IVA, фактично сплаченого Hacienda. Якщо Modelo 303 відʼємний, не додавайте його тут: це IVA credit/refund planning, а не платіж.',
+          Modelo130: 'Використовуйте для авансів IRPF, фактично сплачених через Modelo 130. Це допомагає не рахувати майбутні резерви IRPF двічі.',
+          SeguridadSocial: 'Використовуйте для квоти autónomo Social Security. Вона зменшує прибуток для IRPF і доступні гроші за місяць.',
+          RentaAnual: 'Використовуйте для річного розрахунку Renta/IRPF, коли ви фактично платите Hacienda.',
+          Other: 'Використовуйте для інших платежів державі, які мають бути відтоком коштів і не підходять до категорій вище.',
         },
         create: 'Створити платіж',
         validation: {
@@ -3020,7 +3040,7 @@ export const resources = {
       },
       statePayments: {
         title: 'مدفوعات الدولة',
-        description: 'سجلات STATE_PAYMENT لهذه المساحة (تصفية حسب السنة).',
+        description: 'سجّل المبالغ المدفوعة فعليًا إلى Hacienda أو Seguridad Social كي تفصل الملخصات التسويات الضريبية عن المدفوعات التشغيلية.',
         add: 'إضافة دفعة للدولة',
         empty: 'لم يتم العثور على مدفوعات للدولة لعام {{year}}.',
       },
@@ -3040,6 +3060,14 @@ export const resources = {
           paymentDate: 'مدفوعات الدولة تُجمَّع دائمًا حسب تاريخ الدفع (أساس نقدي).',
           amount: 'يدخل ضمن “Cash out (state)”. Seguridad Social تقلل أيضًا Profit for IRPF.',
           type: 'Seguridad Social تُخصم من Profit for IRPF. الأنواع الأخرى تُحسب أيضًا كخروج نقدي للدولة.',
+        },
+        typeInfo: {
+          Modelo303:
+            'استخدمه فقط لضريبة IVA المدفوعة فعليًا إلى Hacienda. إذا كان Modelo 303 سالبًا فلا تسجله هنا؛ هذا رصيد/تخطيط استرداد IVA وليس دفعة نقدية.',
+          Modelo130: 'استخدمه لدفعات IRPF المقدمة المدفوعة فعليًا عبر Modelo 130. يساعد على تجنب احتساب احتياطي IRPF مرتين.',
+          SeguridadSocial: 'استخدمه لدفعات حصة autónomo في Seguridad Social. تقلل ربح IRPF والمبلغ الشهري المتاح.',
+          RentaAnual: 'استخدمه لتسوية Renta/IRPF السنوية عندما تدفع فعليًا إلى Hacienda.',
+          Other: 'استخدمه لمدفوعات أخرى للدولة يجب أن تظهر كتدفق نقدي خارج ولا تناسب الفئات أعلاه.',
         },
         create: 'إنشاء دفعة للدولة',
         validation: {
@@ -3878,7 +3906,8 @@ export const resources = {
       },
       statePayments: {
         title: 'Plăți către stat',
-        description: 'Înregistrări STATE_PAYMENT pentru acest spațiu (filtru pe an).',
+        description:
+          'Înregistrează sumele plătite efectiv către Hacienda sau Seguridad Social, ca sumarele să separe taxele de plățile operaționale deductibile.',
         add: 'Adaugă plată către stat',
         empty: 'Nu s-au găsit plăți către stat pentru {{year}}.',
       },
@@ -3898,6 +3927,14 @@ export const resources = {
           paymentDate: 'Plățile către stat sunt grupate întotdeauna după data plății (bază de numerar).',
           amount: 'Intră în “Cash out (state)”. Seguridad Social reduce și Profit pentru IRPF.',
           type: 'Seguridad Social se deduce din Profit pentru IRPF. Alte tipuri sunt tot ieșiri către stat.',
+        },
+        typeInfo: {
+          Modelo303:
+            'Folosește doar pentru IVA plătit efectiv către Hacienda. Dacă Modelo 303 este negativ, nu îl introduce aici; este credit/rambursare IVA, nu plată cash.',
+          Modelo130: 'Folosește pentru avansuri IRPF plătite efectiv prin Modelo 130. Ajută la evitarea dublării rezervelor IRPF viitoare.',
+          SeguridadSocial: 'Folosește pentru contribuția autónomo la Seguridad Social. Reduce profitul IRPF și banii disponibili lunar.',
+          RentaAnual: 'Folosește pentru regularizarea anuală Renta/IRPF când plătești efectiv către Hacienda.',
+          Other: 'Folosește pentru alte plăți către stat care trebuie să apară ca ieșire de numerar și nu se potrivesc mai sus.',
         },
         create: 'Creează plată către stat',
         validation: {

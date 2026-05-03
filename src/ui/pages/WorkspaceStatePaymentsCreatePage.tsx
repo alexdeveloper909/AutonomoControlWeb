@@ -142,6 +142,7 @@ export function WorkspaceStatePaymentsCreatePage(props: {
   }
 
   const inputsDisabled = submitting || (editing && !initializedFromRecord) || recordQuery.isFetching
+  const selectedTypeInfo = t(`statePaymentsCreate.typeInfo.${type}`)
 
   return (
     <Stack spacing={2}>
@@ -223,10 +224,7 @@ export function WorkspaceStatePaymentsCreatePage(props: {
             ) : null}
           </FormControl>
 
-          <Alert severity="info">
-            {t('statePaymentsCreate.semantics.seguridadSocial')} {t('statePaymentsCreate.semantics.modelo130')}{' '}
-            {t('statePaymentsCreate.semantics.modelo303')} {t('statePaymentsCreate.semantics.rentaAnual')}
-          </Alert>
+          <Alert severity="info">{selectedTypeInfo}</Alert>
 
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>
