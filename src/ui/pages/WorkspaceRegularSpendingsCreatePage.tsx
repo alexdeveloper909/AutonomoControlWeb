@@ -1,9 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, TextField } from '@mui/material'
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { RegularSpendingCadence, RegularSpendingPayload } from '../../domain/records'
+import type {
+  RegularSpendingCadence,
+  RegularSpendingPayload,
+  RegularSpendingScheduleType,
+} from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -22,12 +38,30 @@ const asRegularSpendingPayload = (payload: unknown): RegularSpendingPayload | nu
   const p = payload as Partial<RegularSpendingPayload>
   if (typeof p.name !== 'string') return null
   if (typeof p.startDate !== 'string') return null
-  if (typeof p.cadence !== 'string') return null
   if (typeof p.amount !== 'number') return null
-  return p as RegularSpendingPayload
+  if (p.scheduleType === 'FIXED_TERM') {
+    if (typeof p.paymentCount !== 'number') return null
+    return {
+      name: p.name,
+      startDate: p.startDate,
+      scheduleType: 'FIXED_TERM',
+      paymentCount: p.paymentCount,
+      amount: p.amount,
+    }
+  }
+  if (p.scheduleType != null && p.scheduleType !== 'ONGOING') return null
+  if (typeof p.cadence !== 'string') return null
+  return {
+    name: p.name,
+    startDate: p.startDate,
+    scheduleType: 'ONGOING',
+    cadence: p.cadence,
+    amount: p.amount,
+  }
 }
 
 const CADENCE_OPTIONS: RegularSpendingCadence[] = ['MONTHLY', 'QUARTERLY', 'YEARLY']
+const SCHEDULE_TYPE_OPTIONS: RegularSpendingScheduleType[] = ['ONGOING', 'FIXED_TERM']
 
 export function WorkspaceRegularSpendingsCreatePage(props: {
   workspaceId: string
@@ -53,8 +87,10 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
 
   const [name, setName] = useState('')
   const [startDate, setStartDate] = useState(todayIso())
+  const [scheduleType, setScheduleType] = useState<RegularSpendingScheduleType>('ONGOING')
   const [cadence, setCadence] = useState<RegularSpendingCadence>('MONTHLY')
   const [amount, setAmount] = useState('')
+  const [paymentCount, setPaymentCount] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,7 +110,13 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
     }
     setName(payload.name)
     setStartDate(payload.startDate)
-    setCadence(payload.cadence)
+    setScheduleType(payload.scheduleType ?? 'ONGOING')
+    if (payload.scheduleType === 'FIXED_TERM') {
+      setPaymentCount(String(payload.paymentCount))
+    } else {
+      setCadence(payload.cadence)
+      setPaymentCount('')
+    }
     setAmount(String(payload.amount))
     setInitializedFromRecord(true)
   }, [editing, initializedFromRecord, recordQuery.data, t])
@@ -84,11 +126,17 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
     if (!name.trim()) return t('regularSpendingsCreate.validation.nameRequired')
     if (name.trim().length > 80) return t('regularSpendingsCreate.validation.nameMaxLength')
     if (!isIsoDate(startDate)) return t('regularSpendingsCreate.validation.startDate')
+    if (scheduleType === 'FIXED_TERM') {
+      if (!paymentCount.trim()) return t('regularSpendingsCreate.validation.paymentCountRequired')
+      if (!/^\d+$/.test(paymentCount.trim()) || Number(paymentCount) < 1) {
+        return t('regularSpendingsCreate.validation.paymentCountPositiveInteger')
+      }
+    }
     const a = parseEuroAmount(amount)
     if (a === null) return t('regularSpendingsCreate.validation.amountNumber')
     if (a <= 0) return t('regularSpendingsCreate.validation.amountPositive')
     return null
-  }, [editing, initializedFromRecord, name, startDate, amount, t])
+  }, [editing, initializedFromRecord, name, startDate, scheduleType, paymentCount, amount, t])
 
   const submit = async () => {
     setError(null)
@@ -103,12 +151,22 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
       const a = parseEuroAmount(amount)
       if (a === null || a <= 0) throw new Error(t('regularSpendingsCreate.validation.amountPositive'))
 
-      const payload: RegularSpendingPayload = {
-        name: name.trim(),
-        startDate,
-        cadence,
-        amount: a,
-      }
+      const payload: RegularSpendingPayload =
+        scheduleType === 'FIXED_TERM'
+          ? {
+              name: name.trim(),
+              startDate,
+              scheduleType: 'FIXED_TERM',
+              paymentCount: Number(paymentCount),
+              amount: a,
+            }
+          : {
+              name: name.trim(),
+              startDate,
+              scheduleType: 'ONGOING',
+              cadence,
+              amount: a,
+            }
 
       const res = editing
         ? await props.api.updateRecord(props.workspaceId, 'REGULAR_SPENDING', props.eventDate!, props.recordId!, {
@@ -160,6 +218,25 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
         <Stack spacing={2}>
           {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
 
+          <FormControl fullWidth required disabled={inputsDisabled}>
+            <InputLabel shrink>{t('regularSpendingsCreate.scheduleType')}</InputLabel>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
+              value={scheduleType}
+              onChange={(_, value) => {
+                if (value) setScheduleType(value as RegularSpendingScheduleType)
+              }}
+              sx={{ mt: 2, alignSelf: 'flex-start' }}
+            >
+              {SCHEDULE_TYPE_OPTIONS.map((type) => (
+                <ToggleButton key={type} value={type}>
+                  {t(`regularSpendingsCreate.scheduleTypes.${type}`)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </FormControl>
+
           <TextField
             label={
               <FieldLabel
@@ -180,7 +257,11 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
             <TextField
               label={
                 <FieldLabel
-                  label={t('regularSpendingsCreate.startDate')}
+                  label={
+                    scheduleType === 'FIXED_TERM'
+                      ? t('regularSpendingsCreate.firstPaymentDate')
+                      : t('regularSpendingsCreate.startDate')
+                  }
                   tooltip={t('regularSpendingsCreate.tooltips.startDate', { defaultValue: '' })}
                 />
               }
@@ -195,27 +276,44 @@ export function WorkspaceRegularSpendingsCreatePage(props: {
               helperText={t('regularSpendingsCreate.help.startDate', { defaultValue: '' }) || undefined}
             />
 
-            <FormControl fullWidth required disabled={inputsDisabled}>
-              <InputLabel id="rs-cadence-label">{t('regularSpendingsCreate.cadence')}</InputLabel>
-              <Select
-                labelId="rs-cadence-label"
-                label={t('regularSpendingsCreate.cadence')}
-                value={cadence}
-                onChange={(e) => setCadence(e.target.value as RegularSpendingCadence)}
-              >
-                {CADENCE_OPTIONS.map((c) => (
-                  <MenuItem key={c} value={c}>
-                    {t(`regularSpendings.cadence.${c}`)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {scheduleType === 'ONGOING' ? (
+              <FormControl fullWidth required disabled={inputsDisabled}>
+                <InputLabel id="rs-cadence-label">{t('regularSpendingsCreate.cadence')}</InputLabel>
+                <Select
+                  labelId="rs-cadence-label"
+                  label={t('regularSpendingsCreate.cadence')}
+                  value={cadence}
+                  onChange={(e) => setCadence(e.target.value as RegularSpendingCadence)}
+                >
+                  {CADENCE_OPTIONS.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {t(`regularSpendings.cadence.${c}`)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <TextField
+                label={t('regularSpendingsCreate.paymentCount')}
+                type="number"
+                value={paymentCount}
+                onChange={(e) => setPaymentCount(e.target.value)}
+                required
+                fullWidth
+                disabled={inputsDisabled}
+                inputProps={{ min: 1, step: 1 }}
+              />
+            )}
           </Stack>
 
           <EuroTextField
             label={
               <FieldLabel
-                label={t('regularSpendingsCreate.amount')}
+                label={
+                  scheduleType === 'FIXED_TERM'
+                    ? t('regularSpendingsCreate.monthlyAmount')
+                    : t('regularSpendingsCreate.amount')
+                }
                 tooltip={t('regularSpendingsCreate.tooltips.amount', { defaultValue: '' })}
               />
             }

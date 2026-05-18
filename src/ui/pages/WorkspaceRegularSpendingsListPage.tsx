@@ -29,9 +29,33 @@ const asRegularSpendingPayload = (payload: unknown): RegularSpendingPayload | nu
   const p = payload as Partial<RegularSpendingPayload>
   if (typeof p.name !== 'string') return null
   if (typeof p.startDate !== 'string') return null
-  if (typeof p.cadence !== 'string') return null
   if (typeof p.amount !== 'number') return null
-  return p as RegularSpendingPayload
+  if (p.scheduleType === 'FIXED_TERM') {
+    if (typeof p.paymentCount !== 'number') return null
+    return {
+      name: p.name,
+      startDate: p.startDate,
+      scheduleType: 'FIXED_TERM',
+      paymentCount: p.paymentCount,
+      amount: p.amount,
+    }
+  }
+  if (p.scheduleType != null && p.scheduleType !== 'ONGOING') return null
+  if (typeof p.cadence !== 'string') return null
+  return {
+    name: p.name,
+    startDate: p.startDate,
+    scheduleType: 'ONGOING',
+    cadence: p.cadence,
+    amount: p.amount,
+  }
+}
+
+const scheduleLabel = (payload: RegularSpendingPayload, t: ReturnType<typeof useTranslation>['t']): string => {
+  if (payload.scheduleType === 'FIXED_TERM') {
+    return t('regularSpendingsList.fixedTermPayments', { count: payload.paymentCount })
+  }
+  return t(`regularSpendings.cadence.${payload.cadence}`)
 }
 
 export function WorkspaceRegularSpendingsListPage(props: {
@@ -125,7 +149,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
             <TableHead>
               <TableRow>
                 <TableCell>{t('regularSpendingsList.name')}</TableCell>
-                <TableCell>{t('regularSpendingsList.cadence')}</TableCell>
+                <TableCell>{t('regularSpendingsList.schedule')}</TableCell>
                 <TableCell>{t('regularSpendingsList.startDate')}</TableCell>
                 <TableCell align="right">{t('regularSpendingsList.amount')}</TableCell>
                 {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
@@ -137,7 +161,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
                   <TableRow key={record.recordKey} hover>
                     <TableCell>{payload?.name ?? t('common.na')}</TableCell>
                     <TableCell>
-                      {payload ? t(`regularSpendings.cadence.${payload.cadence}`) : t('common.na')}
+                      {payload ? scheduleLabel(payload, t) : t('common.na')}
                     </TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.startDate ?? t('common.na')}</TableCell>
                     <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>

@@ -102,13 +102,25 @@ export const asBudgetEntryPayload = (payload: unknown): BudgetEntryPayload | nul
 }
 
 export type RegularSpendingCadence = 'MONTHLY' | 'QUARTERLY' | 'YEARLY'
+export type RegularSpendingScheduleType = 'ONGOING' | 'FIXED_TERM'
 
-export type RegularSpendingPayload = {
+export type OngoingRegularSpendingPayload = {
   name: string
   startDate: string
+  scheduleType?: 'ONGOING'
   cadence: RegularSpendingCadence
   amount: number
 }
+
+export type FixedTermRegularSpendingPayload = {
+  name: string
+  startDate: string
+  scheduleType: 'FIXED_TERM'
+  paymentCount: number
+  amount: number
+}
+
+export type RegularSpendingPayload = OngoingRegularSpendingPayload | FixedTermRegularSpendingPayload
 
 export type RegularSpendingOccurrence = {
   recordId: string
