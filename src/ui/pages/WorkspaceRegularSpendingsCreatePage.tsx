@@ -15,16 +15,13 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type {
-  RegularSpendingCadence,
-  RegularSpendingPayload,
-  RegularSpendingScheduleType,
-} from '../../domain/records'
+import type { RegularSpendingCadence, RegularSpendingPayload, RegularSpendingScheduleType } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
 import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
+import { asRegularSpendingPayload } from '../lib/regularSpendingPayload'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { toLocalIsoDate } from '../lib/date'
@@ -32,33 +29,6 @@ import { toLocalIsoDate } from '../lib/date'
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s))
 
 const todayIso = (): string => toLocalIsoDate(new Date())
-
-const asRegularSpendingPayload = (payload: unknown): RegularSpendingPayload | null => {
-  if (!payload || typeof payload !== 'object') return null
-  const p = payload as Partial<RegularSpendingPayload>
-  if (typeof p.name !== 'string') return null
-  if (typeof p.startDate !== 'string') return null
-  if (typeof p.amount !== 'number') return null
-  if (p.scheduleType === 'FIXED_TERM') {
-    if (typeof p.paymentCount !== 'number') return null
-    return {
-      name: p.name,
-      startDate: p.startDate,
-      scheduleType: 'FIXED_TERM',
-      paymentCount: p.paymentCount,
-      amount: p.amount,
-    }
-  }
-  if (p.scheduleType != null && p.scheduleType !== 'ONGOING') return null
-  if (typeof p.cadence !== 'string') return null
-  return {
-    name: p.name,
-    startDate: p.startDate,
-    scheduleType: 'ONGOING',
-    cadence: p.cadence,
-    amount: p.amount,
-  }
-}
 
 const CADENCE_OPTIONS: RegularSpendingCadence[] = ['MONTHLY', 'QUARTERLY', 'YEARLY']
 const SCHEDULE_TYPE_OPTIONS: RegularSpendingScheduleType[] = ['ONGOING', 'FIXED_TERM']

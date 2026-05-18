@@ -23,33 +23,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
-
-const asRegularSpendingPayload = (payload: unknown): RegularSpendingPayload | null => {
-  if (!payload || typeof payload !== 'object') return null
-  const p = payload as Partial<RegularSpendingPayload>
-  if (typeof p.name !== 'string') return null
-  if (typeof p.startDate !== 'string') return null
-  if (typeof p.amount !== 'number') return null
-  if (p.scheduleType === 'FIXED_TERM') {
-    if (typeof p.paymentCount !== 'number') return null
-    return {
-      name: p.name,
-      startDate: p.startDate,
-      scheduleType: 'FIXED_TERM',
-      paymentCount: p.paymentCount,
-      amount: p.amount,
-    }
-  }
-  if (p.scheduleType != null && p.scheduleType !== 'ONGOING') return null
-  if (typeof p.cadence !== 'string') return null
-  return {
-    name: p.name,
-    startDate: p.startDate,
-    scheduleType: 'ONGOING',
-    cadence: p.cadence,
-    amount: p.amount,
-  }
-}
+import { asRegularSpendingPayload } from '../lib/regularSpendingPayload'
 
 const scheduleLabel = (payload: RegularSpendingPayload, t: ReturnType<typeof useTranslation>['t']): string => {
   if (payload.scheduleType === 'FIXED_TERM') {
