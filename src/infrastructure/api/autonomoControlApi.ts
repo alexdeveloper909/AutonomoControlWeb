@@ -1,6 +1,7 @@
 import type { Workspace } from '../../domain/workspace'
 import { cleanWorkspaceSettings, type WorkspaceSettings } from '../../domain/settings'
 import type { RecordResponse, RecordType, RecordPayload, RegularSpendingOccurrencesResponse } from '../../domain/records'
+import type { BalanceResponse } from '../../domain/balance'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
 import { isAppLanguage } from '../../domain/language'
@@ -128,6 +129,33 @@ export class AutonomoControlApi {
       },
     )
     return cleanWorkspaceSettings(res.settings)
+  }
+
+  async getBalance(workspaceId: string, options?: { year?: string | number; accountId?: string | null }): Promise<BalanceResponse> {
+    const url = new URL(`/workspaces/${workspaceId}/balance`, this.baseUrl)
+    if (options?.year != null) url.searchParams.set('year', String(options.year))
+    if (options?.accountId) url.searchParams.set('accountId', options.accountId)
+    const res = await jsonFetch<BalanceResponse>(url.toString(), { headers: this.authHeaders() })
+    return {
+      ...res,
+      year: res.year ?? null,
+      selectedAccountId: res.selectedAccountId ?? null,
+      nextPageToken: res.nextPageToken ?? null,
+      accounts: res.accounts.map((account) => ({
+        ...account,
+        closedAt: account.closedAt ?? null,
+      })),
+      ledgerRows: res.ledgerRows.map((row) => ({
+        ...row,
+        operation: row.operation ?? null,
+        accountId: row.accountId ?? null,
+        fromAccountId: row.fromAccountId ?? null,
+        toAccountId: row.toAccountId ?? null,
+        selectedAccountImpact: row.selectedAccountImpact ?? null,
+        selectedAccountRunningBalance: row.selectedAccountRunningBalance ?? null,
+        note: row.note ?? null,
+      })),
+    }
   }
 
   async listRecordsByMonth(workspaceId: string, monthKey: string, recordType?: RecordType): Promise<RecordResponse[]> {

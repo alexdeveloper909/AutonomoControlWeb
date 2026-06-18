@@ -163,8 +163,8 @@ Screens (Finance):
   - Add expense (`/workspaces/:workspaceId/expenses/new`) → `src/ui/pages/WorkspaceExpensesCreatePage.tsx` (creates an `EXPENSE` record)
 - State payments (`/workspaces/:workspaceId/state-payments`) → `src/ui/pages/WorkspaceStatePaymentsPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add state payment (`/workspaces/:workspaceId/state-payments/new`) → `src/ui/pages/WorkspaceStatePaymentsCreatePage.tsx` (creates a `STATE_PAYMENT` record)
-- Balance (`/workspaces/:workspaceId/balance`) → `src/ui/pages/WorkspaceTransfersPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
-  - Add entry (`/workspaces/:workspaceId/balance/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates a `TRANSFER` record)
+- Balance (`/workspaces/:workspaceId/balance`) → `src/ui/pages/WorkspaceTransfersPage.tsx` (account-aware balances from `GET /workspaces/{workspaceId}/balance`; year filters ledger history only)
+  - Add entry (`/workspaces/:workspaceId/balance/new`) → `src/ui/pages/WorkspaceTransfersCreatePage.tsx` (creates external or internal-transfer `TRANSFER` records)
 - Budget (`/workspaces/:workspaceId/budget`) → `src/ui/pages/WorkspaceBudgetEntriesPage.tsx` (year filter; paginated, sorted by `eventDate` desc)
   - Add budget entry (`/workspaces/:workspaceId/budget/new`) → `src/ui/pages/WorkspaceBudgetCreatePage.tsx` (creates a `BUDGET` record)
 - Regular spendings (`/workspaces/:workspaceId/regular-spendings`) → `src/ui/pages/WorkspaceRegularSpendingsDashboardPage.tsx` (dashboard: chart, upcoming list, monthly totals)
@@ -181,7 +181,8 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Add income: open a workspace → Income → “Add Income” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=INVOICE`)
 - Add expense: open a workspace → Expenses → “Add Expense” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=EXPENSE`)
 - Add state payment: open a workspace → State payments → “Add State Payment” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=STATE_PAYMENT`)
-- Add balance entry: open a workspace → Balance → “Add entry” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=TRANSFER`)
+- Add balance entry: open a workspace → Balance → “Add entry” → choose external inflow/outflow or move between accounts → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=TRANSFER`)
+- Add balance account: open a workspace → Balance → “Create account” → choose name, kind, opening balance, and opening date.
 - Add budget entry: open a workspace → Budget → “Add Budget Entry” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=BUDGET`)
 - Add regular spending: open a workspace → Regular spendings → “Add regular spending” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=REGULAR_SPENDING`)
 - View regular spendings dashboard: open a workspace → Regular spendings → see chart (30/60/90 days), upcoming list, and monthly totals

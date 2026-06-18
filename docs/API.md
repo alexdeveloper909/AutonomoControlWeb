@@ -158,18 +158,23 @@ The Budget screen lists year-scoped budget records using:
 
 ## Add balance entry (TRANSFER)
 
-The Balance screen uses a dedicated form and submits:
+The Balance screen uses a dedicated form and submits external inflows/outflows or internal account transfers:
 
 - `POST /workspaces/{workspaceId}/records`
 - Body:
   - `recordType: "TRANSFER"`
-  - `payload` fields: `date`, `operation` (`Inflow` | `Outflow`), `amount`, optional `note`
+  - External payload fields: `date`, `operation` (`Inflow` | `Outflow`), `accountId`, `amount`, optional `note`
+  - Internal transfer payload fields: `date`, `movementType: "InternalTransfer"`, `fromAccountId`, `toAccountId`, `amount`, optional `note`
 
-## List balance entries (TRANSFER) with sorting + pagination
+Legacy external payloads without `accountId` are treated as Main account entries.
 
-The Balance screen lists year-scoped balance entries using:
+## Read balance
 
-- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=TRANSFER&sort=eventDateDesc&limit=20&nextToken=...`
+The Balance screen reads current account balances and absolute running ledger balances from:
+
+- `GET /workspaces/{workspaceId}/balance?year=YYYY&accountId=main`
+
+`year` filters the ledger rows only. Current balances and row running balances are returned by the API and are not reconstructed from visible year rows in the web client. When `accountId` is omitted, the response includes all account ledger rows.
 
 Invoice example:
 

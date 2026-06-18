@@ -14,7 +14,9 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
-import type { RecordResponse, TransferOp, TransferPayload } from '../../domain/records'
+import type { InternalTransferPayload, RecordResponse, TransferOp, TransferPayload } from '../../domain/records'
+import type { BalanceAccount, WorkspaceSettings } from '../../domain/settings'
+import { normalizedBalanceAccounts } from '../../domain/settings'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EuroTextField } from '../components/EuroTextField'
@@ -22,6 +24,9 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+
+type MovementMode = 'ExternalInflow' | 'ExternalOutflow' | 'InternalTransfer'
+type BalancePayload = TransferPayload | InternalTransferPayload
 
 const errorMessage = (err: unknown): string => (err instanceof Error ? err.message : String(err))
 
@@ -35,19 +40,33 @@ const todayIso = (): string => {
 
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
-const asTransferPayload = (payload: unknown): TransferPayload | null => {
+const asBalancePayload = (payload: unknown): BalancePayload | null => {
   if (!payload || typeof payload !== 'object') return null
   const p = payload as Record<string, unknown>
   const date = p.date
-  const operation = p.operation
   const amount = p.amount
   const note = p.note
   if (typeof date !== 'string') return null
-  if (operation !== 'Inflow' && operation !== 'Outflow') return null
   if (typeof amount !== 'number') return null
   if (note != null && typeof note !== 'string') return null
-  return { date, operation, amount, note: note ?? undefined }
+  if (p.movementType === 'InternalTransfer') {
+    if (typeof p.fromAccountId !== 'string' || typeof p.toAccountId !== 'string') return null
+    return {
+      date,
+      movementType: 'InternalTransfer',
+      fromAccountId: p.fromAccountId,
+      toAccountId: p.toAccountId,
+      amount,
+      note: note ?? undefined,
+    }
+  }
+  if (p.operation !== 'Inflow' && p.operation !== 'Outflow') return null
+  if (p.accountId != null && typeof p.accountId !== 'string') return null
+  return { date, operation: p.operation, amount, accountId: p.accountId ?? 'main', note: note ?? undefined }
 }
+
+const activeOrExistingAccounts = (accounts: BalanceAccount[], existingAccountIds: Set<string>): BalanceAccount[] =>
+  accounts.filter((account) => (!account.archivedAt && !account.closedAt) || existingAccountIds.has(account.accountId))
 
 export function WorkspaceTransfersCreatePage(props: {
   workspaceId: string
@@ -70,32 +89,59 @@ export function WorkspaceTransfersCreatePage(props: {
     queryFn: () => props.api.getRecord(props.workspaceId, 'TRANSFER', props.eventDate!, props.recordId!),
     enabled: editing && Boolean(props.eventDate && props.recordId),
   })
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.workspaceSettings(props.workspaceId),
+    queryFn: () => props.api.getWorkspaceSettings(props.workspaceId),
+  })
+
+  const settings = (settingsQuery.data ?? null) as WorkspaceSettings | null
+  const allAccounts = useMemo(() => normalizedBalanceAccounts(settings), [settings])
 
   const [date, setDate] = useState(todayIso())
-  const [operation, setOperation] = useState<TransferOp>('Inflow')
+  const [movementMode, setMovementMode] = useState<MovementMode>('ExternalInflow')
+  const [accountId, setAccountId] = useState('main')
+  const [fromAccountId, setFromAccountId] = useState('main')
+  const [toAccountId, setToAccountId] = useState('')
   const [amount, setAmount] = useState('150')
   const [note, setNote] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [initializedFromRecord, setInitializedFromRecord] = useState(false)
+  const [existingAccountIds, setExistingAccountIds] = useState<Set<string>>(new Set())
 
   const backToPath = `/workspaces/${props.workspaceId}/balance`
+  const accountOptions = useMemo(() => activeOrExistingAccounts(allAccounts, existingAccountIds), [allAccounts, existingAccountIds])
+
+  useEffect(() => {
+    if (accountOptions.length && !toAccountId) {
+      setToAccountId(accountOptions.find((account) => account.accountId !== fromAccountId)?.accountId ?? accountOptions[0].accountId)
+    }
+  }, [accountOptions, fromAccountId, toAccountId])
 
   useEffect(() => {
     if (!editing) return
     const record = recordQuery.data ?? null
     if (!record || initializedFromRecord) return
-    const payload = asTransferPayload(record.payload)
+    const payload = asBalancePayload(record.payload)
     if (!payload) {
       setError(t('records.invalidPayload'))
       setInitializedFromRecord(true)
       return
     }
     setDate(payload.date)
-    setOperation(payload.operation)
     setAmount(String(payload.amount))
     setNote(payload.note ?? '')
+    if ('movementType' in payload) {
+      setMovementMode('InternalTransfer')
+      setFromAccountId(payload.fromAccountId)
+      setToAccountId(payload.toAccountId)
+      setExistingAccountIds(new Set([payload.fromAccountId, payload.toAccountId]))
+    } else {
+      setMovementMode(payload.operation === 'Inflow' ? 'ExternalInflow' : 'ExternalOutflow')
+      setAccountId(payload.accountId ?? 'main')
+      setExistingAccountIds(new Set([payload.accountId ?? 'main']))
+    }
     setInitializedFromRecord(true)
   }, [editing, initializedFromRecord, recordQuery.data, t])
 
@@ -105,8 +151,14 @@ export function WorkspaceTransfersCreatePage(props: {
     const a = parseEuroAmount(amount)
     if (a === null) return t('transfersCreate.validation.amountNumber')
     if (a < 0) return t('transfersCreate.validation.amountNonNegative')
+    if (movementMode === 'InternalTransfer') {
+      if (!fromAccountId || !toAccountId) return t('transfersCreate.validation.accountRequired')
+      if (fromAccountId === toAccountId) return t('transfersCreate.validation.sameAccount')
+    } else if (!accountId) {
+      return t('transfersCreate.validation.accountRequired')
+    }
     return null
-  }, [amount, date, editing, initializedFromRecord, t])
+  }, [accountId, amount, date, editing, fromAccountId, initializedFromRecord, movementMode, t, toAccountId])
 
   const submit = async () => {
     setError(null)
@@ -124,12 +176,17 @@ export function WorkspaceTransfersCreatePage(props: {
         return
       }
 
-      const payload: TransferPayload = {
-        date,
-        operation,
-        amount: a,
-        note: note.trim() ? note.trim() : undefined,
-      }
+      const cleanNote = note.trim() ? note.trim() : undefined
+      const payload: BalancePayload =
+        movementMode === 'InternalTransfer'
+          ? { date, movementType: 'InternalTransfer', fromAccountId, toAccountId, amount: a, note: cleanNote }
+          : {
+              date,
+              operation: (movementMode === 'ExternalInflow' ? 'Inflow' : 'Outflow') as TransferOp,
+              accountId: accountId || 'main',
+              amount: a,
+              note: cleanNote,
+            }
 
       const res = editing
         ? await props.api.updateRecord(props.workspaceId, 'TRANSFER', props.eventDate!, props.recordId!, {
@@ -138,6 +195,7 @@ export function WorkspaceTransfersCreatePage(props: {
           })
         : await props.api.createRecord(props.workspaceId, { recordType: 'TRANSFER', payload })
 
+      queryClient.invalidateQueries({ queryKey: queryKeys.balanceAll(props.workspaceId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'TRANSFER') })
 
       if (editing) {
@@ -155,7 +213,7 @@ export function WorkspaceTransfersCreatePage(props: {
     }
   }
 
-  const inputsDisabled = submitting || (editing && !initializedFromRecord) || recordQuery.isFetching
+  const inputsDisabled = submitting || (editing && !initializedFromRecord) || recordQuery.isFetching || settingsQuery.isFetching
 
   return (
     <Stack spacing={2}>
@@ -170,13 +228,12 @@ export function WorkspaceTransfersCreatePage(props: {
       />
 
       {error ? <ErrorAlert message={error} /> : null}
-      {recordQuery.error ? (
-        <ErrorAlert message={errorMessage(recordQuery.error)} />
-      ) : null}
+      {recordQuery.error ? <ErrorAlert message={errorMessage(recordQuery.error)} /> : null}
+      {settingsQuery.error ? <ErrorAlert message={errorMessage(settingsQuery.error)} /> : null}
 
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
-          {editing && !initializedFromRecord && recordQuery.isFetching ? <LinearProgress /> : null}
+          {(editing && !initializedFromRecord && recordQuery.isFetching) || settingsQuery.isFetching ? <LinearProgress /> : null}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
@@ -210,29 +267,77 @@ export function WorkspaceTransfersCreatePage(props: {
           </Stack>
 
           <FormControl fullWidth>
-            <InputLabel id="transfer-operation-label">
-              <FieldLabel
-                label={t('transfersCreate.operation')}
-                tooltip={t('transfersCreate.tooltips.operation', { defaultValue: '' })}
-              />
-            </InputLabel>
+            <InputLabel id="transfer-movement-mode-label">{t('transfersCreate.movementMode')}</InputLabel>
             <Select
-              labelId="transfer-operation-label"
-              label={t('transfersCreate.operation')}
-              value={operation}
-              onChange={(e) => setOperation(e.target.value as TransferOp)}
+              labelId="transfer-movement-mode-label"
+              label={t('transfersCreate.movementMode')}
+              value={movementMode}
+              onChange={(e) => setMovementMode(e.target.value as MovementMode)}
               disabled={inputsDisabled}
             >
-              {(['Inflow', 'Outflow'] as const).map((op) => (
-                <MenuItem key={op} value={op}>
-                  {t(`transfersCreate.operations.${op}`)}
-                </MenuItem>
-              ))}
+              <MenuItem value="ExternalInflow">{t('transfersCreate.modes.externalInflow')}</MenuItem>
+              <MenuItem value="ExternalOutflow">{t('transfersCreate.modes.externalOutflow')}</MenuItem>
+              <MenuItem value="InternalTransfer">{t('transfersCreate.modes.internal')}</MenuItem>
             </Select>
             {t('transfersCreate.help.operation', { defaultValue: '' }) ? (
               <FormHelperText>{t('transfersCreate.help.operation', { defaultValue: '' })}</FormHelperText>
             ) : null}
           </FormControl>
+
+          {movementMode === 'InternalTransfer' ? (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel id="transfer-from-account-label">{t('balanceAccounts.fromAccount')}</InputLabel>
+                <Select
+                  labelId="transfer-from-account-label"
+                  label={t('balanceAccounts.fromAccount')}
+                  value={fromAccountId}
+                  onChange={(e) => setFromAccountId(e.target.value)}
+                  disabled={inputsDisabled}
+                >
+                  {accountOptions.map((account) => (
+                    <MenuItem key={account.accountId} value={account.accountId}>
+                      {account.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="transfer-to-account-label">{t('balanceAccounts.toAccount')}</InputLabel>
+                <Select
+                  labelId="transfer-to-account-label"
+                  label={t('balanceAccounts.toAccount')}
+                  value={toAccountId}
+                  onChange={(e) => setToAccountId(e.target.value)}
+                  disabled={inputsDisabled}
+                >
+                  {accountOptions.map((account) => (
+                    <MenuItem key={account.accountId} value={account.accountId} disabled={account.accountId === fromAccountId}>
+                      {account.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+          ) : (
+            <FormControl fullWidth>
+              <InputLabel id="transfer-account-label">{t('balanceAccounts.targetAccount')}</InputLabel>
+              <Select
+                labelId="transfer-account-label"
+                label={t('balanceAccounts.targetAccount')}
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                disabled={inputsDisabled}
+              >
+                {accountOptions.map((account) => (
+                  <MenuItem key={account.accountId} value={account.accountId}>
+                    {account.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{t('balanceAccounts.selectorHelp')}</FormHelperText>
+            </FormControl>
+          )}
 
           <TextField
             label={t('transfersCreate.noteOptional')}

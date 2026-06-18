@@ -58,6 +58,16 @@ export type TransferPayload = {
   date: string
   operation: TransferOp
   amount: number
+  accountId?: string
+  note?: string
+}
+
+export type InternalTransferPayload = {
+  date: string
+  movementType: 'InternalTransfer'
+  fromAccountId: string
+  toAccountId: string
+  amount: number
   note?: string
 }
 
@@ -140,6 +150,7 @@ export type RecordPayload =
   | ExpensePayload
   | StatePaymentPayload
   | TransferPayload
+  | InternalTransferPayload
   | BudgetEntryPayload
   | RegularSpendingPayload
 

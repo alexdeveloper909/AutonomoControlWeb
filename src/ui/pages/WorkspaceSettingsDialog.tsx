@@ -135,6 +135,7 @@ export function WorkspaceSettingsDialog(props: {
         irpfRate: draft.irpfRate,
         obligacion130: draft.obligacion130,
         openingBalance: settings.openingBalance ?? null,
+        balanceAccounts: settings.balanceAccounts ?? null,
         rentaPlanning: draft.rentaPlanning,
         ivaProfile: draft.ivaProfile ?? defaultIvaDeductionProfile(),
       })

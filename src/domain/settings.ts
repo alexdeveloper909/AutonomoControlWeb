@@ -38,6 +38,17 @@ export type RentaPlanningSettings = {
 
 export type VatDeductionRight = 'FULL' | 'NONE' | 'PARTIAL'
 export type Q4NegativeVatAction = 'CARRY_FORWARD' | 'REQUEST_REFUND'
+export type BalanceAccountKind = 'MAIN' | 'CASH' | 'OTHER'
+
+export type BalanceAccount = {
+  accountId: string
+  kind: BalanceAccountKind
+  name: string
+  openingBalance: number
+  openingDate: string
+  archivedAt?: string | null
+  closedAt?: string | null
+}
 
 export type IvaDeductionProfile = {
   hasVatDeductionRight: VatDeductionRight
@@ -55,6 +66,7 @@ export type WorkspaceSettings = {
   irpfRate: number
   obligacion130: boolean
   openingBalance: number | null
+  balanceAccounts?: BalanceAccount[] | null
   rentaPlanning: RentaPlanningSettings | null
   ivaProfile: IvaDeductionProfile
 }
@@ -151,6 +163,49 @@ const cleanIvaProfile = (v: unknown): IvaDeductionProfile => {
   }
 }
 
+const cleanBalanceAccount = (v: unknown): BalanceAccount | null => {
+  if (!v || typeof v !== 'object') return null
+  const o = v as Record<string, unknown>
+  const kind = o.kind === 'MAIN' || o.kind === 'CASH' || o.kind === 'OTHER' ? o.kind : null
+  if (typeof o.accountId !== 'string' || !o.accountId.trim()) return null
+  if (typeof o.name !== 'string' || !o.name.trim()) return null
+  if (!kind) return null
+  const openingBalance = cleanNumberOrNull(o.openingBalance)
+  if (openingBalance == null) return null
+  if (typeof o.openingDate !== 'string' || !o.openingDate.trim()) return null
+  return {
+    accountId: o.accountId,
+    kind,
+    name: o.name,
+    openingBalance,
+    openingDate: o.openingDate,
+    archivedAt: typeof o.archivedAt === 'string' ? o.archivedAt : null,
+    closedAt: typeof o.closedAt === 'string' ? o.closedAt : null,
+  }
+}
+
+const cleanBalanceAccounts = (v: unknown): BalanceAccount[] | null => {
+  if (!Array.isArray(v)) return null
+  const accounts = v.map(cleanBalanceAccount).filter((account): account is BalanceAccount => account != null)
+  return accounts.length ? accounts : null
+}
+
+export const normalizedBalanceAccounts = (settings: WorkspaceSettings | null): BalanceAccount[] => {
+  if (!settings) return []
+  if (settings.balanceAccounts?.length) return settings.balanceAccounts
+  return [
+    {
+      accountId: 'main',
+      kind: 'MAIN',
+      name: 'Main',
+      openingBalance: settings.openingBalance ?? 0,
+      openingDate: settings.startDate,
+      archivedAt: null,
+      closedAt: null,
+    },
+  ]
+}
+
 const cleanRentaPlanning = (v: unknown, taxYear: number): RentaPlanningSettings | null => {
   if (!v || typeof v !== 'object') return defaultRentaPlanningSettings(taxYear)
   const o = v as Record<string, unknown>
@@ -173,6 +228,7 @@ export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings 
   irpfRate: s.irpfRate,
   obligacion130: s.obligacion130,
   openingBalance: s.openingBalance ?? null,
+  balanceAccounts: cleanBalanceAccounts((s as unknown as Record<string, unknown>).balanceAccounts),
   rentaPlanning: cleanRentaPlanning((s as unknown as Record<string, unknown>).rentaPlanning, s.year),
   ivaProfile: cleanIvaProfile((s as unknown as Record<string, unknown>).ivaProfile),
 })

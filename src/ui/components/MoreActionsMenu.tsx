@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next'
 
 export function MoreActionsMenu(props: {
   onEdit: () => void
-  onDelete: () => void
+  onDelete?: () => void
+  deleteLabel?: string
   onRepeat?: () => void
   disabled?: boolean
 }) {
@@ -58,17 +59,19 @@ export function MoreActionsMenu(props: {
             <ListItemText>{t('common.repeat')}</ListItemText>
           </MenuItem>
         ) : null}
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null)
-            props.onDelete()
-          }}
-        >
-          <ListItemIcon>
-            <DeleteOutlineOutlinedIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>{t('common.delete')}</ListItemText>
-        </MenuItem>
+        {props.onDelete ? (
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null)
+              props.onDelete?.()
+            }}
+          >
+            <ListItemIcon>
+              <DeleteOutlineOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{props.deleteLabel ?? t('common.delete')}</ListItemText>
+          </MenuItem>
+        ) : null}
       </Menu>
     </>
   )

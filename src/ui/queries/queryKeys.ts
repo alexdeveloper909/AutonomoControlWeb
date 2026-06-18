@@ -2,6 +2,9 @@ import type { RecordType } from '../../domain/records'
 
 export const queryKeys = {
   workspaceSettings: (workspaceId: string) => ['workspaces', workspaceId, 'settings'] as const,
+  balance: (workspaceId: string, year: string, accountId: string | null) =>
+    ['workspaces', workspaceId, 'balance', year, accountId ?? 'all'] as const,
+  balanceAll: (workspaceId: string) => ['workspaces', workspaceId, 'balance'] as const,
 
   recordsByYear: (workspaceId: string, recordType: RecordType, year: string) =>
     ['workspaces', workspaceId, 'recordsByYear', recordType, year] as const,
