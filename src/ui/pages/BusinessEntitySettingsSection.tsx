@@ -5,6 +5,7 @@ import type { AutonomoControlApi } from '../../infrastructure/api/autonomoContro
 import type { BusinessEntity, BusinessEntityCurrency, BusinessEntitySocialContributionYear } from '../../domain/settings'
 import { queryKeys } from '../queries/queryKeys'
 import { ErrorAlert } from '../components/ErrorAlert'
+import type { RecordResponse } from '../../domain/records'
 
 const currentYear = (): number => new Date().getFullYear()
 const monthKeys = (year: number): string[] => Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
@@ -21,6 +22,13 @@ const entityMutablePayload = (entity: BusinessEntity): BusinessEntity => ({
   taxRatesByYear: entity.taxRatesByYear ?? {},
   socialContribution: entity.socialContribution ?? { byYear: {} },
 })
+
+const invoiceCurrencyFromRecord = (record: RecordResponse): BusinessEntityCurrency | null => {
+  const payload = record.payload
+  if (!payload || typeof payload !== 'object') return null
+  const currency = (payload as Record<string, unknown>).currency
+  return currency === 'USD' || currency === 'UAH' ? currency : null
+}
 
 export function BusinessEntitySettingsSection(props: {
   workspaceId: string
@@ -50,6 +58,7 @@ export function BusinessEntitySettingsSection(props: {
   const [editSocialEnabled, setEditSocialEnabled] = useState(true)
   const [editMonthlySocial, setEditMonthlySocial] = useState(1902.34)
   const [editCurrencies, setEditCurrencies] = useState<BusinessEntityCurrency[]>(['USD', 'UAH'])
+  const [lockedCurrencies, setLockedCurrencies] = useState<BusinessEntityCurrency[]>([])
 
   const activeUserEntities = useMemo(
     () => entities.filter((entity) => entity.entityId !== 'autonomo' && !entity.archivedAt),
@@ -96,6 +105,43 @@ export function BusinessEntitySettingsSection(props: {
     setEditMonthlySocial(social ? social.monthlyAmountsUah[`${selectedYear}-01`] ?? 0 : 1902.34)
   }, [editYear, selectedEntity])
 
+  useEffect(() => {
+    if (!selectedEntity || selectedEntity.entityId === 'autonomo') {
+      setLockedCurrencies([])
+      return
+    }
+    let cancelled = false
+    const loadCurrencies = async () => {
+      const years = new Set<string>()
+      const now = currentYear()
+      for (let y = now + 1; y >= now - 10; y -= 1) years.add(String(y))
+      Object.keys(selectedEntity.taxRatesByYear ?? {}).forEach((y) => years.add(y))
+      Object.keys(selectedEntity.socialContribution?.byYear ?? {}).forEach((y) => years.add(y))
+
+      const next = new Set<BusinessEntityCurrency>()
+      for (const y of years) {
+        let nextToken: string | null = null
+        do {
+          const page = await props.api.listInvoiceRecordsByEntityYear(props.workspaceId, selectedEntity.entityId, y, {
+            limit: 100,
+            nextToken,
+          })
+          page.items.map(invoiceCurrencyFromRecord).forEach((currency) => {
+            if (currency) next.add(currency)
+          })
+          nextToken = page.nextToken ?? null
+        } while (nextToken)
+      }
+      if (!cancelled) setLockedCurrencies(Array.from(next))
+    }
+    void loadCurrencies().catch((e) => {
+      if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [props.api, props.workspaceId, selectedEntity])
+
   const hasDuplicateActiveName = (candidate: string): boolean =>
     activeUserEntities.some((entity) => entity.name.trim().toLowerCase() === candidate.trim().toLowerCase())
 
@@ -139,6 +185,11 @@ export function BusinessEntitySettingsSection(props: {
     try {
       const invoices = await props.api.listInvoiceRecordsByEntityYear(props.workspaceId, selectedEntity.entityId, String(editYear), { limit: 1 })
       if (invoices.items.length && !window.confirm('This entity already has invoices for this year. Saving will change historical summaries. Continue?')) return
+      const removedLockedCurrency = lockedCurrencies.find((currency) => !editCurrencies.includes(currency))
+      if (removedLockedCurrency) {
+        setError(`Cannot remove ${removedLockedCurrency}; existing invoices use that currency.`)
+        return
+      }
       const payload = {
         ...entityMutablePayload(selectedEntity),
         confirmHistoricalSummaryChange: invoices.items.length > 0,
@@ -266,7 +317,17 @@ export function BusinessEntitySettingsSection(props: {
             </Stack>
             <Stack direction="row" spacing={2}>
               {(['USD', 'UAH'] as const).map((currency) => (
-                <FormControlLabel key={currency} control={<Checkbox checked={editCurrencies.includes(currency)} onChange={(e) => toggleCurrency(currency, e.target.checked, setEditCurrencies, editCurrencies)} disabled={props.readOnly || Boolean(selectedEntity.archivedAt) || currency === 'USD'} />} label={currency} />
+                <FormControlLabel
+                  key={currency}
+                  control={
+                    <Checkbox
+                      checked={editCurrencies.includes(currency)}
+                      onChange={(e) => toggleCurrency(currency, e.target.checked, setEditCurrencies, editCurrencies)}
+                      disabled={props.readOnly || Boolean(selectedEntity.archivedAt) || currency === 'USD' || lockedCurrencies.includes(currency)}
+                    />
+                  }
+                  label={lockedCurrencies.includes(currency) ? `${currency} (used by invoices)` : currency}
+                />
               ))}
             </Stack>
             <FormControlLabel control={<Checkbox checked={editSocialEnabled} onChange={(e) => setEditSocialEnabled(e.target.checked)} disabled={props.readOnly || Boolean(selectedEntity.archivedAt)} />} label="Social contribution enabled" />

@@ -7,7 +7,7 @@ import type { ExchangeRateSource, InvoiceCurrency, UkrainianFopInvoicePayload } 
 import { isUkrainianFopEntity } from '../../domain/settings'
 import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
-import { parseMoneyAmount, roundMoney } from '../lib/money'
+import { multiplyMoneyToCents, parseMoneyAmount } from '../lib/money'
 import { currencyFormatter } from '../lib/intl'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -114,8 +114,8 @@ export function WorkspaceBusinessEntityInvoiceCreatePage(props: {
   const parsedAmount = useMemo(() => parseMoneyAmount(amount), [amount])
   const parsedRate = useMemo(() => parseMoneyAmount(exchangeRate), [exchangeRate])
   const amountTaxCurrency = useMemo(
-    () => (parsedAmount != null && parsedRate != null ? roundMoney(parsedAmount * parsedRate) : null),
-    [parsedAmount, parsedRate],
+    () => (parsedAmount != null && parsedRate != null ? multiplyMoneyToCents(amount, exchangeRate) : null),
+    [amount, exchangeRate, parsedAmount, parsedRate],
   )
   const snapshotDriversChanged = useMemo(() => {
     if (!editing || !originalSnapshotDrivers) return true
