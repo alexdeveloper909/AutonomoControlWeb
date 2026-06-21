@@ -24,3 +24,7 @@ export const parseEuroAmount = (raw: string): number | null => {
   return Number.isFinite(amount) ? amount : null
 }
 
+export const parseMoneyAmount = parseEuroAmount
+
+export const roundMoney = (value: number): number => Math.round((value + Number.EPSILON) * 100) / 100
+

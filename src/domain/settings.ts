@@ -39,6 +39,9 @@ export type RentaPlanningSettings = {
 export type VatDeductionRight = 'FULL' | 'NONE' | 'PARTIAL'
 export type Q4NegativeVatAction = 'CARRY_FORWARD' | 'REQUEST_REFUND'
 export type BalanceAccountKind = 'MAIN' | 'CASH' | 'OTHER'
+export type BusinessEntityType = 'AUTONOMO' | 'UKRAINIAN_FOP_GROUP3_SIMPLIFIED' | (string & {})
+export type BusinessEntityCurrency = 'USD' | 'UAH'
+export type BusinessEntityExemptionReason = 'DISABILITY'
 
 export type BalanceAccount = {
   accountId: string
@@ -59,6 +62,33 @@ export type IvaDeductionProfile = {
   openingVatCredit: number | null
 }
 
+export type BusinessEntityTaxRates = {
+  singleTaxRate: number
+  militaryLevyRate: number
+}
+
+export type BusinessEntitySocialContributionYear = {
+  enabled: boolean
+  monthlyAmountsUah: Record<string, number>
+  exemptionReason?: BusinessEntityExemptionReason | null
+}
+
+export type BusinessEntity = {
+  entityId: string
+  type: BusinessEntityType
+  name: string
+  taxCurrency?: BusinessEntityCurrency | string
+  invoiceCurrencies?: (BusinessEntityCurrency | string)[]
+  taxRatesByYear?: Record<string, BusinessEntityTaxRates>
+  socialContribution?: {
+    byYear?: Record<string, BusinessEntitySocialContributionYear>
+  }
+  createdAt?: string | null
+  updatedAt?: string | null
+  archivedAt?: string | null
+  builtIn?: boolean
+}
+
 export type WorkspaceSettings = {
   year: number
   startDate: string
@@ -69,6 +99,7 @@ export type WorkspaceSettings = {
   balanceAccounts?: BalanceAccount[] | null
   rentaPlanning: RentaPlanningSettings | null
   ivaProfile: IvaDeductionProfile
+  entities?: BusinessEntity[] | null
 }
 
 const cleanTerritory = (v: unknown): IrpfTerritory => {
@@ -98,10 +129,87 @@ const cleanTerritory = (v: unknown): IrpfTerritory => {
 }
 
 const cleanNumberOrNull = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+const cleanNumber = (v: unknown, fallback = 0): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback)
 const cleanPercentage = (v: unknown, fallback: number): number => {
   const n = typeof v === 'number' && Number.isFinite(v) ? v : fallback
   return Math.min(1, Math.max(0, n))
 }
+
+const cleanTaxRatesByYear = (v: unknown): Record<string, BusinessEntityTaxRates> | undefined => {
+  if (!v || typeof v !== 'object') return undefined
+  const out: Record<string, BusinessEntityTaxRates> = {}
+  for (const [year, raw] of Object.entries(v as Record<string, unknown>)) {
+    if (!/^\d{4}$/.test(year) || !raw || typeof raw !== 'object') continue
+    const o = raw as Record<string, unknown>
+    out[year] = {
+      singleTaxRate: cleanPercentage(o.singleTaxRate, 0.05),
+      militaryLevyRate: cleanPercentage(o.militaryLevyRate, 0.01),
+    }
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
+const cleanSocialContributionByYear = (v: unknown): { byYear?: Record<string, BusinessEntitySocialContributionYear> } | undefined => {
+  if (!v || typeof v !== 'object') return undefined
+  const byYearRaw = (v as Record<string, unknown>).byYear
+  if (!byYearRaw || typeof byYearRaw !== 'object') return undefined
+  const byYear: Record<string, BusinessEntitySocialContributionYear> = {}
+  for (const [year, raw] of Object.entries(byYearRaw as Record<string, unknown>)) {
+    if (!/^\d{4}$/.test(year) || !raw || typeof raw !== 'object') continue
+    const o = raw as Record<string, unknown>
+    const amountsRaw = o.monthlyAmountsUah
+    const monthlyAmountsUah: Record<string, number> = {}
+    if (amountsRaw && typeof amountsRaw === 'object') {
+      for (const [month, amount] of Object.entries(amountsRaw as Record<string, unknown>)) {
+        if (month.startsWith(`${year}-`) && /^\d{4}-\d{2}$/.test(month)) monthlyAmountsUah[month] = Math.max(0, cleanNumber(amount))
+      }
+    }
+    byYear[year] = {
+      enabled: o.enabled !== false,
+      monthlyAmountsUah,
+      exemptionReason: o.exemptionReason === 'DISABILITY' ? 'DISABILITY' : null,
+    }
+  }
+  return Object.keys(byYear).length ? { byYear } : undefined
+}
+
+const cleanBusinessEntity = (v: unknown): BusinessEntity | null => {
+  if (!v || typeof v !== 'object') return null
+  const o = v as Record<string, unknown>
+  if (typeof o.entityId !== 'string' || !o.entityId.trim()) return null
+  if (typeof o.type !== 'string' || !o.type.trim()) return null
+  if (typeof o.name !== 'string' || !o.name.trim()) return null
+  const invoiceCurrencies = Array.isArray(o.invoiceCurrencies)
+    ? o.invoiceCurrencies.filter((currency): currency is string => typeof currency === 'string' && Boolean(currency.trim()))
+    : undefined
+  return {
+    entityId: o.entityId,
+    type: o.type,
+    name: o.name,
+    taxCurrency: typeof o.taxCurrency === 'string' ? o.taxCurrency : undefined,
+    invoiceCurrencies,
+    taxRatesByYear: cleanTaxRatesByYear(o.taxRatesByYear),
+    socialContribution: cleanSocialContributionByYear(o.socialContribution),
+    createdAt: typeof o.createdAt === 'string' ? o.createdAt : null,
+    updatedAt: typeof o.updatedAt === 'string' ? o.updatedAt : null,
+    archivedAt: typeof o.archivedAt === 'string' ? o.archivedAt : null,
+    builtIn: typeof o.builtIn === 'boolean' ? o.builtIn : undefined,
+  }
+}
+
+const cleanBusinessEntities = (v: unknown): BusinessEntity[] | null => {
+  if (!Array.isArray(v)) return null
+  const entities = v.map(cleanBusinessEntity).filter((entity): entity is BusinessEntity => entity != null)
+  return entities.length ? entities : null
+}
+
+export const businessEntitiesFromSettings = (settings: WorkspaceSettings | null): BusinessEntity[] => settings?.entities ?? []
+
+export const activeBusinessEntities = (entities: BusinessEntity[]): BusinessEntity[] =>
+  entities.filter((entity) => entity.entityId === 'autonomo' || !entity.archivedAt)
+
+export const isUkrainianFopEntity = (entity: BusinessEntity | null | undefined): boolean =>
+  entity?.type === 'UKRAINIAN_FOP_GROUP3_SIMPLIFIED'
 
 const cleanInicioActividad = (v: unknown, taxYear: number): InicioActividadReductionSettings | null => {
   if (!v || typeof v !== 'object') return null
@@ -231,4 +339,5 @@ export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings 
   balanceAccounts: cleanBalanceAccounts((s as unknown as Record<string, unknown>).balanceAccounts),
   rentaPlanning: cleanRentaPlanning((s as unknown as Record<string, unknown>).rentaPlanning, s.year),
   ivaProfile: cleanIvaProfile((s as unknown as Record<string, unknown>).ivaProfile),
+  entities: cleanBusinessEntities((s as unknown as Record<string, unknown>).entities),
 })

@@ -126,6 +126,8 @@ And set matching runtime release (example):
 - `/login` → starts Cognito Hosted UI login (Google if configured)
 - `/workspaces` → list/create workspaces (POST `/workspaces`)
 - `/workspaces/:workspaceId` → workspace area with app shell + **left navigation** (services grouped by domain)
+- `/workspaces/:workspaceId/business-entities/:entityId/invoices` → Ukrainian FOP received invoices for a user-created business entity
+- `/workspaces/:workspaceId/business-entities/:entityId/summary` → Ukrainian FOP month, quarter, and year totals in UAH
 
 ## Workspace sharing (read-only)
 
@@ -173,6 +175,8 @@ Screens (Finance):
   - Edit (`/workspaces/:workspaceId/regular-spendings/:eventDate/:recordId/edit`) → `src/ui/pages/WorkspaceRegularSpendingsEditPage.tsx`
   - Definitions list (`/workspaces/:workspaceId/regular-spendings/list`) → `src/ui/pages/WorkspaceRegularSpendingsListPage.tsx` (table with 3-dots actions)
 - Summaries (`/workspaces/:workspaceId/summaries`) → `src/ui/pages/WorkspaceSummariesPage.tsx` (Month/Quarter tabs; table view + details dialog; optional raw JSON; month table includes “Can spend” and “Can spend (with expenses)” columns)
+- Business entity invoices (`/workspaces/:workspaceId/business-entities/:entityId/invoices`) → `src/ui/pages/WorkspaceBusinessEntityInvoicesPage.tsx` (Ukrainian FOP `BUSINESS_ENTITY_INVOICE` records, received-date year filter, entity-scoped cache)
+- Business entity summary (`/workspaces/:workspaceId/business-entities/:entityId/summary`) → `src/ui/pages/WorkspaceBusinessEntitySummaryPage.tsx` (Ukrainian FOP persisted-settings summary with month rows, quarter totals, year totals, warnings, and effective settings)
 
 For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source of truth for record schemas).
 
@@ -188,6 +192,9 @@ For payload formats, see `../AutonomoControlApi/USAGES.md` (this is the source o
 - Add regular spending: open a workspace → Regular spendings → “Add regular spending” → fill the form → Create (sends `POST /workspaces/{workspaceId}/records` with `recordType=REGULAR_SPENDING`)
 - View regular spendings dashboard: open a workspace → Regular spendings → see chart (30/60/90 days), upcoming list, and monthly totals
 - View summaries: open a workspace → “Summaries” → Month/Quarter tabs show tables; click a row for full details; “Show raw JSON” toggles debug output
+- Add Ukrainian FOP entity: open a workspace → Settings → Business entities → create the entity with initial year tax/social-contribution settings.
+- Add Ukrainian FOP invoice: select the entity in the workspace header → Invoices → Add invoice. USD invoices auto-fill exchange rates through the backend NBU proxy; UAH invoices use rate `1`.
+- View Ukrainian FOP summary: select the entity in the workspace header → Summary.
 
 ## Development notes
 
@@ -209,6 +216,8 @@ Caching behavior:
 - Record lists are cached per `workspaceId` + `recordType` + `year`.
 - Regular spendings definitions are cached per `workspaceId`. Occurrences are cached per `workspaceId` + date range.
 - Summaries are cached per `workspaceId`.
+- Business entity invoice lists are cached per `workspaceId` + `entityId` + received-date year.
+- Business entity summaries are cached per `workspaceId` + `entityId` + year.
 - Queries default to `staleTime=Infinity` (no automatic refetch on tab switch); the UI “Refresh” buttons clear cache for the current view.
 
 Cache invalidation on create:

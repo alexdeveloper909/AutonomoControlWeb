@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link as RouterLink, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { Button, Chip, Divider, IconButton, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, Stack, Typography } from '@mui/material'
+import { Link as RouterLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Button, Chip, Divider, FormControl, IconButton, InputLabel, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, MenuItem, Select, Stack, Typography } from '@mui/material'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { AppShell } from '../components/AppShell'
 import { useAuth } from '../auth/useAuth'
@@ -15,8 +15,11 @@ import { WorkspaceRegularSpendingsRoutes } from './WorkspaceRegularSpendingsRout
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
 import { useTranslation } from 'react-i18next'
 import type { Workspace } from '../../domain/workspace'
+import type { BusinessEntity } from '../../domain/settings'
+import { isUkrainianFopEntity } from '../../domain/settings'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { WorkspaceBusinessEntityRoutes } from './WorkspaceBusinessEntityRoutes'
 
 function LegacyTransfersRedirect(props: { basePath: string }) {
   const location = useLocation()
@@ -32,8 +35,10 @@ export function WorkspaceLayoutPage() {
   const { session } = useAuth()
   const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const location = useLocation()
+  const navigate = useNavigate()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [workspace, setWorkspace] = useState<Workspace | null | undefined>(undefined)
+  const [businessEntities, setBusinessEntities] = useState<BusinessEntity[]>([])
   const [error, setError] = useState<string | null>(null)
   const { t } = useTranslation()
 
@@ -49,6 +54,23 @@ export function WorkspaceLayoutPage() {
         if (!cancelled) setWorkspace(found)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [api, workspaceId])
+
+  useEffect(() => {
+    if (!workspaceId) return
+    let cancelled = false
+    const load = async () => {
+      try {
+        const entities = await api.listBusinessEntities(workspaceId, false)
+        if (!cancelled) setBusinessEntities(entities)
+      } catch {
+        if (!cancelled) setBusinessEntities([])
       }
     }
     void load()
@@ -88,11 +110,19 @@ export function WorkspaceLayoutPage() {
   }
   const readOnly = workspace.accessMode === 'READ_ONLY'
 
-  const section = (() => {
+  const pathParts = (() => {
     const rest = location.pathname.startsWith(basePath) ? location.pathname.slice(basePath.length) : location.pathname
-    const first = rest.split('/').filter(Boolean)[0]
-    return first ?? 'income'
+    return rest.split('/').filter(Boolean)
   })()
+  const selectedEntityId = pathParts[0] === 'business-entities' && pathParts[1] ? pathParts[1] : 'autonomo'
+  const selectedEntity = businessEntities.find((entity) => entity.entityId === selectedEntityId) ?? null
+  const section = selectedEntityId === 'autonomo' ? pathParts[0] ?? 'income' : pathParts[2] ?? 'invoices'
+  const activeBusinessEntities = businessEntities.filter((entity) => entity.entityId === 'autonomo' || !entity.archivedAt)
+  const entitySelectorOptions = activeBusinessEntities.length
+    ? activeBusinessEntities
+    : [{ entityId: 'autonomo', type: 'AUTONOMO', name: 'Autonomo', builtIn: true } as BusinessEntity]
+  const entityMode = selectedEntityId !== 'autonomo'
+  const entityBasePath = `${basePath}/business-entities/${selectedEntityId}`
 
   return (
     <AppShell
@@ -100,6 +130,25 @@ export function WorkspaceLayoutPage() {
       right={
         <Stack direction="row" spacing={2} alignItems="center">
           {readOnly ? <Chip size="small" color="default" label={t('workspaceDetails.readOnly')} /> : null}
+          <FormControl size="small" sx={{ minWidth: 190 }}>
+            <InputLabel id="workspace-entity-selector-label">{t('businessEntities.selector')}</InputLabel>
+            <Select
+              labelId="workspace-entity-selector-label"
+              label={t('businessEntities.selector')}
+              value={selectedEntityId}
+              onChange={(e) => {
+                const next = e.target.value
+                if (next === 'autonomo') navigate(`${basePath}/income`)
+                else navigate(`${basePath}/business-entities/${next}/invoices`)
+              }}
+            >
+              {entitySelectorOptions.map((entity) => (
+                <MenuItem key={entity.entityId} value={entity.entityId}>
+                  {entity.entityId === 'autonomo' ? t('businessEntities.autonomo') : entity.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             {workspace.name}
           </Typography>
@@ -112,7 +161,30 @@ export function WorkspaceLayoutPage() {
         </Stack>
       }
       nav={
-        <>
+        entityMode ? (
+          <List
+            component="nav"
+            subheader={
+              <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
+                {selectedEntity?.name ?? t('businessEntities.title')}
+              </ListSubheader>
+            }
+          >
+            {selectedEntity && !isUkrainianFopEntity(selectedEntity) ? (
+              <ListItemText primary={t('businessEntities.unsupported')} sx={{ px: 2, py: 1 }} />
+            ) : (
+              <>
+                <ListItemButton component={RouterLink} to={`${entityBasePath}/invoices`} selected={section === 'invoices'}>
+                  <ListItemText primary={t('businessEntities.invoices')} />
+                </ListItemButton>
+                <ListItemButton component={RouterLink} to={`${entityBasePath}/summary`} selected={section === 'summary'}>
+                  <ListItemText primary={t('businessEntities.summary')} />
+                </ListItemButton>
+              </>
+            )}
+          </List>
+        ) : (
+          <>
           <List
             component="nav"
             subheader={
@@ -155,7 +227,8 @@ export function WorkspaceLayoutPage() {
               <ListItemText primary={t('workspace.regularSpendings')} />
             </ListItemButton>
           </List>
-        </>
+          </>
+        )
       }
     >
       <WorkspaceSettingsDialog
@@ -175,6 +248,7 @@ export function WorkspaceLayoutPage() {
         <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="regular-spendings/*" element={<WorkspaceRegularSpendingsRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="summaries" element={<WorkspaceSummariesPage workspaceId={workspaceId} api={api} />} />
+        <Route path="business-entities/:entityId/*" element={<WorkspaceBusinessEntityRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="records" element={<Navigate to={`${basePath}/income`} replace />} />
         <Route path="*" element={<Navigate to={`${basePath}/income`} replace />} />
       </Routes>

@@ -1,6 +1,6 @@
 import type { Workspace } from '../../domain/workspace'
-import { cleanWorkspaceSettings, type WorkspaceSettings } from '../../domain/settings'
-import type { RecordResponse, RecordType, RecordPayload, RegularSpendingOccurrencesResponse } from '../../domain/records'
+import { cleanWorkspaceSettings, type BusinessEntity, type WorkspaceSettings } from '../../domain/settings'
+import type { RecordResponse, RecordType, RecordPayload, RegularSpendingOccurrencesResponse, UkrainianFopYearSummary } from '../../domain/records'
 import type { BalanceResponse } from '../../domain/balance'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
@@ -10,6 +10,20 @@ import { jsonFetch } from '../http/jsonFetch'
 
 type ListResponse<T> = { items: T[]; nextToken?: string | null }
 type WorkspaceSettingsResponse = { workspaceId: string; settings: WorkspaceSettings }
+type BusinessEntitiesResponse = { items: BusinessEntity[] }
+type BusinessEntityResponse = { entity: BusinessEntity }
+type UkrainianFopSummaryResponse = {
+  entity: BusinessEntity
+  summary: Omit<UkrainianFopYearSummary, 'workspaceId' | 'entity' | 'isComplete' | 'warnings'>
+  isComplete: boolean
+}
+type NbuExchangeRateResponse = {
+  currency: string
+  date: string
+  rate: number
+  source?: string
+  fetchedAt?: string | null
+}
 type UserMeResponse = {
   userId: string
   email?: string | null
@@ -131,6 +145,39 @@ export class AutonomoControlApi {
     return cleanWorkspaceSettings(res.settings)
   }
 
+  async listBusinessEntities(workspaceId: string, includeArchived = false): Promise<BusinessEntity[]> {
+    const url = new URL(`/workspaces/${workspaceId}/business-entities`, this.baseUrl)
+    if (includeArchived) url.searchParams.set('includeArchived', 'true')
+    const res = await jsonFetch<BusinessEntitiesResponse>(url.toString(), { headers: this.authHeaders() })
+    return res.items
+  }
+
+  async createBusinessEntity(workspaceId: string, payload: Omit<BusinessEntity, 'entityId' | 'createdAt' | 'updatedAt' | 'archivedAt'>): Promise<BusinessEntity> {
+    const res = await jsonFetch<BusinessEntityResponse>(new URL(`/workspaces/${workspaceId}/business-entities`, this.baseUrl).toString(), {
+      method: 'POST',
+      headers: this.authHeaders(),
+      body: payload,
+    })
+    return res.entity
+  }
+
+  async updateBusinessEntity(workspaceId: string, entityId: string, payload: BusinessEntity): Promise<BusinessEntity> {
+    const res = await jsonFetch<BusinessEntityResponse>(new URL(`/workspaces/${workspaceId}/business-entities/${entityId}`, this.baseUrl).toString(), {
+      method: 'PUT',
+      headers: this.authHeaders(),
+      body: payload,
+    })
+    return res.entity
+  }
+
+  async archiveBusinessEntity(workspaceId: string, entityId: string): Promise<BusinessEntity> {
+    const res = await jsonFetch<BusinessEntityResponse>(new URL(`/workspaces/${workspaceId}/business-entities/${entityId}/archive`, this.baseUrl).toString(), {
+      method: 'POST',
+      headers: this.authHeaders(),
+    })
+    return res.entity
+  }
+
   async getBalance(workspaceId: string, options?: { year?: string | number; accountId?: string | null }): Promise<BalanceResponse> {
     const url = new URL(`/workspaces/${workspaceId}/balance`, this.baseUrl)
     if (options?.year != null) url.searchParams.set('year', String(options.year))
@@ -191,6 +238,23 @@ export class AutonomoControlApi {
     const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
     url.searchParams.set('year', year)
     if (options?.recordType) url.searchParams.set('recordType', options.recordType)
+    if (options?.sort) url.searchParams.set('sort', options.sort)
+    if (options?.limit != null) url.searchParams.set('limit', String(options.limit))
+    if (options?.nextToken) url.searchParams.set('nextToken', options.nextToken)
+    const res = await jsonFetch<ListResponse<RecordResponse>>(url.toString(), { headers: this.authHeaders() })
+    return { items: res.items, nextToken: res.nextToken ?? null }
+  }
+
+  async listInvoiceRecordsByEntityYear(
+    workspaceId: string,
+    entityId: string,
+    year: string,
+    options?: RecordsListOptions,
+  ): Promise<ListResponse<RecordResponse>> {
+    const url = new URL(`/workspaces/${workspaceId}/records`, this.baseUrl)
+    url.searchParams.set('year', year)
+    url.searchParams.set('recordType', 'BUSINESS_ENTITY_INVOICE')
+    url.searchParams.set('entityId', entityId)
     if (options?.sort) url.searchParams.set('sort', options.sort)
     if (options?.limit != null) url.searchParams.set('limit', String(options.limit))
     if (options?.nextToken) url.searchParams.set('nextToken', options.nextToken)
@@ -259,6 +323,25 @@ export class AutonomoControlApi {
       method: 'DELETE',
       headers: this.authHeaders(),
     })
+  }
+
+  async getUkrainianFopSummary(workspaceId: string, entityId: string, year: string | number): Promise<UkrainianFopYearSummary> {
+    const url = new URL(`/workspaces/${workspaceId}/business-entities/${entityId}/summary`, this.baseUrl)
+    url.searchParams.set('year', String(year))
+    const res = await jsonFetch<UkrainianFopSummaryResponse>(url.toString(), { headers: this.authHeaders() })
+    return {
+      ...res.summary,
+      workspaceId,
+      entity: res.entity,
+      isComplete: res.isComplete,
+    }
+  }
+
+  async getNbuExchangeRate(currency: 'USD', date: string): Promise<NbuExchangeRateResponse> {
+    const url = new URL('/exchange-rates/nbu', this.baseUrl)
+    url.searchParams.set('currency', currency)
+    url.searchParams.set('date', date)
+    return jsonFetch<NbuExchangeRateResponse>(url.toString(), { headers: this.authHeaders() })
   }
 
   async monthSummaries(workspaceId: string, settings: WorkspaceSettings): Promise<{ settings: WorkspaceSettings; items: unknown[] }> {

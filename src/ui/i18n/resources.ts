@@ -153,6 +153,14 @@ export const resources = {
         budget: 'Budget',
         regularSpendings: 'Regular spendings',
       },
+      businessEntities: {
+        title: 'Business entities',
+        selector: 'Entity',
+        autonomo: 'Autonomo',
+        invoices: 'Invoices',
+        summary: 'Summary',
+        unsupported: 'Unsupported entity type',
+      },
       expenseCategories: {
         defaults: {
           healthInsurance: 'Health insurance',
@@ -1136,6 +1144,14 @@ export const resources = {
         budget: 'Presupuesto',
         regularSpendings: 'Gastos recurrentes',
       },
+      businessEntities: {
+        title: 'Entidades de negocio',
+        selector: 'Entidad',
+        autonomo: 'Autonomo',
+        invoices: 'Facturas',
+        summary: 'Resumen',
+        unsupported: 'Tipo de entidad no compatible',
+      },
       expenseCategories: {
         defaults: {
           healthInsurance: 'Seguro médico',
@@ -2015,6 +2031,14 @@ export const resources = {
         transfers: 'Баланс',
         budget: 'Бюджет',
         regularSpendings: 'Регулярні витрати',
+      },
+      businessEntities: {
+        title: 'Бізнес-субʼєкти',
+        selector: 'Субʼєкт',
+        autonomo: 'Autonomo',
+        invoices: 'Рахунки',
+        summary: 'Підсумок',
+        unsupported: 'Тип субʼєкта не підтримується',
       },
       expenseCategories: {
         defaults: {
@@ -2896,6 +2920,14 @@ export const resources = {
         budget: 'الميزانية',
         regularSpendings: 'مصاريف منتظمة',
       },
+      businessEntities: {
+        title: 'كيانات العمل',
+        selector: 'الكيان',
+        autonomo: 'Autonomo',
+        invoices: 'الفواتير',
+        summary: 'الملخص',
+        unsupported: 'نوع الكيان غير مدعوم',
+      },
       expenseCategories: {
         defaults: {
           healthInsurance: 'التأمين الصحي',
@@ -3771,6 +3803,14 @@ export const resources = {
         transfers: 'Sold',
         budget: 'Buget',
         regularSpendings: 'Cheltuieli regulate',
+      },
+      businessEntities: {
+        title: 'Entitati de business',
+        selector: 'Entitate',
+        autonomo: 'Autonomo',
+        invoices: 'Facturi',
+        summary: 'Rezumat',
+        unsupported: 'Tip de entitate neacceptat',
       },
       expenseCategories: {
         defaults: {

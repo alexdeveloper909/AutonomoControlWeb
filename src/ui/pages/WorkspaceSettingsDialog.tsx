@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../queries/queryKeys'
 import { FieldLabel } from '../components/FieldLabel'
+import { BusinessEntitySettingsSection } from './BusinessEntitySettingsSection'
 
 export function WorkspaceSettingsDialog(props: {
   open: boolean
@@ -138,6 +139,7 @@ export function WorkspaceSettingsDialog(props: {
         balanceAccounts: settings.balanceAccounts ?? null,
         rentaPlanning: draft.rentaPlanning,
         ivaProfile: draft.ivaProfile ?? defaultIvaDeductionProfile(),
+        entities: settings.entities ?? null,
       })
       const saved = await props.api.putWorkspaceSettings(props.workspace.workspaceId, payload)
       setSettings(saved)
@@ -754,6 +756,12 @@ export function WorkspaceSettingsDialog(props: {
                   ) : null}
                 </Stack>
               ) : null}
+
+              <BusinessEntitySettingsSection
+                workspaceId={props.workspace.workspaceId}
+                api={props.api}
+                readOnly={readOnly}
+              />
             </>
           ) : null}
 

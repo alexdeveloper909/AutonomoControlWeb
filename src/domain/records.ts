@@ -1,4 +1,4 @@
-export type RecordType = 'INVOICE' | 'EXPENSE' | 'STATE_PAYMENT' | 'TRANSFER' | 'BUDGET' | 'REGULAR_SPENDING'
+export type RecordType = 'INVOICE' | 'EXPENSE' | 'STATE_PAYMENT' | 'TRANSFER' | 'BUDGET' | 'REGULAR_SPENDING' | 'BUSINESS_ENTITY_INVOICE'
 
 export type IvaRate = 'ZERO' | 'SUPER_REDUCED' | 'REDUCED' | 'STANDARD'
 export type RetencionRate = 'ZERO' | 'NEW_PROFESSIONAL' | 'STANDARD'
@@ -17,8 +17,11 @@ export type StatePaymentType =
   | 'RentaAnual'
   | 'Other'
 export type TransferOp = 'Inflow' | 'Outflow'
+export type InvoiceCurrency = 'USD' | 'UAH'
+export type ExchangeRateSource = 'NBU' | 'MANUAL'
 
 export type InvoicePayload = {
+  entityId?: 'autonomo'
   invoiceDate: string
   number: string
   client: string
@@ -29,6 +32,25 @@ export type InvoicePayload = {
   paymentDate?: string
   amountReceivedOverride?: number
 }
+
+export type UkrainianFopInvoicePayload = {
+  entityId: string
+  invoiceType: 'UKRAINIAN_FOP'
+  invoiceDate: string
+  receivedDate: string
+  number: string
+  client: string
+  amount: number
+  currency: InvoiceCurrency
+  taxCurrency: 'UAH'
+  exchangeRateToTaxCurrency: number
+  exchangeRateSource: ExchangeRateSource
+  exchangeRateDate: string
+  exchangeRateFetchedAt?: string | null
+  amountTaxCurrency: number
+}
+
+export type BusinessEntityInvoicePayload = UkrainianFopInvoicePayload
 
 export type ExpensePayload = {
   documentDate: string
@@ -147,6 +169,7 @@ export type RegularSpendingOccurrencesResponse = {
 
 export type RecordPayload =
   | InvoicePayload
+  | BusinessEntityInvoicePayload
   | ExpensePayload
   | StatePaymentPayload
   | TransferPayload
@@ -165,4 +188,50 @@ export type RecordResponse = {
   updatedAt: string
   createdBy: string
   updatedBy: string
+}
+
+export type UkrainianFopSummaryWarningCode = 'MISSING_TAX_RATES' | 'MISSING_SOCIAL_CONTRIBUTION_MONTHS' | (string & {})
+
+export type UkrainianFopSummaryWarning = {
+  code: UkrainianFopSummaryWarningCode
+  message?: string
+  year?: number
+  missingMonths?: string[]
+}
+
+export type UkrainianFopSummaryRow = {
+  monthKey?: string
+  quarterKey?: string
+  taxCurrency: 'UAH' | string
+  invoiceCount: number
+  taxableRevenue: number
+  singleTaxRate?: number
+  singleTax: number
+  militaryLevyRate?: number
+  militaryLevy: number
+  socialContribution: number
+  availableEstimate: number
+}
+
+export type UkrainianFopYearSummary = {
+  workspaceId: string
+  entity: unknown
+  year: number
+  isComplete: boolean
+  warnings?: UkrainianFopSummaryWarning[]
+  warningCodes?: UkrainianFopSummaryWarningCode[]
+  effectiveYearSettings?: {
+    taxRates?: {
+      singleTaxRate: number
+      militaryLevyRate: number
+    } | null
+    socialContribution?: {
+      enabled: boolean
+      monthlyAmountsUah?: Record<string, number>
+      exemptionReason?: string | null
+    } | null
+  } | null
+  months: UkrainianFopSummaryRow[]
+  quarters: UkrainianFopSummaryRow[]
+  totals: UkrainianFopSummaryRow
 }

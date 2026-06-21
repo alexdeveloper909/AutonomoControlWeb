@@ -27,3 +27,6 @@ export const decimalFormatter = (langTag: string, options?: Intl.NumberFormatOpt
 export const euroCurrencyFormatter = (langTag: string): Intl.NumberFormat =>
   new Intl.NumberFormat(resolveLocale(langTag), { style: 'currency', currency: 'EUR' })
 
+export const currencyFormatter = (langTag: string, currency: string): Intl.NumberFormat =>
+  new Intl.NumberFormat(resolveLocale(langTag), { style: 'currency', currency })
+

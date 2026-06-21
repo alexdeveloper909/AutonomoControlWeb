@@ -26,6 +26,12 @@ All authenticated requests include:
 - `POST /workspaces/{workspaceId}/share` (share workspace read-only by email)
 - `GET /workspaces/{workspaceId}/settings`
 - `PUT /workspaces/{workspaceId}/settings`
+- `GET /workspaces/{workspaceId}/business-entities?includeArchived=true|false`
+- `POST /workspaces/{workspaceId}/business-entities`
+- `PUT /workspaces/{workspaceId}/business-entities/{entityId}`
+- `POST /workspaces/{workspaceId}/business-entities/{entityId}/archive`
+- `GET /workspaces/{workspaceId}/business-entities/{entityId}/summary?year=YYYY`
+- `GET /exchange-rates/nbu?currency=USD&date=YYYY-MM-DD`
 - `GET /workspaces/{workspaceId}/records?month=YYYY-MM&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `GET /workspaces/{workspaceId}/records?quarter=YYYY-Q1&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
 - `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=...&sort=eventDateDesc&limit=20&nextToken=...`
@@ -54,6 +60,29 @@ The API record types used in the web client are:
 - `TRANSFER`
 - `BUDGET` (BudgetEntry)
 - `REGULAR_SPENDING` (RegularSpending)
+- `BUSINESS_ENTITY_INVOICE` (Ukrainian FOP invoices for user-created business entities)
+
+## Business entities
+
+The workspace shell lists active business entities with `GET /workspaces/{workspaceId}/business-entities`. The response includes the synthetic built-in Autonomo entity plus active user-created entities. Workspace Settings uses `includeArchived=true` for history and archives entities through `POST /workspaces/{workspaceId}/business-entities/{entityId}/archive`; Web does not generate entity IDs.
+
+Ukrainian FOP invoice lists use:
+
+- `GET /workspaces/{workspaceId}/records?year=YYYY&recordType=BUSINESS_ENTITY_INVOICE&entityId=<entityId>&sort=eventDateDesc&limit=20&nextToken=...`
+
+`year` is the received-date/event-date year. Create and edit use the generic records endpoints with `recordType: "BUSINESS_ENTITY_INVOICE"` and payload `invoiceType: "UKRAINIAN_FOP"`.
+
+Ukrainian FOP summaries use:
+
+- `GET /workspaces/{workspaceId}/business-entities/{entityId}/summary?year=YYYY`
+
+The summary response includes `months`, `quarters`, `totals`, `warnings`, `isComplete`, and `effectiveYearSettings`. Web renders warning actions based on stable warning codes such as `MISSING_TAX_RATES` and `MISSING_SOCIAL_CONTRIBUTION_MONTHS`.
+
+USD Ukrainian FOP invoices auto-fill the official exchange rate through the backend proxy only:
+
+- `GET /exchange-rates/nbu?currency=USD&date=YYYY-MM-DD`
+
+UAH invoices use exchange rate `1` locally. Manual exchange-rate overrides are stored with `exchangeRateSource: "MANUAL"` and no `exchangeRateFetchedAt`.
 
 ## Example payloads
 
