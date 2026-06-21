@@ -52,18 +52,48 @@ const moneyValue = (value: unknown): number => {
   return 0
 }
 
-const normalizeUkrainianFopSummaryRow = (row: Partial<UkrainianFopSummaryRow> | undefined): UkrainianFopSummaryRow => ({
-  ...row,
-  taxCurrency: row?.taxCurrency ?? 'UAH',
-  invoiceCount: row?.invoiceCount ?? 0,
-  taxableRevenue: moneyValue(row?.taxableRevenue),
-  singleTaxRate: row?.singleTaxRate,
-  singleTax: moneyValue(row?.singleTax),
-  militaryLevyRate: row?.militaryLevyRate,
-  militaryLevy: moneyValue(row?.militaryLevy),
-  socialContribution: moneyValue(row?.socialContribution),
-  availableEstimate: moneyValue(row?.availableEstimate),
-})
+const monthKeyValue = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value
+  if (!value || typeof value !== 'object') return undefined
+  const objectValue = value as Record<string, unknown>
+  const yearMonth = objectValue.ym
+  if (typeof yearMonth === 'string') return yearMonth
+  if (yearMonth && typeof yearMonth === 'object') {
+    const ym = yearMonth as Record<string, unknown>
+    if (typeof ym.year === 'number' && typeof ym.monthValue === 'number') {
+      return `${ym.year}-${String(ym.monthValue).padStart(2, '0')}`
+    }
+  }
+  return undefined
+}
+
+const quarterKeyValue = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value
+  if (!value || typeof value !== 'object') return undefined
+  const quarterKey = value as Record<string, unknown>
+  if (typeof quarterKey.year === 'number' && typeof quarterKey.quarter === 'number') {
+    return `${quarterKey.year}-Q${quarterKey.quarter}`
+  }
+  return undefined
+}
+
+const normalizeUkrainianFopSummaryRow = (row: Partial<UkrainianFopSummaryRow> | undefined): UkrainianFopSummaryRow => {
+  const raw = row as Record<string, unknown> | undefined
+  return {
+    ...row,
+    monthKey: monthKeyValue(raw?.monthKey),
+    quarterKey: quarterKeyValue(raw?.quarterKey),
+    taxCurrency: row?.taxCurrency ?? 'UAH',
+    invoiceCount: row?.invoiceCount ?? 0,
+    taxableRevenue: moneyValue(row?.taxableRevenue),
+    singleTaxRate: row?.singleTaxRate,
+    singleTax: moneyValue(row?.singleTax),
+    militaryLevyRate: row?.militaryLevyRate,
+    militaryLevy: moneyValue(row?.militaryLevy),
+    socialContribution: moneyValue(row?.socialContribution),
+    availableEstimate: moneyValue(row?.availableEstimate),
+  }
+}
 
 export type RecordsSort = 'eventDateDesc'
 export type RecordsListOptions = { sort?: RecordsSort; limit?: number; nextToken?: string | null }
