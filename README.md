@@ -15,6 +15,7 @@ Related overview: `../project_overview.md`
 - UI design + theming guidelines: `AutonomoControlWeb/docs/DESIGN.md`
 - Auth (Hosted UI + PKCE): `AutonomoControlWeb/docs/AUTH.md`
 - API integration (endpoints + payloads): `AutonomoControlWeb/docs/API.md`
+- AI-assisted browser testing: `AutonomoControlWeb/docs/AI_BROWSER_TESTING.md`
 - Dev/prod stacks + web hosting notes: `AutonomoControlWeb/docs/DEPLOYMENT.md`
 - Troubleshooting: `AutonomoControlWeb/docs/TROUBLESHOOTING.md`
 
