@@ -1,6 +1,13 @@
 import type { Workspace } from '../../domain/workspace'
 import { cleanWorkspaceSettings, type BusinessEntity, type WorkspaceSettings } from '../../domain/settings'
-import type { RecordResponse, RecordType, RecordPayload, RegularSpendingOccurrencesResponse, UkrainianFopYearSummary } from '../../domain/records'
+import type {
+  RecordResponse,
+  RecordType,
+  RecordPayload,
+  RegularSpendingOccurrencesResponse,
+  UkrainianFopSummaryRow,
+  UkrainianFopYearSummary,
+} from '../../domain/records'
 import type { BalanceResponse } from '../../domain/balance'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
@@ -13,10 +20,10 @@ type WorkspaceSettingsResponse = { workspaceId: string; settings: WorkspaceSetti
 type BusinessEntitiesResponse = { items: BusinessEntity[] }
 type BusinessEntityResponse = { entity: BusinessEntity }
 type UkrainianFopSummaryResponse = {
-  entity: BusinessEntity
-  summary: Omit<UkrainianFopYearSummary, 'workspaceId' | 'entity' | 'isComplete' | 'warnings'>
-  isComplete: boolean
-}
+  entity?: BusinessEntity
+  summary?: Omit<UkrainianFopYearSummary, 'workspaceId' | 'entity' | 'isComplete' | 'warnings'>
+  isComplete?: boolean
+} & Partial<UkrainianFopYearSummary>
 type NbuExchangeRateResponse = {
   currency: string
   date: string
@@ -33,6 +40,30 @@ type UserMeResponse = {
 }
 
 type WorkspaceShareResponse = { workspaceId: string; emailLower: string; role: string; status: string }
+
+const moneyValue = (value: unknown): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && Number.isFinite(Number(value))) return Number(value)
+  if (value && typeof value === 'object') {
+    const amount = (value as Record<string, unknown>).amount
+    if (typeof amount === 'number' && Number.isFinite(amount)) return amount
+    if (typeof amount === 'string' && Number.isFinite(Number(amount))) return Number(amount)
+  }
+  return 0
+}
+
+const normalizeUkrainianFopSummaryRow = (row: Partial<UkrainianFopSummaryRow> | undefined): UkrainianFopSummaryRow => ({
+  ...row,
+  taxCurrency: row?.taxCurrency ?? 'UAH',
+  invoiceCount: row?.invoiceCount ?? 0,
+  taxableRevenue: moneyValue(row?.taxableRevenue),
+  singleTaxRate: row?.singleTaxRate,
+  singleTax: moneyValue(row?.singleTax),
+  militaryLevyRate: row?.militaryLevyRate,
+  militaryLevy: moneyValue(row?.militaryLevy),
+  socialContribution: moneyValue(row?.socialContribution),
+  availableEstimate: moneyValue(row?.availableEstimate),
+})
 
 export type RecordsSort = 'eventDateDesc'
 export type RecordsListOptions = { sort?: RecordsSort; limit?: number; nextToken?: string | null }
@@ -329,11 +360,28 @@ export class AutonomoControlApi {
     const url = new URL(`/workspaces/${workspaceId}/business-entities/${entityId}/summary`, this.baseUrl)
     url.searchParams.set('year', String(year))
     const res = await jsonFetch<UkrainianFopSummaryResponse>(url.toString(), { headers: this.authHeaders() })
+    if (!res.summary) {
+      return {
+        workspaceId: res.workspaceId ?? workspaceId,
+        entity: res.entity ?? null,
+        year: res.year ?? Number(year),
+        isComplete: res.isComplete ?? false,
+        warnings: res.warnings,
+        warningCodes: res.warningCodes,
+        effectiveYearSettings: res.effectiveYearSettings,
+        months: (res.months ?? []).map(normalizeUkrainianFopSummaryRow),
+        quarters: (res.quarters ?? []).map(normalizeUkrainianFopSummaryRow),
+        totals: normalizeUkrainianFopSummaryRow(res.totals),
+      }
+    }
     return {
       ...res.summary,
       workspaceId,
-      entity: res.entity,
-      isComplete: res.isComplete,
+      entity: res.entity ?? null,
+      isComplete: res.isComplete ?? false,
+      months: (res.summary.months ?? []).map(normalizeUkrainianFopSummaryRow),
+      quarters: (res.summary.quarters ?? []).map(normalizeUkrainianFopSummaryRow),
+      totals: normalizeUkrainianFopSummaryRow(res.summary.totals),
     }
   }
 

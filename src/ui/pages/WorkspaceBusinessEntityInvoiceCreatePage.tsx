@@ -49,7 +49,7 @@ export function WorkspaceBusinessEntityInvoiceCreatePage(props: {
     queryFn: () => props.api.listBusinessEntities(props.workspaceId, true),
   })
   const entity = entitiesQuery.data?.find((item) => item.entityId === props.entityId) ?? null
-  const allowedCurrencies = useMemo(
+  const allowedCurrencies = useMemo<InvoiceCurrency[]>(
     () =>
       (entity?.invoiceCurrencies?.filter((currency): currency is InvoiceCurrency => currency === 'USD' || currency === 'UAH') ?? [
         'USD',
@@ -108,7 +108,8 @@ export function WorkspaceBusinessEntityInvoiceCreatePage(props: {
   }, [editing, initializedFromRecord, recordQuery.data])
 
   useEffect(() => {
-    if (allowedCurrencies.length && !allowedCurrencies.includes(currency)) setCurrency(allowedCurrencies[0])
+    const fallbackCurrency = allowedCurrencies[0]
+    if (fallbackCurrency && !allowedCurrencies.includes(currency)) setCurrency(fallbackCurrency)
   }, [allowedCurrencies, currency])
 
   const parsedAmount = useMemo(() => parseMoneyAmount(amount), [amount])
