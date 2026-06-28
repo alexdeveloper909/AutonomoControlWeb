@@ -42,6 +42,7 @@ All authenticated requests include:
 - `POST /workspaces/{workspaceId}/summaries/quarters`
 - `POST /workspaces/{workspaceId}/summaries/renta`
 - `POST /workspaces/{workspaceId}/summaries/iva`
+- `POST /workspaces/{workspaceId}/summaries/reta`
 
 ## Read-only shared workspaces
 
@@ -145,6 +146,16 @@ The Summaries screen uses:
 - Response: `{ "settings": ..., "iva": { "year": 2026, "quarters": [ /* IvaQuarterEstimate */ ] } }`
 
 The IVA Estimate tab displays output IVA, deductible input IVA, raw result, credit brought forward, payable amount, credit carried forward, and Q4 refund/carry-forward candidate fields.
+
+## Seguridad Social / RETA estimate
+
+The RETA page uses:
+
+- `POST /workspaces/{workspaceId}/summaries/reta`
+- Body: `{ "settings": WorkspaceSettings, "scenario": RetaScenarioSettings }`
+- Response: `{ "settings": ..., "reta": RetaEstimate }`
+
+`scenario` is page-local and may include `projectionMode`, `manualFutureMonthlyActivityNet`, `baseSelectionPolicy`, and `customContributionBase`. The endpoint is read-only. It uses Spanish/autonomo invoices, expenses, and state payments for the selected year, and excludes transfers, budgets, regular spendings, and business-entity invoices.
 
 ## List expenses (EXPENSE) with sorting + pagination
 
