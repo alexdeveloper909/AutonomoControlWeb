@@ -124,6 +124,7 @@ export function WorkspaceStatePaymentsCreatePage(props: {
 
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'STATE_PAYMENT') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
 
       if (editing) {
         if (props.eventDate && props.recordId) {

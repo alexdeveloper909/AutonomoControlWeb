@@ -22,6 +22,7 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'record', recordType, eventDate, recordId] as const,
 
   summaries: (workspaceId: string) => ['workspaces', workspaceId, 'summaries'] as const,
+  retaSummaries: (workspaceId: string) => ['workspaces', workspaceId, 'summaries', 'reta'] as const,
   retaSummary: (workspaceId: string, settingsYear: number, scenarioKey: string) =>
     ['workspaces', workspaceId, 'summaries', 'reta', settingsYear, scenarioKey] as const,
   entitySummary: (workspaceId: string, entityId: string, year: string) =>

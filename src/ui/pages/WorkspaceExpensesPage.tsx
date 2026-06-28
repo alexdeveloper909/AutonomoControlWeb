@@ -149,6 +149,7 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
       await props.api.deleteRecord(props.workspaceId, 'EXPENSE', deleteTarget.record.eventDate, deleteTarget.record.recordId)
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'EXPENSE') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
       setDeleteTarget(null)
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e))
@@ -190,6 +191,7 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
       await props.api.createRecord(props.workspaceId, { recordType: 'EXPENSE', payload })
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'EXPENSE') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
       setRepeatTarget(null)
     } catch (e) {
       setRepeatError(e instanceof Error ? e.message : String(e))

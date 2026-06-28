@@ -94,7 +94,7 @@ function Metric(props: { label: string; value: string; helper?: string }) {
 export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoControlApi; readOnly: boolean }) {
   const { i18n, t } = useTranslation()
   const money = useMemo(() => euroCurrencyFormatter(i18n.language), [i18n.language])
-  const [projectionMode, setProjectionMode] = useState<RetaProjectionMode>('MANUAL_FUTURE_MONTHLY_INCOME')
+  const [projectionMode, setProjectionMode] = useState<RetaProjectionMode>('SAME_AS_CURRENT_RUN_RATE')
   const [manualFutureMonthlyActivityNet, setManualFutureMonthlyActivityNet] = useState('')
   const [customContributionBase, setCustomContributionBase] = useState('')
 

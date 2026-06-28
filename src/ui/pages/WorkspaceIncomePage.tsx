@@ -108,6 +108,7 @@ export function WorkspaceIncomePage(props: { workspaceId: string; api: AutonomoC
       await props.api.deleteRecord(props.workspaceId, 'INVOICE', deleteTarget.record.eventDate, deleteTarget.record.recordId)
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'INVOICE') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
       setDeleteTarget(null)
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e))

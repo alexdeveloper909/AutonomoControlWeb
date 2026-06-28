@@ -117,6 +117,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
       )
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'STATE_PAYMENT') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
       setDeleteTarget(null)
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e))

@@ -158,6 +158,7 @@ export function WorkspaceIncomeCreatePage(props: {
 
       queryClient.invalidateQueries({ queryKey: queryKeys.recordsByYearRecordType(props.workspaceId, 'INVOICE') })
       queryClient.invalidateQueries({ queryKey: queryKeys.summaries(props.workspaceId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.retaSummaries(props.workspaceId) })
 
       if (editing) {
         if (props.eventDate && props.recordId) {
