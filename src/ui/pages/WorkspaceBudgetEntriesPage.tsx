@@ -32,6 +32,8 @@ import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
 import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
 
 const PAGE_SIZE = 100
 
@@ -197,6 +199,7 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
   const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [expandedMonthKey, setExpandedMonthKey] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching } = useQuery({
     queryKey,
@@ -315,7 +318,14 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
             </Select>
           </FormControl>
 
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            alignItems="center"
+            justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}
+            sx={{ flex: 1, flexWrap: 'wrap', '& > .MuiButton-root': { minHeight: 44 } }}
+          >
             <Typography variant="body2" color="text.secondary">
               {t('budget.monthsReviewed', { count: filledRows.length })}
             </Typography>
@@ -371,110 +381,189 @@ export function WorkspaceBudgetEntriesPage(props: { workspaceId: string; api: Au
         }}
       />
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('records.month')}</TableCell>
-                <TableCell>{t('budget.status')}</TableCell>
-                <TableCell align="right">{t('records.spent')}</TableCell>
-                <TableCell align="right">{t('budget.baseline')}</TableCell>
-                <TableCell align="right">{t('budget.target')}</TableCell>
-                <TableCell align="right">{t('budget.overUnder')}</TableCell>
-                <TableCell align="right">{t('records.earned')}</TableCell>
-                <TableCell align="right">{t('budget.saved')}</TableCell>
-                <TableCell align="right">{t('budget.savingsRate')}</TableCell>
-                <TableCell>{t('budget.notes')}</TableCell>
-                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => {
+      <ResponsiveDataView
+        tableLabel={t('budget.title')}
+        cardsLabel={t('budget.title')}
+        table={
+          <Paper variant="outlined">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('records.month')}</TableCell>
+                    <TableCell>{t('budget.status')}</TableCell>
+                    <TableCell align="right">{t('records.spent')}</TableCell>
+                    <TableCell align="right">{t('budget.baseline')}</TableCell>
+                    <TableCell align="right">{t('budget.target')}</TableCell>
+                    <TableCell align="right">{t('budget.overUnder')}</TableCell>
+                    <TableCell align="right">{t('records.earned')}</TableCell>
+                    <TableCell align="right">{t('budget.saved')}</TableCell>
+                    <TableCell align="right">{t('budget.savingsRate')}</TableCell>
+                    <TableCell>{t('budget.notes')}</TableCell>
+                    {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => {
+                    const budget = row.budget
+                    const status =
+                      !budget ? t('budget.rowStatus.missing') : budget.targetSpend === null ? t('budget.rowStatus.noTarget') : budget.overUnderTarget! > 0 ? t('budget.rowStatus.over') : t('budget.rowStatus.under')
+                    return (
+                      <TableRow key={row.monthKey} hover selected={!budget}>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.monthKey}</TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                            <Chip
+                              size="small"
+                              color={!budget ? 'default' : budget.targetSpend === null ? 'warning' : budget.overUnderTarget! > 0 ? 'warning' : 'success'}
+                              variant={!budget ? 'outlined' : 'filled'}
+                              label={status}
+                            />
+                            {row.duplicates.length ? <Chip size="small" color="warning" variant="outlined" label={t('budget.duplicateChip', { count: row.duplicates.length })} /> : null}
+                            {budget && (budget.payload.exceptionalSpend ?? 0) > 0 ? (
+                              <Chip size="small" variant="outlined" label={t('budget.exceptionalChip', { amount: money.format(budget.payload.exceptionalSpend ?? 0) })} />
+                            ) : null}
+                          </Stack>
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget ? money.format(budget.payload.spent) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget ? money.format(budget.baselineSpend) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget?.targetSpend == null ? t('common.na') : money.format(budget.targetSpend)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget ? formatSigned(money, budget.overUnderTarget) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget ? money.format(budget.payload.earned) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget ? formatSigned(money, budget.saved) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {budget?.savingsRate == null ? t('common.na') : percent.format(budget.savingsRate)}
+                        </TableCell>
+                        <TableCell sx={{ minWidth: 220, maxWidth: 320 }} title={budget?.payload.exceptionalNotes ?? budget?.payload.notes ?? budget?.payload.description}>
+                          {budget ? budget.payload.notes ?? budget.payload.description ?? t('common.na') : t('budget.missingHint')}
+                          {budget?.payload.exceptionalNotes ? (
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {budget.payload.exceptionalNotes}
+                            </Typography>
+                          ) : null}
+                        </TableCell>
+                        {props.readOnly ? null : (
+                          <TableCell align="right" padding="checkbox">
+                            {budget ? (
+                              <MoreActionsMenu
+                                onEdit={() =>
+                                  navigate(`/workspaces/${props.workspaceId}/budget/${budget.record.eventDate}/${budget.record.recordId}/edit`)
+                                }
+                                onDelete={() =>
+                                  setDeleteTarget({
+                                    record: budget.record,
+                                    label: `${t('recordTypes.BUDGET')} ${budget.payload.monthKey}`,
+                                  })
+                                }
+                              />
+                            ) : (
+                              <Button size="small" component={RouterLink} to={addPath(row.monthKey)}>
+                                {t('budget.addMissing')}
+                              </Button>
+                            )}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    )
+                  })}
+                  {isPending ? (
+                    <TableRow>
+                      <TableCell colSpan={props.readOnly ? 10 : 11}>
+                        <Typography color="text.secondary">{t('common.loading')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1}>
+            {isPending ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              </Paper>
+            ) : (
+              rows.map((row) => {
                 const budget = row.budget
                 const status =
                   !budget ? t('budget.rowStatus.missing') : budget.targetSpend === null ? t('budget.rowStatus.noTarget') : budget.overUnderTarget! > 0 ? t('budget.rowStatus.over') : t('budget.rowStatus.under')
-                return (
-                  <TableRow key={row.monthKey} hover selected={!budget}>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.monthKey}</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                        <Chip
-                          size="small"
-                          color={!budget ? 'default' : budget.targetSpend === null ? 'warning' : budget.overUnderTarget! > 0 ? 'warning' : 'success'}
-                          variant={!budget ? 'outlined' : 'filled'}
-                          label={status}
-                        />
-                        {row.duplicates.length ? <Chip size="small" color="warning" variant="outlined" label={t('budget.duplicateChip', { count: row.duplicates.length })} /> : null}
-                        {budget && (budget.payload.exceptionalSpend ?? 0) > 0 ? (
-                          <Chip size="small" variant="outlined" label={t('budget.exceptionalChip', { amount: money.format(budget.payload.exceptionalSpend ?? 0) })} />
-                        ) : null}
-                      </Stack>
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget ? money.format(budget.payload.spent) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget ? money.format(budget.baselineSpend) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget?.targetSpend == null ? t('common.na') : money.format(budget.targetSpend)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget ? formatSigned(money, budget.overUnderTarget) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget ? money.format(budget.payload.earned) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget ? formatSigned(money, budget.saved) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {budget?.savingsRate == null ? t('common.na') : percent.format(budget.savingsRate)}
-                    </TableCell>
-                    <TableCell sx={{ minWidth: 220, maxWidth: 320 }} title={budget?.payload.exceptionalNotes ?? budget?.payload.notes ?? budget?.payload.description}>
-                      {budget ? budget.payload.notes ?? budget.payload.description ?? t('common.na') : t('budget.missingHint')}
-                      {budget?.payload.exceptionalNotes ? (
-                        <Typography variant="caption" color="text.secondary" display="block">
-                          {budget.payload.exceptionalNotes}
-                        </Typography>
-                      ) : null}
-                    </TableCell>
-                    {props.readOnly ? null : (
-                      <TableCell align="right" padding="checkbox">
-                        {budget ? (
-                          <MoreActionsMenu
-                            onEdit={() =>
-                              navigate(`/workspaces/${props.workspaceId}/budget/${budget.record.eventDate}/${budget.record.recordId}/edit`)
-                            }
-                            onDelete={() =>
-                              setDeleteTarget({
-                                record: budget.record,
-                                label: `${t('recordTypes.BUDGET')} ${budget.payload.monthKey}`,
-                              })
-                            }
-                          />
-                        ) : (
-                          <Button size="small" component={RouterLink} to={addPath(row.monthKey)}>
-                            {t('budget.addMissing')}
-                          </Button>
-                        )}
-                      </TableCell>
-                    )}
-                  </TableRow>
+                const statusChip = (
+                  <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" justifyContent="flex-end">
+                    <Chip
+                      size="small"
+                      color={!budget ? 'default' : budget.targetSpend === null ? 'warning' : budget.overUnderTarget! > 0 ? 'warning' : 'success'}
+                      variant={!budget ? 'outlined' : 'filled'}
+                      label={status}
+                    />
+                    {row.duplicates.length ? <Chip size="small" color="warning" variant="outlined" label={t('budget.duplicateChip', { count: row.duplicates.length })} /> : null}
+                    {budget && (budget.payload.exceptionalSpend ?? 0) > 0 ? (
+                      <Chip size="small" variant="outlined" label={t('budget.exceptionalChip', { amount: money.format(budget.payload.exceptionalSpend ?? 0) })} />
+                    ) : null}
+                  </Stack>
                 )
-              })}
-              {isPending ? (
-                <TableRow>
-                  <TableCell colSpan={props.readOnly ? 10 : 11}>
-                    <Typography color="text.secondary">{t('common.loading')}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                return (
+                  <MobileRecordCard
+                    key={row.monthKey}
+                    title={row.monthKey}
+                    subtitle={statusChip}
+                    amount={budget ? money.format(budget.payload.spent) : t('common.na')}
+                    facts={[
+                      { label: t('budget.target'), value: budget?.targetSpend == null ? t('common.na') : money.format(budget.targetSpend) },
+                      { label: t('budget.saved'), value: budget ? formatSigned(money, budget.saved) : t('common.na') },
+                    ]}
+                    details={[
+                      { label: t('budget.baseline'), value: budget ? money.format(budget.baselineSpend) : t('common.na') },
+                      { label: t('budget.overUnder'), value: budget ? formatSigned(money, budget.overUnderTarget) : t('common.na') },
+                      { label: t('records.earned'), value: budget ? money.format(budget.payload.earned) : t('common.na') },
+                      { label: t('budget.savingsRate'), value: budget?.savingsRate == null ? t('common.na') : percent.format(budget.savingsRate) },
+                      {
+                        label: t('budget.notes'),
+                        value: budget
+                          ? budget.payload.exceptionalNotes ?? budget.payload.notes ?? budget.payload.description ?? t('common.na')
+                          : t('budget.missingHint'),
+                      },
+                    ]}
+                    actions={
+                      props.readOnly ? null : budget ? (
+                        <MoreActionsMenu
+                          onEdit={() => navigate(`/workspaces/${props.workspaceId}/budget/${budget.record.eventDate}/${budget.record.recordId}/edit`)}
+                          onDelete={() =>
+                            setDeleteTarget({
+                              record: budget.record,
+                              label: `${t('recordTypes.BUDGET')} ${budget.payload.monthKey}`,
+                            })
+                          }
+                        />
+                      ) : (
+                        <Button size="small" component={RouterLink} to={addPath(row.monthKey)} sx={{ minHeight: 44 }}>
+                          {t('budget.addMissing')}
+                        </Button>
+                      )
+                    }
+                    expanded={expandedMonthKey === row.monthKey}
+                    onToggleExpanded={() => setExpandedMonthKey((current) => (current === row.monthKey ? null : row.monthKey))}
+                    expandLabel={t('common.more')}
+                  />
+                )
+              })
+            )}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

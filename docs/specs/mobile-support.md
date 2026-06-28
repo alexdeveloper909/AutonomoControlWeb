@@ -303,15 +303,15 @@ Acceptance:
 
 Tasks:
 
-- [ ] Update Balance page mobile header actions, account cards, and ledger presentation.
-- [ ] Update Balance create/edit/account dialogs for phones.
-- [ ] Update Budget page summary grid, trend chart container, and monthly rows for phones.
-- [ ] Update Regular spendings dashboard for mobile actions, totals, and chart controls.
-- [ ] Update Regular spendings definitions list for phones.
-- [ ] Keep analytic charts and table scrollers local to their own containers.
+- [x] Update Balance page mobile header actions, account cards, and ledger presentation.
+- [x] Update Balance create/edit/account dialogs for phones.
+- [x] Update Budget page summary grid, trend chart container, and monthly rows for phones.
+- [x] Update Regular spendings dashboard for mobile actions, totals, and chart controls.
+- [x] Update Regular spendings definitions list for phones.
+- [x] Keep analytic charts and table scrollers local to their own containers.
 - [ ] Verify account dialogs and action menus on phones.
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run lint`.
 
 Acceptance:
 

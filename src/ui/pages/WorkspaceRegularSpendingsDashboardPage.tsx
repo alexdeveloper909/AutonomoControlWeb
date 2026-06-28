@@ -26,6 +26,7 @@ import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter, resolveLocale } from '../lib/intl'
 import { toLocalIsoDate } from '../lib/date'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 type RangeDays = 30 | 60 | 90
 
@@ -294,7 +295,7 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
       <PageHeader
         title={t('regularSpendings.title')}
         right={
-          <Stack direction="row" spacing={1}>
+          <ResponsiveActionRow>
             <Button variant="outlined" component={RouterLink} to={`${basePath}/list`}>
               {t('regularSpendings.listButton')}
             </Button>
@@ -303,7 +304,7 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
                 {t('regularSpendings.add')}
               </Button>
             )}
-          </Stack>
+          </ResponsiveActionRow>
         }
       />
 
@@ -348,13 +349,23 @@ export function WorkspaceRegularSpendingsDashboardPage(props: {
 
           {/* Chart */}
           <Paper variant="outlined" sx={{ p: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
+              alignItems={{ xs: 'stretch', sm: 'center' }}
+              justifyContent="space-between"
+              sx={{ mb: 1 }}
+            >
               <Typography variant="subtitle2">{t('regularSpendings.chart')}</Typography>
               <ToggleButtonGroup
                 size="small"
                 exclusive
                 value={range}
                 onChange={(_, v) => { if (v !== null) setRange(v as RangeDays) }}
+                sx={{
+                  alignSelf: { xs: 'stretch', sm: 'center' },
+                  '& .MuiToggleButton-root': { minHeight: 44, flex: { xs: 1, sm: '0 0 auto' } },
+                }}
               >
                 <ToggleButton value={30}>{t('regularSpendings.range30')}</ToggleButton>
                 <ToggleButton value={60}>{t('regularSpendings.range60')}</ToggleButton>

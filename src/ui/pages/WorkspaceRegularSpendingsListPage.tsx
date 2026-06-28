@@ -24,6 +24,9 @@ import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
 import { asRegularSpendingPayload } from '../lib/regularSpendingPayload'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 const scheduleLabel = (payload: RegularSpendingPayload, t: ReturnType<typeof useTranslation>['t']): string => {
   if (payload.scheduleType === 'FIXED_TERM') {
@@ -46,6 +49,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
   const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [expandedRecordKey, setExpandedRecordKey] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching } = useQuery({
     queryKey: queryKeys.regularSpendings(props.workspaceId),
@@ -92,7 +96,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
         title={t('regularSpendingsList.title')}
         description={t('regularSpendingsList.description')}
         right={
-          <Stack direction="row" spacing={1}>
+          <ResponsiveActionRow>
             <Button variant="outlined" component={RouterLink} to={basePath}>
               {t('regularSpendingsList.backToDashboard')}
             </Button>
@@ -101,7 +105,7 @@ export function WorkspaceRegularSpendingsListPage(props: {
                 {t('regularSpendings.add')}
               </Button>
             )}
-          </Stack>
+          </ResponsiveActionRow>
         }
       />
 
@@ -117,64 +121,109 @@ export function WorkspaceRegularSpendingsListPage(props: {
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
       {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('regularSpendingsList.name')}</TableCell>
-                <TableCell>{t('regularSpendingsList.schedule')}</TableCell>
-                <TableCell>{t('regularSpendingsList.startDate')}</TableCell>
-                <TableCell align="right">{t('regularSpendingsList.amount')}</TableCell>
-                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableRows?.length ? (
-                tableRows.map(({ record, payload }) => (
-                  <TableRow key={record.recordKey} hover>
-                    <TableCell>{payload?.name ?? t('common.na')}</TableCell>
-                    <TableCell>
-                      {payload ? scheduleLabel(payload, t) : t('common.na')}
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.startDate ?? t('common.na')}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.amount) : t('common.na')}
-                    </TableCell>
-                    {props.readOnly ? null : (
-                      <TableCell align="right" padding="checkbox">
-                        <MoreActionsMenu
-                          onEdit={() =>
-                            navigate(`${basePath}/${record.eventDate}/${record.recordId}/edit`)
-                          }
-                          onDelete={() =>
-                            setDeleteTarget({
-                              record,
-                              label: `${t('recordTypes.REGULAR_SPENDING')} ${payload?.name ?? record.recordId}`,
-                            })
-                          }
-                        />
-                      </TableCell>
-                    )}
+      <ResponsiveDataView
+        tableLabel={t('regularSpendingsList.title')}
+        cardsLabel={t('regularSpendingsList.title')}
+        table={
+          <Paper variant="outlined">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('regularSpendingsList.name')}</TableCell>
+                    <TableCell>{t('regularSpendingsList.schedule')}</TableCell>
+                    <TableCell>{t('regularSpendingsList.startDate')}</TableCell>
+                    <TableCell align="right">{t('regularSpendingsList.amount')}</TableCell>
+                    {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
                   </TableRow>
-                ))
-              ) : data ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('regularSpendingsList.empty')}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : isPending ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('common.loading')}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {tableRows?.length ? (
+                    tableRows.map(({ record, payload }) => (
+                      <TableRow key={record.recordKey} hover>
+                        <TableCell>{payload?.name ?? t('common.na')}</TableCell>
+                        <TableCell>{payload ? scheduleLabel(payload, t) : t('common.na')}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.startDate ?? t('common.na')}</TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {payload ? money.format(payload.amount) : t('common.na')}
+                        </TableCell>
+                        {props.readOnly ? null : (
+                          <TableCell align="right" padding="checkbox">
+                            <MoreActionsMenu
+                              onEdit={() => navigate(`${basePath}/${record.eventDate}/${record.recordId}/edit`)}
+                              onDelete={() =>
+                                setDeleteTarget({
+                                  record,
+                                  label: `${t('recordTypes.REGULAR_SPENDING')} ${payload?.name ?? record.recordId}`,
+                                })
+                              }
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  ) : data ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('regularSpendingsList.empty')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : isPending ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('common.loading')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1}>
+            {tableRows?.length ? (
+              tableRows.map(({ record, payload }) => (
+                <MobileRecordCard
+                  key={record.recordKey}
+                  title={payload?.name ?? t('common.na')}
+                  subtitle={payload ? scheduleLabel(payload, t) : t('common.na')}
+                  amount={payload ? money.format(payload.amount) : t('common.na')}
+                  facts={[
+                    { label: t('regularSpendingsList.schedule'), value: payload ? scheduleLabel(payload, t) : t('common.na') },
+                    { label: t('regularSpendingsList.amount'), value: payload ? money.format(payload.amount) : t('common.na') },
+                  ]}
+                  details={[{ label: t('regularSpendingsList.startDate'), value: payload?.startDate ?? t('common.na') }]}
+                  actions={
+                    props.readOnly ? null : (
+                      <MoreActionsMenu
+                        onEdit={() => navigate(`${basePath}/${record.eventDate}/${record.recordId}/edit`)}
+                        onDelete={() =>
+                          setDeleteTarget({
+                            record,
+                            label: `${t('recordTypes.REGULAR_SPENDING')} ${payload?.name ?? record.recordId}`,
+                          })
+                        }
+                      />
+                    )
+                  }
+                  expanded={expandedRecordKey === record.recordKey}
+                  onToggleExpanded={() => setExpandedRecordKey((current) => (current === record.recordKey ? null : record.recordKey))}
+                  expandLabel={t('common.more')}
+                />
+              ))
+            ) : data ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('regularSpendingsList.empty')}</Typography>
+              </Paper>
+            ) : isPending ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              </Paper>
+            ) : null}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

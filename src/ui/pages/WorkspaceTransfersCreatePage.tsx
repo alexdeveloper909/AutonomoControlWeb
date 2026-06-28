@@ -24,6 +24,7 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 type MovementMode = 'ExternalInflow' | 'ExternalOutflow' | 'InternalTransfer'
 type BalancePayload = TransferPayload | InternalTransferPayload
@@ -350,14 +351,14 @@ export function WorkspaceTransfersCreatePage(props: {
             helperText={t('transfersCreate.help.note', { defaultValue: '' }) || undefined}
           />
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <ResponsiveActionRow>
             <Button component={RouterLink} to={backToPath} variant="outlined" disabled={submitting}>
               {t('common.back')}
             </Button>
             <Button variant="contained" onClick={submit} disabled={inputsDisabled}>
               {editing ? (submitting ? t('common.saving') : t('common.save')) : submitting ? t('common.creating') : t('transfersCreate.create')}
             </Button>
-          </Stack>
+          </ResponsiveActionRow>
         </Stack>
       </Paper>
     </Stack>

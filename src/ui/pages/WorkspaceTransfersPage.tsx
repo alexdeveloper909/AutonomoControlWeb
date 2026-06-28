@@ -22,6 +22,8 @@ import {
   TableRow,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
@@ -38,6 +40,9 @@ import { decimalFormatter, euroCurrencyFormatter } from '../lib/intl'
 import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { parseEuroAmount } from '../lib/money'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 const currentYear = (): string => String(new Date().getFullYear())
 const todayIso = (): string => {
@@ -84,6 +89,8 @@ function AccountDialog(props: {
   onSubmit: (input: { name: string; kind: BalanceAccountKind; openingBalance: number; openingDate: string }) => Promise<void>
 }) {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const [name, setName] = useState(props.account?.name ?? '')
   const [kind, setKind] = useState<BalanceAccountKind>(props.account?.kind === 'MAIN' ? 'OTHER' : props.account?.kind ?? 'CASH')
   const [openingBalance, setOpeningBalance] = useState('0')
@@ -106,7 +113,7 @@ function AccountDialog(props: {
     setOpeningBalance('0')
     setOpeningDate(todayIso())
     setError(null)
-  }, [props.open, props.mode, props.account?.accountId])
+  }, [props.open, props.mode, props.account?.accountId, props.account?.kind, props.account?.name])
 
   const submit = async () => {
     setError(null)
@@ -142,7 +149,7 @@ function AccountDialog(props: {
   }
 
   return (
-    <Dialog open={props.open} onClose={submitting ? () => {} : props.onClose} maxWidth="sm" fullWidth>
+    <Dialog open={props.open} onClose={submitting ? () => {} : props.onClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>{props.mode === 'create' ? t('balanceAccounts.createTitle') : t('balanceAccounts.renameTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
@@ -190,7 +197,7 @@ function AccountDialog(props: {
           ) : null}
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
         <Button onClick={props.onClose} disabled={submitting}>
           {t('common.cancel')}
         </Button>
@@ -216,6 +223,7 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
   const [accountError, setAccountError] = useState<string | null>(null)
   const [confirmAccount, setConfirmAccount] = useState<{ account: BalanceAccount; action: 'archive' | 'close' } | null>(null)
   const [accountSubmitting, setAccountSubmitting] = useState(false)
+  const [expandedRecordKey, setExpandedRecordKey] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const settingsQuery = useQuery({
@@ -340,14 +348,14 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
         title={t('transfers.title')}
         right={
           props.readOnly ? null : (
-            <Stack direction="row" spacing={1}>
+            <ResponsiveActionRow>
               <Button variant="outlined" onClick={() => setAccountDialog({ mode: 'create' })}>
                 {t('balanceAccounts.create')}
               </Button>
               <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/balance/new`}>
                 {t('transfers.add')}
               </Button>
-            </Stack>
+            </ResponsiveActionRow>
           )
         }
       />
@@ -367,42 +375,42 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
           <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ xs: 'stretch', lg: 'flex-start' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ flex: 1, minWidth: 0 }}>
               <FormControl sx={{ minWidth: { xs: '100%', sm: 130 } }}>
-              <InputLabel id="transfers-year-label">{t('common.year')}</InputLabel>
-              <Select
-                labelId="transfers-year-label"
-                label={t('common.year')}
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                size="small"
-                sx={{ borderRadius: 1.5 }}
-              >
-                {yearOptions.map((y) => (
-                  <MenuItem key={y} value={y}>
-                    {y}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <InputLabel id="transfers-year-label">{t('common.year')}</InputLabel>
+                <Select
+                  labelId="transfers-year-label"
+                  label={t('common.year')}
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  size="small"
+                  sx={{ borderRadius: 1.5 }}
+                >
+                  {yearOptions.map((y) => (
+                    <MenuItem key={y} value={y}>
+                      {y}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <FormControl sx={{ minWidth: { xs: '100%', sm: 260 } }}>
-              <InputLabel id="balance-account-label">{t('balanceAccounts.selector')}</InputLabel>
-              <Select
-                labelId="balance-account-label"
-                label={t('balanceAccounts.selector')}
-                value={selectedAccountId ?? 'all'}
-                onChange={(e) => setSelectedAccountId(e.target.value === 'all' ? null : e.target.value)}
-                size="small"
-                sx={{ borderRadius: 1.5 }}
-              >
-                <MenuItem value="all">{t('balanceAccounts.allAccounts')}</MenuItem>
-                {accounts.map((account) => (
-                  <MenuItem key={account.accountId} value={account.accountId}>
-                    {account.name}
-                    {account.archived ? ` (${t('balanceAccounts.archived')})` : ''}
-                    {account.closedAt ? ` (${t('balanceAccounts.closed')})` : ''}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <InputLabel id="balance-account-label">{t('balanceAccounts.selector')}</InputLabel>
+                <Select
+                  labelId="balance-account-label"
+                  label={t('balanceAccounts.selector')}
+                  value={selectedAccountId ?? 'all'}
+                  onChange={(e) => setSelectedAccountId(e.target.value === 'all' ? null : e.target.value)}
+                  size="small"
+                  sx={{ borderRadius: 1.5 }}
+                >
+                  <MenuItem value="all">{t('balanceAccounts.allAccounts')}</MenuItem>
+                  {accounts.map((account) => (
+                    <MenuItem key={account.accountId} value={account.accountId}>
+                      {account.name}
+                      {account.archived ? ` (${t('balanceAccounts.archived')})` : ''}
+                      {account.closedAt ? ` (${t('balanceAccounts.closed')})` : ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Stack>
 
             <Stack
@@ -504,81 +512,146 @@ export function WorkspaceTransfersPage(props: { workspaceId: string; api: Autono
       {deleteError ? <ErrorAlert message={deleteError} /> : null}
       {accountError ? <Alert severity="warning">{accountError}</Alert> : null}
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('records.eventDate')}</TableCell>
-                <TableCell>{t('balanceAccounts.account')}</TableCell>
-                <TableCell>{t('records.operation')}</TableCell>
-                <TableCell align="right">{t('records.amount')}</TableCell>
-                <TableCell align="right">{t('balanceAccounts.impact')}</TableCell>
-                <TableCell>{t('records.note')}</TableCell>
-                <TableCell align="right">{selectedAccountId ? t('records.balance') : t('balanceAccounts.totalBalance')}</TableCell>
-                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.length ? (
-                rows.map((row) => {
-                  const accountLabel =
-                    row.movementType === 'InternalTransfer'
-                      ? `${displayAccountName(accounts, row.fromAccountId)} -> ${displayAccountName(accounts, row.toAccountId)}`
-                      : displayAccountName(accounts, row.accountId ?? 'main')
-                  const operation =
-                    row.movementType === 'InternalTransfer'
-                      ? t('transfersCreate.modes.internal')
-                      : row.operation
-                        ? t(`transfersCreate.operations.${row.operation}`)
-                        : t('common.na')
-                  const impact = selectedAccountId ? row.selectedAccountImpact : row.totalBalanceImpact
-                  const running = selectedAccountId ? row.selectedAccountRunningBalance : row.totalRunningBalance
-                  return (
-                    <TableRow key={row.recordKey} hover>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.eventDate}</TableCell>
-                      <TableCell>{accountLabel}</TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{operation}</TableCell>
-                      <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                        {money.format(row.amount)}
+      <ResponsiveDataView
+        tableLabel={t('transfers.title')}
+        cardsLabel={t('transfers.title')}
+        table={
+          <Paper variant="outlined">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('records.eventDate')}</TableCell>
+                    <TableCell>{t('balanceAccounts.account')}</TableCell>
+                    <TableCell>{t('records.operation')}</TableCell>
+                    <TableCell align="right">{t('records.amount')}</TableCell>
+                    <TableCell align="right">{t('balanceAccounts.impact')}</TableCell>
+                    <TableCell>{t('records.note')}</TableCell>
+                    <TableCell align="right">{selectedAccountId ? t('records.balance') : t('balanceAccounts.totalBalance')}</TableCell>
+                    {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.length ? (
+                    rows.map((row) => {
+                      const accountLabel =
+                        row.movementType === 'InternalTransfer'
+                          ? `${displayAccountName(accounts, row.fromAccountId)} -> ${displayAccountName(accounts, row.toAccountId)}`
+                          : displayAccountName(accounts, row.accountId ?? 'main')
+                      const operation =
+                        row.movementType === 'InternalTransfer'
+                          ? t('transfersCreate.modes.internal')
+                          : row.operation
+                            ? t(`transfersCreate.operations.${row.operation}`)
+                            : t('common.na')
+                      const impact = selectedAccountId ? row.selectedAccountImpact : row.totalBalanceImpact
+                      const running = selectedAccountId ? row.selectedAccountRunningBalance : row.totalRunningBalance
+                      return (
+                        <TableRow key={row.recordKey} hover>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.eventDate}</TableCell>
+                          <TableCell>{accountLabel}</TableCell>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>{operation}</TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                            {money.format(row.amount)}
+                          </TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                            {impact == null ? t('common.na') : money.format(impact)}
+                          </TableCell>
+                          <TableCell sx={{ maxWidth: 320 }} title={row.note ?? undefined}>
+                            {row.note ?? t('common.na')}
+                          </TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                            {running == null ? t('common.na') : money.format(running)}
+                          </TableCell>
+                          {props.readOnly ? null : (
+                            <TableCell align="right" padding="checkbox">
+                              <MoreActionsMenu
+                                onEdit={() => navigate(`/workspaces/${props.workspaceId}/balance/${row.eventDate}/${row.recordId}/edit`)}
+                                onDelete={() => setDeleteTarget(row)}
+                              />
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      )
+                    })
+                  ) : balance ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('transfers.empty', { year })}</Typography>
                       </TableCell>
-                      <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                        {impact == null ? t('common.na') : money.format(impact)}
-                      </TableCell>
-                      <TableCell sx={{ maxWidth: 320 }} title={row.note ?? undefined}>
-                        {row.note ?? t('common.na')}
-                      </TableCell>
-                      <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                        {running == null ? t('common.na') : money.format(running)}
-                      </TableCell>
-                      {props.readOnly ? null : (
-                        <TableCell align="right" padding="checkbox">
-                          <MoreActionsMenu
-                            onEdit={() => navigate(`/workspaces/${props.workspaceId}/balance/${row.eventDate}/${row.recordId}/edit`)}
-                            onDelete={() => setDeleteTarget(row)}
-                          />
-                        </TableCell>
-                      )}
                     </TableRow>
-                  )
-                })
-              ) : balance ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('transfers.empty', { year })}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('common.loading')}</Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('common.loading')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1}>
+            {rows.length ? (
+              rows.map((row) => {
+                const accountLabel =
+                  row.movementType === 'InternalTransfer'
+                    ? `${displayAccountName(accounts, row.fromAccountId)} -> ${displayAccountName(accounts, row.toAccountId)}`
+                    : displayAccountName(accounts, row.accountId ?? 'main')
+                const operation =
+                  row.movementType === 'InternalTransfer'
+                    ? t('transfersCreate.modes.internal')
+                    : row.operation
+                      ? t(`transfersCreate.operations.${row.operation}`)
+                      : t('common.na')
+                const impact = selectedAccountId ? row.selectedAccountImpact : row.totalBalanceImpact
+                const running = selectedAccountId ? row.selectedAccountRunningBalance : row.totalRunningBalance
+                return (
+                  <MobileRecordCard
+                    key={row.recordKey}
+                    title={row.eventDate}
+                    subtitle={accountLabel}
+                    amount={money.format(row.amount)}
+                    facts={[
+                      { label: t('records.operation'), value: operation },
+                      { label: t('balanceAccounts.impact'), value: impact == null ? t('common.na') : money.format(impact) },
+                      {
+                        label: selectedAccountId ? t('records.balance') : t('balanceAccounts.totalBalance'),
+                        value: running == null ? t('common.na') : money.format(running),
+                      },
+                    ]}
+                    details={[
+                      { label: t('records.note'), value: row.note ?? t('common.na') },
+                      { label: t('balanceAccounts.account'), value: accountLabel },
+                    ]}
+                    actions={
+                      props.readOnly ? null : (
+                        <MoreActionsMenu
+                          onEdit={() => navigate(`/workspaces/${props.workspaceId}/balance/${row.eventDate}/${row.recordId}/edit`)}
+                          onDelete={() => setDeleteTarget(row)}
+                        />
+                      )
+                    }
+                    expanded={expandedRecordKey === row.recordKey}
+                    onToggleExpanded={() => setExpandedRecordKey((current) => (current === row.recordKey ? null : row.recordKey))}
+                    expandLabel={t('common.more')}
+                  />
+                )
+              })
+            ) : balance ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('transfers.empty', { year })}</Typography>
+              </Paper>
+            ) : (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              </Paper>
+            )}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
