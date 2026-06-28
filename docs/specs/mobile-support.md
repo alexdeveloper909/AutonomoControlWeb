@@ -106,7 +106,9 @@ Update `src/ui/pages/WorkspaceLayoutPage.tsx` so mobile top bar controls remain 
 
 - Entity selector should not force a 190px minimum on phones.
 - Workspace name can be hidden or truncated on phones if the title already shows it.
-- Settings and back-to-workspaces should prefer icons or a compact overflow menu on phones.
+- `Sign out`, `User settings`, `Workspace settings`, and `Back to workspaces` should be grouped into one compact account/workspace overflow menu on phones.
+- The menu trigger should stay in the top bar and replace separate low-priority action buttons on phones.
+- Settings and back-to-workspaces should prefer that overflow menu over standalone labeled actions on phones.
 - Read-only chip must remain visible when a shared workspace is open, but can move below the toolbar if necessary.
 
 ### Page Header
@@ -360,7 +362,7 @@ Acceptance:
 ## Risks and Design Decisions
 
 - Dense financial tables are not all equally suited to mobile cards. Transaction lists should become cards; analytic comparison tables can keep local scrollers.
-- The app bar currently mixes title, entity selector, workspace name, settings, back link, user settings, and sign out. Mobile likely needs an overflow menu rather than trying to display every control inline.
+- The app bar currently mixes title, entity selector, workspace name, settings, back link, user settings, and sign out. On phones, these low-priority account/workspace actions should collapse into one overflow menu rather than compete for inline space.
 - MUI `Dialog` defaults may be cramped on phones; use responsive `fullScreen` selectively for settings-heavy dialogs.
 - RTL plus drawer anchoring must be tested, not assumed.
 - Existing pages use many local table implementations. A reusable mobile view pattern should be introduced early to avoid drift.
@@ -369,5 +371,4 @@ Acceptance:
 
 - Should mobile show a bottom navigation for the most-used workspace services, or is a drawer enough for the first release?
 - Should mobile record cards show all row fields by default, or hide secondary details behind an expand action?
-- Should `Sign out`, `User settings`, `Workspace settings`, and `Back to workspaces` be grouped into one account/workspace menu on phones?
 - Do we want screenshots committed as QA artifacts, or only a written smoke-test note?
