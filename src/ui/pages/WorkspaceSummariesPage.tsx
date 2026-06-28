@@ -26,6 +26,8 @@ import {
   Tabs,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
@@ -447,9 +449,11 @@ function SummaryDetailsDialog(props: {
   fields: { key: string; label: ReactNode; value: string; helperText?: string }[]
 }) {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} maxWidth="md" fullWidth>
+    <Dialog open={props.open} onClose={props.onClose} maxWidth="md" fullWidth fullScreen={fullScreen}>
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
@@ -467,7 +471,7 @@ function SummaryDetailsDialog(props: {
           ))}
         </Grid>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
         <Button onClick={props.onClose}>{t('common.close')}</Button>
       </DialogActions>
     </Dialog>
@@ -476,6 +480,8 @@ function SummaryDetailsDialog(props: {
 
 export function WorkspaceSummariesPage(props: { workspaceId: string; api: AutonomoControlApi }) {
   const { t, i18n } = useTranslation()
+  const theme = useTheme()
+  const fullScreenDialog = useMediaQuery(theme.breakpoints.down('sm'))
   const money = useMemo(() => decimalFormatter(i18n.language), [i18n.language])
   const pct = useMemo(() => new Intl.NumberFormat(i18n.language, { style: 'percent', maximumFractionDigits: 2 }), [i18n.language])
   const [tab, setTab] = useState<'month' | 'quarter' | 'renta' | 'iva'>('month')
@@ -601,7 +607,14 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
 
       <Paper variant="outlined" sx={{ px: 2 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v as 'month' | 'quarter' | 'renta' | 'iva')} sx={{ flex: 1 }}>
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v as 'month' | 'quarter' | 'renta' | 'iva')}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{ flex: 1, minWidth: 0 }}
+          >
             <Tab label={t('summaries.monthTab')} value="month" />
             <Tab label={t('summaries.quarterTab')} value="quarter" />
             <Tab label={t('summaries.rentaTab')} value="renta" />
@@ -622,8 +635,8 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
               </Typography>
             </Stack>
             {ivaRaw && !ivaParsed ? <Alert severity="warning">{t('summaries.iva.invalidEstimate')}</Alert> : null}
-            <TableContainer>
-              <Table size="small">
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 980 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>{t('summaries.table.quarter')}</TableCell>
@@ -935,8 +948,8 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
           ) : null}
 
           <Paper variant="outlined">
-            <TableContainer>
-              <Table size="small">
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 980 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>{t('summaries.table.quarter')}</TableCell>
@@ -1077,39 +1090,41 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
         }
       />
 
-      <Dialog open={rentaDetailsOpen} onClose={() => setRentaDetailsOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={rentaDetailsOpen} onClose={() => setRentaDetailsOpen(false)} maxWidth="md" fullWidth fullScreen={fullScreenDialog}>
         <DialogTitle>{t('summaries.renta.breakdownTitle')}</DialogTitle>
         <DialogContent dividers>
           {rentaSelected ? (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('summaries.renta.scope')}</TableCell>
-                  <TableCell align="right">{t('summaries.renta.from')}</TableCell>
-                  <TableCell align="right">{t('summaries.renta.to')}</TableCell>
-                  <TableCell align="right">{t('summaries.renta.rate')}</TableCell>
-                  <TableCell align="right">{t('summaries.renta.tax')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rentaSelected.breakdown.map((b, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{b.scope === 'STATE' ? t('summaries.renta.scopeState') : t('summaries.renta.scopeAutonomic')}</TableCell>
-                    <TableCell align="right">{money.format(b.from)}</TableCell>
-                    <TableCell align="right">{b.to == null ? '∞' : money.format(b.to)}</TableCell>
-                    <TableCell align="right">{pct.format(b.rate)}</TableCell>
-                    <TableCell align="right">{money.format(b.tax)}</TableCell>
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 560 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('summaries.renta.scope')}</TableCell>
+                    <TableCell align="right">{t('summaries.renta.from')}</TableCell>
+                    <TableCell align="right">{t('summaries.renta.to')}</TableCell>
+                    <TableCell align="right">{t('summaries.renta.rate')}</TableCell>
+                    <TableCell align="right">{t('summaries.renta.tax')}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {rentaSelected.breakdown.map((b, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{b.scope === 'STATE' ? t('summaries.renta.scopeState') : t('summaries.renta.scopeAutonomic')}</TableCell>
+                      <TableCell align="right">{money.format(b.from)}</TableCell>
+                      <TableCell align="right">{b.to == null ? '∞' : money.format(b.to)}</TableCell>
+                      <TableCell align="right">{pct.format(b.rate)}</TableCell>
+                      <TableCell align="right">{money.format(b.tax)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           ) : (
             <Typography variant="body2" color="text.secondary">
               {t('summaries.renta.unavailable')}
             </Typography>
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
           <Button onClick={() => setRentaDetailsOpen(false)}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>

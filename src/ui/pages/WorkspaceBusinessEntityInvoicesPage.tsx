@@ -9,6 +9,8 @@ import { PageHeader } from '../components/PageHeader'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
 import { currencyFormatter, decimalFormatter } from '../lib/intl'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
@@ -38,6 +40,7 @@ export function WorkspaceBusinessEntityInvoicesPage(props: {
   const queryClient = useQueryClient()
   const [year, setYear] = useState(currentYear())
   const [pageIndex, setPageIndex] = useState(0)
+  const [expandedRecordKey, setExpandedRecordKey] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -130,7 +133,15 @@ export function WorkspaceBusinessEntityInvoicesPage(props: {
               ))}
             </Select>
           </FormControl>
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            justifyContent={{ xs: 'flex-start', sm: 'flex-end' }}
+            flexWrap="wrap"
+            useFlexGap
+            sx={{ flex: 1, '& > .MuiButton-root': { minHeight: 44 } }}
+          >
             <Typography variant="body2" color="text.secondary">{t('records.pageSummary', { page: pageIndex + 1, pageSize: PAGE_SIZE })}</Typography>
             <Button variant="text" onClick={refresh} disabled={recordsQuery.isFetching}>Refresh</Button>
             <Button variant="outlined" onClick={() => setPageIndex((p) => Math.max(0, p - 1))} disabled={recordsQuery.isFetching || pageIndex === 0}>Prev</Button>
@@ -156,59 +167,105 @@ export function WorkspaceBusinessEntityInvoicesPage(props: {
       {recordsQuery.isFetching ? <LinearProgress /> : null}
       {recordsQuery.error ? <ErrorAlert message={recordsQuery.error instanceof Error ? recordsQuery.error.message : String(recordsQuery.error)} /> : null}
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Received date</TableCell>
-                <TableCell>Invoice date</TableCell>
-                <TableCell>Invoice #</TableCell>
-                <TableCell>Client</TableCell>
-                <TableCell align="right">Amount</TableCell>
-                <TableCell align="right">Tax base (UAH)</TableCell>
-                {props.readOnly || archived ? null : <TableCell align="right">Actions</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows?.length ? (
-                rows.map(({ record, payload }) => (
-                  <TableRow key={record.recordKey} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.receivedDate ?? record.eventDate}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.invoiceDate ?? t('common.na')}</TableCell>
-                    <TableCell>{payload?.number ?? t('common.na')}</TableCell>
-                    <TableCell sx={{ maxWidth: 280 }} title={payload?.client}>{payload?.client ?? t('common.na')}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? `${decimal.format(payload.amount)} ${payload.currency}` : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{payload ? uah.format(payload.amountTaxCurrency) : t('common.na')}</TableCell>
-                    {props.readOnly || archived ? null : (
-                      <TableCell align="right" padding="checkbox">
-                        <MoreActionsMenu
-                          onEdit={() => navigate(`${basePath}/invoices/${record.eventDate}/${record.recordId}/edit`)}
-                          onDelete={() => setDeleteTarget({ record, label: payload?.number ?? record.recordId })}
-                        />
-                      </TableCell>
-                    )}
+      <ResponsiveDataView
+        tableLabel="Business entity invoices table"
+        cardsLabel="Business entity invoices cards"
+        table={
+          <Paper variant="outlined">
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 780 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Received date</TableCell>
+                    <TableCell>Invoice date</TableCell>
+                    <TableCell>Invoice #</TableCell>
+                    <TableCell>Client</TableCell>
+                    <TableCell align="right">Amount</TableCell>
+                    <TableCell align="right">Tax base (UAH)</TableCell>
+                    {props.readOnly || archived ? null : <TableCell align="right">Actions</TableCell>}
                   </TableRow>
-                ))
-              ) : currentPageItems ? (
-                <TableRow>
-                  <TableCell colSpan={props.readOnly || archived ? 6 : 7}>
-                    <Typography color="text.secondary">No Ukrainian FOP invoices found for {year}.</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : recordsQuery.isPending ? (
-                <TableRow>
-                  <TableCell colSpan={props.readOnly || archived ? 6 : 7}>
-                    <Typography color="text.secondary">Loading...</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {rows?.length ? (
+                    rows.map(({ record, payload }) => (
+                      <TableRow key={record.recordKey} hover>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.receivedDate ?? record.eventDate}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.invoiceDate ?? t('common.na')}</TableCell>
+                        <TableCell>{payload?.number ?? t('common.na')}</TableCell>
+                        <TableCell sx={{ maxWidth: 280 }} title={payload?.client}>{payload?.client ?? t('common.na')}</TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {payload ? `${decimal.format(payload.amount)} ${payload.currency}` : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{payload ? uah.format(payload.amountTaxCurrency) : t('common.na')}</TableCell>
+                        {props.readOnly || archived ? null : (
+                          <TableCell align="right" padding="checkbox">
+                            <MoreActionsMenu
+                              onEdit={() => navigate(`${basePath}/invoices/${record.eventDate}/${record.recordId}/edit`)}
+                              onDelete={() => setDeleteTarget({ record, label: payload?.number ?? record.recordId })}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  ) : currentPageItems ? (
+                    <TableRow>
+                      <TableCell colSpan={props.readOnly || archived ? 6 : 7}>
+                        <Typography color="text.secondary">No Ukrainian FOP invoices found for {year}.</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : recordsQuery.isPending ? (
+                    <TableRow>
+                      <TableCell colSpan={props.readOnly || archived ? 6 : 7}>
+                        <Typography color="text.secondary">Loading...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1.5}>
+            {rows?.length ? (
+              rows.map(({ record, payload }) => (
+                <MobileRecordCard
+                  key={record.recordKey}
+                  title={payload?.receivedDate ?? record.eventDate}
+                  subtitle={payload?.number ?? t('common.na')}
+                  amount={payload ? `${decimal.format(payload.amount)} ${payload.currency}` : t('common.na')}
+                  facts={[
+                    { label: 'Tax base', value: payload ? uah.format(payload.amountTaxCurrency) : t('common.na') },
+                  ]}
+                  details={[
+                    { label: 'Invoice date', value: payload?.invoiceDate ?? t('common.na') },
+                    { label: 'Client', value: payload?.client ?? t('common.na') },
+                  ]}
+                  actions={
+                    props.readOnly || archived ? null : (
+                      <MoreActionsMenu
+                        onEdit={() => navigate(`${basePath}/invoices/${record.eventDate}/${record.recordId}/edit`)}
+                        onDelete={() => setDeleteTarget({ record, label: payload?.number ?? record.recordId })}
+                      />
+                    )
+                  }
+                  expanded={expandedRecordKey === record.recordKey}
+                  onToggleExpanded={() => setExpandedRecordKey((current) => (current === record.recordKey ? null : record.recordKey))}
+                  expandLabel="Show invoice details"
+                />
+              ))
+            ) : currentPageItems ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">No Ukrainian FOP invoices found for {year}.</Typography>
+              </Paper>
+            ) : recordsQuery.isPending ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">Loading...</Typography>
+              </Paper>
+            ) : null}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

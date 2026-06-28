@@ -249,7 +249,7 @@ export function BusinessEntitySettingsSection(props: {
       {error ? <ErrorAlert message={error} /> : null}
       {success ? <Alert severity="success">{success}</Alert> : null}
 
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
         {activeUserEntities.map((entity) => (
           <Chip
             key={entity.entityId}
@@ -259,14 +259,14 @@ export function BusinessEntitySettingsSection(props: {
           />
         ))}
         {!activeUserEntities.length && !loading ? <Typography color="text.secondary">No additional business entities yet.</Typography> : null}
-        <Button size="small" onClick={refresh} disabled={loading || saving}>
+        <Button size="small" onClick={refresh} disabled={loading || saving} sx={{ minHeight: 44 }}>
           Refresh
         </Button>
         <FormControlLabel control={<Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />} label="Show archived" />
       </Stack>
 
       {showArchived && archivedUserEntities.length ? (
-        <Stack direction="row" spacing={1} flexWrap="wrap">
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {archivedUserEntities.map((entity) => (
             <Chip key={entity.entityId} label={`${entity.name} (archived)`} variant="outlined" />
           ))}
@@ -283,7 +283,7 @@ export function BusinessEntitySettingsSection(props: {
               <TextField label="Single tax rate" type="number" inputProps={{ step: '0.01', min: 0, max: 1 }} value={singleTaxRate} onChange={(e) => setSingleTaxRate(Number(e.target.value))} fullWidth />
               <TextField label="Military levy rate" type="number" inputProps={{ step: '0.01', min: 0, max: 1 }} value={militaryLevyRate} onChange={(e) => setMilitaryLevyRate(Number(e.target.value))} fullWidth />
             </Stack>
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               {(['USD', 'UAH'] as const).map((currency) => (
                 <FormControlLabel key={currency} control={<Checkbox checked={currencies.includes(currency)} onChange={(e) => toggleCurrency(currency, e.target.checked, setCurrencies, currencies)} disabled={currency === 'USD'} />} label={currency} />
               ))}
@@ -296,7 +296,7 @@ export function BusinessEntitySettingsSection(props: {
                 <MenuItem value="DISABILITY">Disability</MenuItem>
               </TextField>
             )}
-            <Button variant="contained" onClick={createEntity} disabled={saving || loading}>
+            <Button variant="contained" onClick={createEntity} disabled={saving || loading} sx={{ minHeight: 44, alignSelf: { xs: 'stretch', sm: 'flex-start' } }}>
               Create business entity
             </Button>
           </Stack>
@@ -306,7 +306,7 @@ export function BusinessEntitySettingsSection(props: {
       {selectedEntity ? (
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Stack spacing={2}>
-            <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
               <Typography variant="subtitle2">Year settings: {selectedEntity.name}</Typography>
               {selectedEntity.archivedAt ? <Chip label="Archived" size="small" /> : null}
             </Stack>
@@ -315,7 +315,7 @@ export function BusinessEntitySettingsSection(props: {
               <TextField label="Single tax rate" type="number" inputProps={{ step: '0.01', min: 0, max: 1 }} value={editSingleTaxRate} onChange={(e) => setEditSingleTaxRate(Number(e.target.value))} fullWidth disabled={props.readOnly || Boolean(selectedEntity.archivedAt)} />
               <TextField label="Military levy rate" type="number" inputProps={{ step: '0.01', min: 0, max: 1 }} value={editMilitaryLevyRate} onChange={(e) => setEditMilitaryLevyRate(Number(e.target.value))} fullWidth disabled={props.readOnly || Boolean(selectedEntity.archivedAt)} />
             </Stack>
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               {(['USD', 'UAH'] as const).map((currency) => (
                 <FormControlLabel
                   key={currency}
@@ -339,7 +339,7 @@ export function BusinessEntitySettingsSection(props: {
               </TextField>
             )}
             {!props.readOnly && !selectedEntity.archivedAt ? (
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} useFlexGap flexWrap="wrap">
                 <Button variant="contained" onClick={saveYearSettings} disabled={saving || loading}>
                   Save year settings
                 </Button>

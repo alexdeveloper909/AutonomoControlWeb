@@ -14,6 +14,8 @@ import {
   Switch,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -42,6 +44,8 @@ export function WorkspaceSettingsDialog(props: {
   api: AutonomoControlApi
 }) {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const fullScreenDialog = useMediaQuery(theme.breakpoints.down('sm'))
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [settings, setSettings] = useState<WorkspaceSettings | null>(null)
@@ -70,7 +74,6 @@ export function WorkspaceSettingsDialog(props: {
   const dirty = useMemo(() => {
     if (!settings || !draft) return false
     return editableSnapshot(settings) !== editableSnapshot(draft)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings, draft])
 
   const ivaInvalid = useMemo(() => (draft ? !Number.isFinite(draft.ivaStd) || draft.ivaStd < 0 || draft.ivaStd > 1 : false), [draft])
@@ -170,9 +173,9 @@ export function WorkspaceSettingsDialog(props: {
   }
 
   return (
-    <Dialog open={props.open} onClose={deleting || saving ? () => {} : props.onClose} maxWidth="md" fullWidth>
+    <Dialog open={props.open} onClose={deleting || saving ? () => {} : props.onClose} maxWidth="md" fullWidth fullScreen={fullScreenDialog}>
       <DialogTitle>{t('common.settings')}</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         {saving ? <LinearProgress /> : null}
         <Stack spacing={2} sx={{ pt: 1 }}>
           {error ? <ErrorAlert message={error} /> : null}
@@ -772,14 +775,20 @@ export function WorkspaceSettingsDialog(props: {
               <Typography variant="body2" color="text.secondary">
                 {t('workspaceSettings.deleteDesc')}
               </Typography>
-              <Button color="error" variant="outlined" onClick={() => setDeleteOpen(true)} disabled={loading || deleting || saving}>
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={() => setDeleteOpen(true)}
+                disabled={loading || deleting || saving}
+                sx={{ minHeight: 44, alignSelf: { xs: 'stretch', sm: 'flex-start' } }}
+              >
                 {t('workspaceSettings.deleteAction')}
               </Button>
             </>
           ) : null}
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
         <Button
           onClick={onSave}
           disabled={readOnly || loading || saving || !dirty || ivaInvalid || irpfInvalid || ivaProfileInvalid || rentaForalUnsupported || rentaInicioMissingYear || !draft}
@@ -796,7 +805,7 @@ export function WorkspaceSettingsDialog(props: {
         </Button>
       </DialogActions>
 
-      <Dialog open={deleteOpen} onClose={deleting ? () => {} : () => setDeleteOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={deleteOpen} onClose={deleting ? () => {} : () => setDeleteOpen(false)} maxWidth="sm" fullWidth fullScreen={fullScreenDialog}>
         <DialogTitle>{t('workspaceSettings.deleteConfirmTitle', { name: props.workspace.name })}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
@@ -811,7 +820,7 @@ export function WorkspaceSettingsDialog(props: {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
           <Button onClick={() => setDeleteOpen(false)} disabled={deleting}>
             {t('common.cancel')}
           </Button>

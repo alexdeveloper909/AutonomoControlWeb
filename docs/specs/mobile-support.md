@@ -325,14 +325,14 @@ Acceptance:
 
 Tasks:
 
-- [ ] Update Summaries tabs for mobile behavior.
-- [ ] Update Summaries tables and dialogs for phone-sized viewports.
-- [ ] Update Business entity invoices list for phones.
-- [ ] Update Business entity summary page for phones.
-- [ ] Update Workspace Settings dialog for phones.
-- [ ] Update the business entity settings section for phones.
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
+- [x] Update Summaries tabs for mobile behavior.
+- [x] Update Summaries tables and dialogs for phone-sized viewports.
+- [x] Update Business entity invoices list for phones.
+- [x] Update Business entity summary page for phones.
+- [x] Update Workspace Settings dialog for phones.
+- [x] Update the business entity settings section for phones.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run lint`.
 
 Acceptance:
 

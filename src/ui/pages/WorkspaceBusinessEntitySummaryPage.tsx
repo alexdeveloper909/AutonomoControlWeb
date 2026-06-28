@@ -10,52 +10,108 @@ import { ErrorAlert } from '../components/ErrorAlert'
 import { currencyFormatter } from '../lib/intl'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
 
 const currentYear = (): string => String(new Date().getFullYear())
 
 function SummaryTable(props: { title: string; rows: UkrainianFopSummaryRow[]; keyField: 'monthKey' | 'quarterKey'; empty: string; money: Intl.NumberFormat }) {
   return (
-    <Paper variant="outlined">
-      <Stack spacing={1} sx={{ p: 2, pb: 0 }}>
-        <Typography variant="subtitle2">{props.title}</Typography>
-      </Stack>
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Period</TableCell>
-              <TableCell align="right">Invoices</TableCell>
-              <TableCell align="right">Taxable revenue</TableCell>
-              <TableCell align="right">Single tax</TableCell>
-              <TableCell align="right">Military levy</TableCell>
-              <TableCell align="right">Social contribution</TableCell>
-              <TableCell align="right">Available estimate</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+    <Stack spacing={1}>
+      <Typography variant="subtitle2">{props.title}</Typography>
+      <ResponsiveDataView
+        tableLabel={`${props.title} table`}
+        cardsLabel={`${props.title} cards`}
+        table={
+          <Paper variant="outlined">
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 820 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Period</TableCell>
+                    <TableCell align="right">Invoices</TableCell>
+                    <TableCell align="right">Taxable revenue</TableCell>
+                    <TableCell align="right">Single tax</TableCell>
+                    <TableCell align="right">Military levy</TableCell>
+                    <TableCell align="right">Social contribution</TableCell>
+                    <TableCell align="right">Available estimate</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {props.rows.length ? (
+                    props.rows.map((row) => (
+                      <TableRow key={row[props.keyField] ?? 'total'}>
+                        <TableCell>{row[props.keyField]}</TableCell>
+                        <TableCell align="right">{row.invoiceCount}</TableCell>
+                        <TableCell align="right">{props.money.format(row.taxableRevenue)}</TableCell>
+                        <TableCell align="right">{props.money.format(row.singleTax)}</TableCell>
+                        <TableCell align="right">{props.money.format(row.militaryLevy)}</TableCell>
+                        <TableCell align="right">{props.money.format(row.socialContribution)}</TableCell>
+                        <TableCell align="right">{props.money.format(row.availableEstimate)}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7}>
+                        <Typography color="text.secondary">{props.empty}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1.5}>
             {props.rows.length ? (
               props.rows.map((row) => (
-                <TableRow key={row[props.keyField] ?? 'total'}>
-                  <TableCell>{row[props.keyField]}</TableCell>
-                  <TableCell align="right">{row.invoiceCount}</TableCell>
-                  <TableCell align="right">{props.money.format(row.taxableRevenue)}</TableCell>
-                  <TableCell align="right">{props.money.format(row.singleTax)}</TableCell>
-                  <TableCell align="right">{props.money.format(row.militaryLevy)}</TableCell>
-                  <TableCell align="right">{props.money.format(row.socialContribution)}</TableCell>
-                  <TableCell align="right">{props.money.format(row.availableEstimate)}</TableCell>
-                </TableRow>
+                <MobileRecordCard
+                  key={row[props.keyField] ?? 'total'}
+                  title={row[props.keyField] ?? 'Total'}
+                  amount={props.money.format(row.availableEstimate)}
+                  facts={[
+                    { label: 'Invoices', value: row.invoiceCount },
+                    { label: 'Taxable revenue', value: props.money.format(row.taxableRevenue) },
+                    { label: 'Single tax', value: props.money.format(row.singleTax) },
+                    { label: 'Military levy', value: props.money.format(row.militaryLevy) },
+                    { label: 'Social contribution', value: props.money.format(row.socialContribution) },
+                  ]}
+                  expandLabel="Show summary details"
+                />
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <Typography color="text.secondary">{props.empty}</Typography>
-                </TableCell>
-              </TableRow>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{props.empty}</Typography>
+              </Paper>
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+          </Stack>
+        }
+      />
+    </Stack>
+  )
+}
+
+function KeyValueGrid(props: { items: { label: string; value: string | number }[] }) {
+  return (
+    <Stack
+      direction={{ xs: 'column', sm: 'row' }}
+      spacing={1.5}
+      useFlexGap
+      flexWrap="wrap"
+      sx={{ '& > *': { flex: { xs: '1 1 auto', sm: '1 1 180px' }, minWidth: 0 } }}
+    >
+      {props.items.map((item) => (
+        <Paper key={item.label} variant="outlined" sx={{ p: 1.5, bgcolor: 'background.default' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+            {item.label}
+          </Typography>
+          <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' }}>
+            {item.value}
+          </Typography>
+        </Paper>
+      ))}
+    </Stack>
   )
 }
 
@@ -110,6 +166,7 @@ export function WorkspaceBusinessEntitySummaryPage(props: { workspaceId: string;
           <Button
             onClick={() => queryClient.removeQueries({ queryKey: queryKeys.entitySummary(props.workspaceId, props.entityId, year) })}
             disabled={summaryQuery.isFetching}
+            sx={{ minHeight: 44, alignSelf: { xs: 'stretch', sm: 'center' } }}
           >
             Refresh
           </Button>
@@ -135,11 +192,13 @@ export function WorkspaceBusinessEntitySummaryPage(props: { workspaceId: string;
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Stack spacing={1}>
             <Typography variant="subtitle2">Effective year settings</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Single tax: {summary.effectiveYearSettings.taxRates?.singleTaxRate ?? 'missing'} · Military levy:{' '}
-              {summary.effectiveYearSettings.taxRates?.militaryLevyRate ?? 'missing'} · Social contribution:{' '}
-              {summary.effectiveYearSettings.socialContribution?.enabled === false ? 'disabled' : 'enabled'}
-            </Typography>
+            <KeyValueGrid
+              items={[
+                { label: 'Single tax', value: summary.effectiveYearSettings.taxRates?.singleTaxRate ?? 'missing' },
+                { label: 'Military levy', value: summary.effectiveYearSettings.taxRates?.militaryLevyRate ?? 'missing' },
+                { label: 'Social contribution', value: summary.effectiveYearSettings.socialContribution?.enabled === false ? 'disabled' : 'enabled' },
+              ]}
+            />
           </Stack>
         </Paper>
       ) : null}
@@ -149,12 +208,16 @@ export function WorkspaceBusinessEntitySummaryPage(props: { workspaceId: string;
           <Paper variant="outlined" sx={{ p: 2 }}>
             <Stack spacing={1}>
               <Typography variant="subtitle2">Year totals</Typography>
-              <Typography>Invoices: {summary.totals.invoiceCount}</Typography>
-              <Typography>Taxable revenue: {money.format(summary.totals.taxableRevenue)}</Typography>
-              <Typography>Single tax: {money.format(summary.totals.singleTax)}</Typography>
-              <Typography>Military levy: {money.format(summary.totals.militaryLevy)}</Typography>
-              <Typography>Social contribution: {money.format(summary.totals.socialContribution)}</Typography>
-              <Typography>Available estimate: {money.format(summary.totals.availableEstimate)}</Typography>
+              <KeyValueGrid
+                items={[
+                  { label: 'Invoices', value: summary.totals.invoiceCount },
+                  { label: 'Taxable revenue', value: money.format(summary.totals.taxableRevenue) },
+                  { label: 'Single tax', value: money.format(summary.totals.singleTax) },
+                  { label: 'Military levy', value: money.format(summary.totals.militaryLevy) },
+                  { label: 'Social contribution', value: money.format(summary.totals.socialContribution) },
+                  { label: 'Available estimate', value: money.format(summary.totals.availableEstimate) },
+                ]}
+              />
             </Stack>
           </Paper>
           <SummaryTable title="Months" rows={summary.months} keyField="monthKey" empty="No month rows returned." money={money} />
