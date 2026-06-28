@@ -9,7 +9,6 @@ import {
   Grid,
   LinearProgress,
   Link,
-  MenuItem,
   Paper,
   Stack,
   Table,
@@ -186,7 +185,7 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
           </ToggleButtonGroup>
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label={t('reta.manualFutureMonthlyActivityNet', {
                   defaultValue: 'Expected monthly income minus deductible business expenses',
@@ -202,7 +201,7 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label={t('reta.customContributionBase', { defaultValue: 'Custom contribution base' })}
                 type="number"
@@ -256,14 +255,14 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
           ) : null}
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Metric
                 label={t('reta.averageMonthlyEarnings', { defaultValue: 'Average monthly RETA earnings to report' })}
                 value={money.format(estimate.retaAverageMonthlyEarnings)}
                 helper={t('reta.reportableHelper', { defaultValue: 'Use this as the planning value to verify in Importass.' })}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Metric
                 label={t('reta.tramo', { defaultValue: 'Matched tramo' })}
                 value={estimate.tramo ? `${estimate.tramo.table} ${estimate.tramo.tramo}` : t('common.na')}
@@ -274,7 +273,7 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
                 }
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Metric
                 label={t('reta.selectedBase', { defaultValue: 'Selected contribution base' })}
                 value={estimate.selectedContributionBase == null ? t('common.na') : money.format(estimate.selectedContributionBase)}
@@ -284,7 +283,7 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
           </Grid>
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                 <Typography variant="subtitle1">{t('reta.breakdown', { defaultValue: 'Calculation breakdown' })}</Typography>
                 <Stack spacing={1.25} sx={{ mt: 1.5 }}>
@@ -307,7 +306,7 @@ export function WorkspaceRetaPage(props: { workspaceId: string; api: AutonomoCon
                 </Stack>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                 <Typography variant="subtitle1">{t('reta.changeWindow', { defaultValue: 'Next change window' })}</Typography>
                 <Stack spacing={1} sx={{ mt: 1.5 }}>

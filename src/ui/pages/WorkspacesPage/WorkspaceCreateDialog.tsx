@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import type { Workspace } from '../../../domain/workspace'
+import { defaultRetaPlanningSettings } from '../../../domain/reta'
 import { defaultIvaDeductionProfile, defaultRentaPlanningSettings, type IrpfTerritory, type WorkspaceSettings } from '../../../domain/settings'
 import type { AutonomoControlApi } from '../../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../../components/ErrorAlert'
@@ -33,6 +34,7 @@ const defaultSettings = (): WorkspaceSettings => {
     obligacion130: true,
     openingBalance: 0,
     rentaPlanning: defaultRentaPlanningSettings(year),
+    retaPlanning: defaultRetaPlanningSettings(),
     ivaProfile: defaultIvaDeductionProfile(),
   }
 }
