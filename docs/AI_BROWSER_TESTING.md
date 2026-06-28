@@ -1,8 +1,8 @@
 # AutonomoControlWeb — AI-Assisted Browser Testing
 
-This project can be tested end to end by an AI agent using a local browser, with a short manual handoff for Google sign-in.
+This project can be tested end to end by an AI agent using a local browser and a dedicated dev Cognito test user.
 
-The goal is to let the agent verify web changes in the real local app after implementation: start the Vite client, open the app, click through user flows, and report visible problems. Because authentication uses Cognito Hosted UI with Google, the user completes the Google login step manually.
+The goal is to let the agent verify web changes in the real local app after implementation: start the Vite client, open the app, bootstrap a real authenticated Cognito session, click through user flows, and report visible problems. The AI flow does not automate Google sign-in.
 
 ## When to Use This
 
@@ -11,7 +11,7 @@ Use this flow after web UI changes that affect routes, forms, layout, auth redir
 It is especially useful for:
 
 - Checking that the app starts with the current `.env.dev.local`.
-- Verifying Cognito login returns to the app.
+- Verifying authenticated app behavior without a manual Google handoff.
 - Clicking through workspace navigation after a change.
 - Confirming that forms, dialogs, filters, tabs, and tables render correctly.
 - Reproducing bugs that are hard to see from static code review.
@@ -20,7 +20,7 @@ This is not a replacement for type-checking, linting, or automated tests. It is 
 
 ## Safety Rules
 
-- Only test against the local dev client, normally `npm run dev:dev`.
+- Only test against the local dev client, normally `npm run dev:e2e` for AI browser testing.
 - Never print tokens, OAuth callback URLs with sensitive parameters, cookies, local storage values, or `.env.*.local` contents.
 - The user must explicitly name which workspace is safe for testing.
 - Do not open, edit, create records in, or delete anything from a workspace that was not approved by the user.
@@ -29,43 +29,66 @@ This is not a replacement for type-checking, linting, or automated tests. It is 
 - If mutation testing is needed, use clearly disposable test data and stay inside the approved test workspace.
 - Stop and ask the user if the browser is on an unexpected account, workspace, stage, or data set.
 
-## Standard Flow
+## One-Time Setup
+
+1. Deploy the dev CDK stack version that enables `USER_PASSWORD_AUTH` on the dev Cognito web app client.
+
+2. Create a local e2e env file:
+
+   ```sh
+   cp .env.e2e.example .env.e2e.local
+   ```
+
+3. Fill in `.env.e2e.local`:
+
+   - `E2E_COGNITO_USER_POOL_ID` from the dev CDK output.
+   - `E2E_TEST_USER_EMAIL` for the dedicated dev Cognito test user.
+   - `E2E_TEST_USER_PASSWORD` for that user.
+   - `E2E_WORKSPACE_ID=83e079dc-9385-47e5-bef2-56f349b36acd` for `My workspace test`.
+   - `E2E_WORKSPACE_MEMBERS_TABLE`, normally `autonomo-control-dev-workspace_members`.
+
+4. Ensure the test user exists and has membership in the approved test workspace:
+
+   ```sh
+   npm run e2e:grant-workspace
+   ```
+
+The grant script creates/updates the Cognito user, sets a permanent password, and writes a `USER#<sub>` membership row for the configured workspace.
+
+## Standard AI Flow
 
 1. Start the local web client:
 
    ```sh
-   npm run dev:dev
+   npm run dev:e2e
    ```
 
-2. Open the local app, usually:
+2. Wait for Vite to report that the dev server is ready.
+
+3. Open the e2e bootstrap URL:
 
    ```text
-   http://localhost:5173/
+   http://localhost:5173/__e2e__/auth
    ```
 
-3. Verify the public landing page and `/login` page render.
+4. The bootstrap page writes the real Cognito tokens to the same `localStorage` key used by normal auth and redirects to `/workspaces`.
 
-4. Click `Continue with Google` to start the Cognito Hosted UI flow.
-
-5. Hand control to the user. The user signs in with Google and waits until the app returns to `/workspaces`.
-
-6. After the user says the login is done, the agent takes control again and verifies:
+5. Verify:
 
    - The app is back on `localhost`.
    - The workspace list is visible.
    - The approved test workspace is present.
    - Any non-approved workspace is avoided.
 
-7. Enter only the approved workspace and run the agreed checks.
+6. Enter only the approved workspace and run the agreed checks.
 
-8. Report what was tested, what passed, what looked suspicious, and whether any data was changed.
+7. Report what was tested, what passed, what looked suspicious, and whether any data was changed.
 
 ## Suggested Smoke Test
 
 For a non-destructive pass, click through:
 
-- Landing page → Login page.
-- Login redirect handoff → Workspaces page.
+- E2E auth bootstrap → Workspaces page.
 - Approved workspace only.
 - Income.
 - Expenses.
@@ -91,17 +114,18 @@ Recommended agent pattern:
 
 ## Google Sign-In Boundary
 
-The agent should not try to automate the Google account login itself. Google may require MFA, passkeys, captcha, account selection, or other protected flows. The user should complete this step manually in the controlled browser.
+The agent should not try to automate the Google account login itself. Google may require MFA, passkeys, captcha, account selection, or other protected flows.
 
-After sign-in, the agent can continue using the authenticated browser session for local app testing.
+For AI browser testing, use `npm run dev:e2e` and `http://localhost:5173/__e2e__/auth` instead. Manual Google login should be a fallback only when specifically requested.
 
-## Long-Term Automation Option
+## Implementation Notes
 
-For fully repeatable automated tests, add a dedicated e2e strategy that avoids real Google login, such as:
+- `npm run dev:e2e` obtains fresh Cognito tokens for the configured test user and starts Vite with temporary `VITE_E2E_*` env values.
+- `/__e2e__/auth` is guarded client-side: it only works when explicitly enabled, not in `prod`, and only on localhost.
+- The token payload is not printed. Do not read or expose `.env.e2e.local`, terminal process environments, browser storage, or callback URLs containing credentials/tokens.
 
-- A dev-only test auth mode.
-- Playwright with saved authenticated storage state.
-- Mocked auth and mocked API responses for UI-only tests.
-- A dedicated Cognito test user flow if the backend needs to be exercised.
+## Other Automation Options
+
+For faster UI-only regression tests, a future mocked API/auth mode can still be useful. It should complement this real dev API e2e flow, not replace it.
 
 Keep real user credentials, OAuth tokens, and local env secrets out of git and chat.

@@ -59,6 +59,15 @@ Logout clears local tokens and redirects to:
 
 - `GET {COGNITO_DOMAIN}/logout?client_id=...&logout_uri=...`
 
+## Dev E2E auth bootstrap
+
+AI/browser e2e testing uses a dedicated dev Cognito user instead of automating Google sign-in.
+
+- `npm run dev:e2e` obtains real Cognito tokens for the configured test user and starts Vite with temporary `VITE_E2E_*` env values.
+- `http://localhost:5173/__e2e__/auth` writes those tokens into the normal `localStorage` token key and redirects to `/workspaces`.
+- The bootstrap route is guarded to run only when explicitly enabled, not in `prod`, and only on localhost.
+- Setup and safety rules are documented in `docs/AI_BROWSER_TESTING.md`.
+
 ## Common problems
 
 ### “Missing PKCE state (sessionStorage)”

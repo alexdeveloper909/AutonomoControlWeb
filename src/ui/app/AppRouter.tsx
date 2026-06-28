@@ -6,6 +6,7 @@ import { LoginPage } from '../pages/LoginPage'
 import { WorkspacesPage } from '../pages/WorkspacesPage'
 import { RequireAuth } from '../auth/RequireAuth'
 import { WorkspaceLayoutPage } from '../pages/WorkspaceLayoutPage'
+import { E2eAuthBootstrapPage } from '../pages/E2eAuthBootstrapPage'
 
 const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
 
@@ -15,6 +16,7 @@ export function AppRouter() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/__e2e__/auth" element={<E2eAuthBootstrapPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/workspaces" element={<WorkspacesPage />} />
         <Route path="/workspaces/:workspaceId/*" element={<WorkspaceLayoutPage />} />

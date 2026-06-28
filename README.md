@@ -72,6 +72,7 @@ This project uses `.env.dev.local` and `.env.prod.local` to keep stage-specific 
 - `VITE_COGNITO_REDIRECT_URI`: must match `OAuthCallbackUrls` in CDK
 - `VITE_COGNITO_LOGOUT_URI`: must match `OAuthLogoutUrls` in CDK
 - `VITE_COGNITO_IDENTITY_PROVIDER`: optional (set to `Google` to jump straight to Google in Hosted UI)
+- `VITE_E2E_AUTH_ENABLED`, `VITE_E2E_AUTH_TOKENS_JSON`, `VITE_E2E_AUTH_REDIRECT`: set by `npm run dev:e2e`; do not put these in committed env files.
 
 - `VITE_SENTRY_DSN`: optional; enables Sentry (errors, tracing, logs, metrics)
 - `VITE_SENTRY_ENVIRONMENT`: optional; defaults to `VITE_APP_STAGE`
@@ -86,6 +87,16 @@ This project uses `.env.dev.local` and `.env.prod.local` to keep stage-specific 
 npm install
 npm run dev:dev
 ```
+
+AI/browser e2e testing against the dev stack:
+
+```sh
+cp .env.e2e.example .env.e2e.local
+npm run e2e:grant-workspace
+npm run dev:e2e
+```
+
+Then open `http://localhost:5173/__e2e__/auth`. See `docs/AI_BROWSER_TESTING.md`.
 
 Run against the prod stack locally (still on localhost, just a different Cognito/API):
 

@@ -8,6 +8,9 @@ interface ImportMetaEnv {
   readonly VITE_COGNITO_REDIRECT_URI?: string
   readonly VITE_COGNITO_LOGOUT_URI?: string
   readonly VITE_COGNITO_IDENTITY_PROVIDER?: string
+  readonly VITE_E2E_AUTH_ENABLED?: string
+  readonly VITE_E2E_AUTH_TOKENS_JSON?: string
+  readonly VITE_E2E_AUTH_REDIRECT?: string
 
   // Sentry (optional)
   readonly VITE_SENTRY_DSN?: string

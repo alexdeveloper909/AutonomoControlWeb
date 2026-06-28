@@ -32,6 +32,9 @@ export const env = {
   cognitoRedirectUri: getString('VITE_COGNITO_REDIRECT_URI'),
   cognitoLogoutUri: getString('VITE_COGNITO_LOGOUT_URI'),
   cognitoIdentityProvider: getString('VITE_COGNITO_IDENTITY_PROVIDER'),
+  e2eAuthEnabled: getBool('VITE_E2E_AUTH_ENABLED') ?? false,
+  e2eAuthTokensJson: getString('VITE_E2E_AUTH_TOKENS_JSON'),
+  e2eAuthRedirect: getString('VITE_E2E_AUTH_REDIRECT'),
 
   // Sentry (optional)
   sentryDsn,
