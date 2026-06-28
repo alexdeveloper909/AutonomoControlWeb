@@ -12,6 +12,7 @@ This app is an operations UI for managing complex systems. We optimize for **cla
 ## Layout patterns
 
 - **App shell**: persistent top bar + left navigation; content uses a consistent max width and page padding.
+- **Mobile shell**: below the desktop navigation breakpoint, keep high-frequency workspace routes in the bottom bar and put secondary workspace/actions in the grouped `More` sheet.
 - **Page template** (recommended):
   - Title + short description
   - Primary actions on the right (e.g. Create, Deploy, Restart)
@@ -21,6 +22,7 @@ This app is an operations UI for managing complex systems. We optimize for **cla
   - Filters/search at the top (always visible)
   - Table as the primary surface (sortable columns, compact rows)
   - Inline status chips/badges and last-updated timestamps
+  - On phones, transaction-style tables should switch to compact cards with row actions preserved; analytic comparison tables may keep a local horizontal scroller.
 - **Detail pages**:
   - Summary header (name/id, key status, quick actions)
   - Sections as cards/accordions with clear headings
@@ -69,4 +71,3 @@ This app is an operations UI for managing complex systems. We optimize for **cla
 - Don’t introduce new colors, spacing rules, or typography scales outside the theme.
 - Prefer composition of MUI components over custom CSS.
 - Reuse existing page templates and components; if a new pattern is needed, document it here.
-

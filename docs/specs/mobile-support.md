@@ -270,11 +270,11 @@ Tasks:
 
 Acceptance:
 
-- [ ] `/workspaces` fits at 360px without page-level horizontal scrolling.
-- [ ] A workspace route fits at 360px without page-level horizontal scrolling.
-- [ ] Income, Balance, and Summaries are reachable directly from the mobile bottom bar.
-- [ ] Expenses, State payments, Budget, Regular spendings, and workspace actions are reachable through grouped `More` sections.
-- [ ] Desktop left nav still renders at `md` and above.
+- [x] `/workspaces` fits at 360px without page-level horizontal scrolling.
+- [x] A workspace route fits at 360px without page-level horizontal scrolling.
+- [x] Income, Balance, and Summaries are reachable directly from the mobile bottom bar.
+- [x] Expenses, State payments, Budget, Regular spendings, and workspace actions are reachable through grouped `More` sections.
+- [x] Desktop left nav still renders at `md` and above.
 
 ### Phase 2 - Core Record Lists and Forms
 
@@ -297,7 +297,7 @@ Acceptance:
 - [ ] Empty states work on phone and desktop.
 - [ ] Row actions work on phone and desktop.
 - [ ] Create/edit navigation works on phone and desktop.
-- [ ] No page-level horizontal scroll in core record pages.
+- [x] No page-level horizontal scroll in core record pages.
 
 ### Phase 3 - Planning Screens
 
@@ -309,16 +309,16 @@ Tasks:
 - [x] Update Regular spendings dashboard for mobile actions, totals, and chart controls.
 - [x] Update Regular spendings definitions list for phones.
 - [x] Keep analytic charts and table scrollers local to their own containers.
-- [ ] Verify account dialogs and action menus on phones.
+- [x] Verify account dialogs and action menus on phones.
 - [x] Run `npm run typecheck`.
 - [x] Run `npm run lint`.
 
 Acceptance:
 
-- [ ] Balance account cards are usable on phones.
+- [x] Balance account cards are usable on phones.
 - [ ] Balance ledger is usable on phones.
-- [ ] Budget analytics remain inspectable without body overflow.
-- [ ] Regular-spending analytics remain inspectable without body overflow.
+- [x] Budget analytics remain inspectable without body overflow.
+- [x] Regular-spending analytics remain inspectable without body overflow.
 - [ ] Writable/read-only differences remain intact.
 
 ### Phase 4 - Tax and Business Entity Screens
@@ -336,38 +336,38 @@ Tasks:
 
 Acceptance:
 
-- [ ] Spanish tax summaries fit phones.
-- [ ] Ukrainian FOP entity workflows fit phones.
-- [ ] Dense analytic tables either have mobile cards or local horizontal scrolling.
-- [ ] Entity selector plus entity-mode navigation works on phone.
+- [x] Spanish tax summaries fit phones.
+- [x] Ukrainian FOP entity workflows fit phones.
+- [x] Dense analytic tables either have mobile cards or local horizontal scrolling.
+- [x] Entity selector plus entity-mode navigation works on phone.
 
 ### Phase 5 - Browser QA and Documentation
 
 Tasks:
 
-- [ ] Use the `docs/AI_BROWSER_TESTING.md` flow for real app smoke testing.
-- [ ] Add mobile QA notes to `docs/DESIGN.md` after implementation decisions are settled.
+- [x] Use the `docs/AI_BROWSER_TESTING.md` flow for real app smoke testing.
+- [x] Add mobile QA notes to `docs/DESIGN.md` after implementation decisions are settled.
 - [ ] Capture follow-up bugs as separate tasks or spec additions.
 
 Acceptance:
 
-- [ ] Browser smoke test covers 360px width.
-- [ ] Browser smoke test covers 390px width.
-- [ ] Browser smoke test covers 768px width.
-- [ ] Browser smoke test covers desktop width.
-- [ ] Smoke test uses only the approved dev workspace unless the user explicitly approves mutations elsewhere.
+- [x] Browser smoke test covers 360px width.
+- [x] Browser smoke test covers 390px width.
+- [x] Browser smoke test covers 768px width.
+- [x] Browser smoke test covers desktop width.
+- [x] Smoke test uses only the approved dev workspace unless the user explicitly approves mutations elsewhere.
 
 ## Verification Checklist
 
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] Local browser smoke test at 360x800
-- [ ] Local browser smoke test at 390x844
-- [ ] Local browser smoke test at 768x1024
-- [ ] Local browser smoke test at desktop width
-- [ ] Check light mode
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] Local browser smoke test at 360x800
+- [x] Local browser smoke test at 390x844
+- [x] Local browser smoke test at 768x1024
+- [x] Local browser smoke test at desktop width
+- [x] Check light mode
 - [ ] Check dark mode
-- [ ] Check LTR layout direction
+- [x] Check LTR layout direction
 - [ ] Check RTL layout direction
 - [ ] Check read-only shared workspace mode
 - [ ] Check no page-level horizontal scroll with a long workspace name
