@@ -5,12 +5,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  InputLabel,
   LinearProgress,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Table,
   TableBody,
@@ -34,6 +30,9 @@ import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EuroTextField } from '../components/EuroTextField'
 import { parseEuroAmount } from '../lib/money'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
+import { RecordListControls } from '../components/RecordListControls'
 
 const PAGE_SIZE = 20
 
@@ -91,6 +90,7 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
   const [repeatBaseExclVatInput, setRepeatBaseExclVatInput] = useState('')
   const [repeatSubmitting, setRepeatSubmitting] = useState(false)
   const [repeatError, setRepeatError] = useState<string | null>(null)
+  const [expandedRecordKey, setExpandedRecordKey] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
     queryKey,
@@ -211,143 +211,179 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
         }
       />
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <FormControl sx={{ minWidth: 160 }}>
-            <InputLabel id="expenses-year-label">{t('common.year')}</InputLabel>
-            <Select
-              labelId="expenses-year-label"
-              label={t('common.year')}
-              value={year}
-              onChange={(e) => {
-                setYear(e.target.value)
-                setPageIndex(0)
-              }}
-              size="small"
-            >
-              {yearOptions.map((y) => (
-                <MenuItem key={y} value={y}>
-                  {y}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t('records.pageSummary', {
-                page: pageIndex + 1,
-                pageSize: PAGE_SIZE,
-              })}
-            </Typography>
-            <Button variant="text" onClick={refresh} disabled={isFetching}>
-              {t('common.refresh')}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-              disabled={isFetching || pageIndex === 0}
-            >
-              {t('common.prev')}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={async () => {
-                if (nextPageLoaded) {
-                  setPageIndex((p) => p + 1)
-                  return
-                }
-                if (!nextToken) return
-                await fetchNextPage()
-                setPageIndex((p) => p + 1)
-              }}
-              disabled={isFetching || (!nextPageLoaded && !nextToken)}
-            >
-              {t('common.next')}
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
+      <RecordListControls
+        labelId="expenses-year-label"
+        yearLabel={t('common.year')}
+        year={year}
+        yearOptions={yearOptions}
+        pageSummary={t('records.pageSummary', {
+          page: pageIndex + 1,
+          pageSize: PAGE_SIZE,
+        })}
+        refreshLabel={t('common.refresh')}
+        prevLabel={t('common.prev')}
+        nextLabel={t('common.next')}
+        isFetching={isFetching}
+        isPrevDisabled={pageIndex === 0}
+        isNextDisabled={!nextPageLoaded && !nextToken}
+        onYearChange={(nextYear) => {
+          setYear(nextYear)
+          setPageIndex(0)
+        }}
+        onRefresh={refresh}
+        onPrev={() => setPageIndex((p) => Math.max(0, p - 1))}
+        onNext={async () => {
+          if (nextPageLoaded) {
+            setPageIndex((p) => p + 1)
+            return
+          }
+          if (!nextToken) return
+          await fetchNextPage()
+          setPageIndex((p) => p + 1)
+        }}
+      />
 
       {isFetching ? <LinearProgress /> : null}
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
       {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('records.eventDate')}</TableCell>
-                <TableCell>{t('records.documentDate')}</TableCell>
-                <TableCell>{t('records.paymentDate')}</TableCell>
-                <TableCell>{t('records.vendor')}</TableCell>
-                <TableCell>{t('records.category')}</TableCell>
-                <TableCell align="right">{t('records.baseExclVat')}</TableCell>
-                <TableCell align="right">{t('records.deductiblePercent')}</TableCell>
-                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableRows?.length ? (
-                tableRows.map(({ record, payload }) => (
-                  <TableRow key={record.recordKey} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.documentDate ?? t('common.na')}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.paymentDate ?? t('common.na')}</TableCell>
-                    <TableCell sx={{ maxWidth: 240 }} title={payload?.vendor}>
-                      {payload?.vendor ?? t('common.na')}
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 200 }} title={payload?.category}>
-                      {payload?.category ?? t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.baseExclVat) : t('common.na')}
-                    </TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? `${Math.round(payload.deductibleShare * 100)}%` : t('common.na')}
-                    </TableCell>
-                    {props.readOnly ? null : (
-                      <TableCell align="right" padding="checkbox">
-                        <MoreActionsMenu
-                          onEdit={() =>
-                            navigate(`/workspaces/${props.workspaceId}/expenses/${record.eventDate}/${record.recordId}/edit`)
-                          }
-                          onRepeat={
-                            payload
-                              ? () => {
-                                  setRepeatTarget({ record, payload })
-                                }
-                              : undefined
-                          }
-                          onDelete={() =>
-                            setDeleteTarget({
-                              record,
-                              label: `${t('recordTypes.EXPENSE')} ${payload?.vendor ?? record.recordId}`,
-                            })
-                          }
-                        />
-                      </TableCell>
-                    )}
+      <ResponsiveDataView
+        tableLabel={t('expenses.title')}
+        cardsLabel={t('expenses.title')}
+        table={
+          <Paper variant="outlined">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('records.eventDate')}</TableCell>
+                    <TableCell>{t('records.documentDate')}</TableCell>
+                    <TableCell>{t('records.paymentDate')}</TableCell>
+                    <TableCell>{t('records.vendor')}</TableCell>
+                    <TableCell>{t('records.category')}</TableCell>
+                    <TableCell align="right">{t('records.baseExclVat')}</TableCell>
+                    <TableCell align="right">{t('records.deductiblePercent')}</TableCell>
+                    {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
                   </TableRow>
-                ))
-              ) : currentPageItems ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('expenses.empty', { year })}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : isPending ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('common.loading')}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {tableRows?.length ? (
+                    tableRows.map(({ record, payload }) => (
+                      <TableRow key={record.recordKey} hover>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.documentDate ?? t('common.na')}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.paymentDate ?? t('common.na')}</TableCell>
+                        <TableCell sx={{ maxWidth: 240 }} title={payload?.vendor}>
+                          {payload?.vendor ?? t('common.na')}
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 200 }} title={payload?.category}>
+                          {payload?.category ?? t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {payload ? money.format(payload.baseExclVat) : t('common.na')}
+                        </TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {payload ? `${Math.round(payload.deductibleShare * 100)}%` : t('common.na')}
+                        </TableCell>
+                        {props.readOnly ? null : (
+                          <TableCell align="right" padding="checkbox">
+                            <MoreActionsMenu
+                              onEdit={() =>
+                                navigate(`/workspaces/${props.workspaceId}/expenses/${record.eventDate}/${record.recordId}/edit`)
+                              }
+                              onRepeat={
+                                payload
+                                  ? () => {
+                                      setRepeatTarget({ record, payload })
+                                    }
+                                  : undefined
+                              }
+                              onDelete={() =>
+                                setDeleteTarget({
+                                  record,
+                                  label: `${t('recordTypes.EXPENSE')} ${payload?.vendor ?? record.recordId}`,
+                                })
+                              }
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  ) : currentPageItems ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('expenses.empty', { year })}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : isPending ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('common.loading')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1}>
+            {tableRows?.length ? (
+              tableRows.map(({ record, payload }) => (
+                <MobileRecordCard
+                  key={record.recordKey}
+                  title={record.eventDate}
+                  subtitle={payload?.vendor ?? t('common.na')}
+                  amount={payload ? money.format(payload.baseExclVat) : t('common.na')}
+                  facts={[
+                    { label: t('records.category'), value: payload?.category ?? t('common.na') },
+                    { label: t('records.documentDate'), value: payload?.documentDate ?? t('common.na') },
+                  ]}
+                  details={[
+                    { label: t('records.paymentDate'), value: payload?.paymentDate ?? t('common.na') },
+                    {
+                      label: t('records.deductiblePercent'),
+                      value: payload ? `${Math.round(payload.deductibleShare * 100)}%` : t('common.na'),
+                    },
+                  ]}
+                  actions={
+                    props.readOnly ? null : (
+                      <MoreActionsMenu
+                        onEdit={() => navigate(`/workspaces/${props.workspaceId}/expenses/${record.eventDate}/${record.recordId}/edit`)}
+                        onRepeat={
+                          payload
+                            ? () => {
+                                setRepeatTarget({ record, payload })
+                              }
+                            : undefined
+                        }
+                        onDelete={() =>
+                          setDeleteTarget({
+                            record,
+                            label: `${t('recordTypes.EXPENSE')} ${payload?.vendor ?? record.recordId}`,
+                          })
+                        }
+                      />
+                    )
+                  }
+                  expanded={expandedRecordKey === record.recordKey}
+                  onToggleExpanded={() => setExpandedRecordKey((current) => (current === record.recordKey ? null : record.recordKey))}
+                  expandLabel={t('common.more')}
+                />
+              ))
+            ) : currentPageItems ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('expenses.empty', { year })}</Typography>
+              </Paper>
+            ) : isPending ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              </Paper>
+            ) : null}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
@@ -393,7 +429,7 @@ export function WorkspaceExpensesPage(props: { workspaceId: string; api: Autonom
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
           <Button onClick={() => setRepeatTarget(null)} disabled={repeatSubmitting}>
             {t('common.cancel')}
           </Button>

@@ -22,6 +22,7 @@ import { FieldLabel } from '../components/FieldLabel'
 import { parseEuroAmount } from '../lib/money'
 import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -364,7 +365,7 @@ export function WorkspaceIncomeCreatePage(props: {
             <FormHelperText>{t('incomeCreate.help.vatTreatment')}</FormHelperText>
           </FormControl>
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <ResponsiveActionRow>
             <Button component={RouterLink} to={backToIncomePath} variant="outlined" disabled={submitting}>
               {t('common.back')}
             </Button>
@@ -377,7 +378,7 @@ export function WorkspaceIncomeCreatePage(props: {
                   ? t('common.creating')
                   : t('incomeCreate.create')}
             </Button>
-          </Stack>
+          </ResponsiveActionRow>
         </Stack>
       </Paper>
     </Stack>

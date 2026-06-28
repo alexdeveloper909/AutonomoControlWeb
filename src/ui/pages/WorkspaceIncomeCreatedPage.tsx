@@ -3,6 +3,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 import type { RecordResponse } from '../../domain/records'
 import { PageHeader } from '../components/PageHeader'
 import { useTranslation } from 'react-i18next'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 type LocationState = { record?: RecordResponse }
 
@@ -34,14 +35,14 @@ export function WorkspaceIncomeCreatedPage(props: { workspaceId: string }) {
         </Paper>
       ) : null}
 
-      <Stack direction="row" spacing={2}>
+      <ResponsiveActionRow align="start">
         <Button variant="contained" component={RouterLink} to={`/workspaces/${props.workspaceId}/income`}>
           {t('incomeCreated.backTo')}
         </Button>
         <Button variant="text" component={RouterLink} to={`/workspaces/${props.workspaceId}/income/new`}>
           {t('incomeCreated.addAnother')}
         </Button>
-      </Stack>
+      </ResponsiveActionRow>
     </Stack>
   )
 }

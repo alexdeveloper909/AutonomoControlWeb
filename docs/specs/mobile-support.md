@@ -280,15 +280,15 @@ Acceptance:
 
 Tasks:
 
-- [ ] Update Income list page for mobile filters, pagination, and row presentation.
-- [ ] Update Expenses list page for mobile filters, pagination, and row presentation.
-- [ ] Update State payments list page for mobile filters, pagination, and row presentation.
-- [ ] Update create/edit/created pages for Income flows.
-- [ ] Update create/edit/created pages for Expenses flows.
-- [ ] Update create/edit/created pages for State payments flows.
-- [ ] Update shared dialogs used by these flows for mobile sizing and action layout.
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
+- [x] Update Income list page for mobile filters, pagination, and row presentation.
+- [x] Update Expenses list page for mobile filters, pagination, and row presentation.
+- [x] Update State payments list page for mobile filters, pagination, and row presentation.
+- [x] Update create/edit/created pages for Income flows.
+- [x] Update create/edit/created pages for Expenses flows.
+- [x] Update create/edit/created pages for State payments flows.
+- [x] Update shared dialogs used by these flows for mobile sizing and action layout.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run lint`.
 
 Acceptance:
 

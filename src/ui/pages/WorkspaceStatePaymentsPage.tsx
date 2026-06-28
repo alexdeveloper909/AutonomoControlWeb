@@ -1,12 +1,8 @@
 import { useMemo, useState } from 'react'
 import {
   Button,
-  FormControl,
-  InputLabel,
   LinearProgress,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Table,
   TableBody,
@@ -27,6 +23,9 @@ import { useTranslation } from 'react-i18next'
 import { decimalFormatter } from '../lib/intl'
 import { MoreActionsMenu } from '../components/MoreActionsMenu'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ResponsiveDataView } from '../components/ResponsiveDataView'
+import { MobileRecordCard } from '../components/MobileRecordCard'
+import { RecordListControls } from '../components/RecordListControls'
 
 const PAGE_SIZE = 20
 
@@ -55,6 +54,7 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
   const [deleteTarget, setDeleteTarget] = useState<{ record: RecordResponse; label: string } | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [expandedRecordKey, setExpandedRecordKey] = useState<string | null>(null)
 
   const { data, error, isPending, isFetching, fetchNextPage } = useInfiniteQuery({
     queryKey,
@@ -139,124 +139,146 @@ export function WorkspaceStatePaymentsPage(props: { workspaceId: string; api: Au
         }
       />
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-          <FormControl sx={{ minWidth: 160 }}>
-            <InputLabel id="state-payments-year-label">{t('common.year')}</InputLabel>
-            <Select
-              labelId="state-payments-year-label"
-              label={t('common.year')}
-              value={year}
-              onChange={(e) => {
-                setYear(e.target.value)
-                setPageIndex(0)
-              }}
-              size="small"
-            >
-              {yearOptions.map((y) => (
-                <MenuItem key={y} value={y}>
-                  {y}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ flex: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t('records.pageSummary', {
-                page: pageIndex + 1,
-                pageSize: PAGE_SIZE,
-              })}
-            </Typography>
-            <Button variant="text" onClick={refresh} disabled={isFetching}>
-              {t('common.refresh')}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-              disabled={isFetching || pageIndex === 0}
-            >
-              {t('common.prev')}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={async () => {
-                if (nextPageLoaded) {
-                  setPageIndex((p) => p + 1)
-                  return
-                }
-                if (!nextToken) return
-                await fetchNextPage()
-                setPageIndex((p) => p + 1)
-              }}
-              disabled={isFetching || (!nextPageLoaded && !nextToken)}
-            >
-              {t('common.next')}
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
+      <RecordListControls
+        labelId="state-payments-year-label"
+        yearLabel={t('common.year')}
+        year={year}
+        yearOptions={yearOptions}
+        pageSummary={t('records.pageSummary', {
+          page: pageIndex + 1,
+          pageSize: PAGE_SIZE,
+        })}
+        refreshLabel={t('common.refresh')}
+        prevLabel={t('common.prev')}
+        nextLabel={t('common.next')}
+        isFetching={isFetching}
+        isPrevDisabled={pageIndex === 0}
+        isNextDisabled={!nextPageLoaded && !nextToken}
+        onYearChange={(nextYear) => {
+          setYear(nextYear)
+          setPageIndex(0)
+        }}
+        onRefresh={refresh}
+        onPrev={() => setPageIndex((p) => Math.max(0, p - 1))}
+        onNext={async () => {
+          if (nextPageLoaded) {
+            setPageIndex((p) => p + 1)
+            return
+          }
+          if (!nextToken) return
+          await fetchNextPage()
+          setPageIndex((p) => p + 1)
+        }}
+      />
 
       {isFetching ? <LinearProgress /> : null}
       {error ? <ErrorAlert message={error instanceof Error ? error.message : String(error)} /> : null}
       {deleteError ? <ErrorAlert message={deleteError} /> : null}
 
-      <Paper variant="outlined">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('records.eventDate')}</TableCell>
-                <TableCell>{t('records.paymentDate')}</TableCell>
-                <TableCell>{t('records.type')}</TableCell>
-                <TableCell align="right">{t('records.amount')}</TableCell>
-                {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableRows?.length ? (
-                tableRows.map(({ record, payload }) => (
-                  <TableRow key={record.recordKey} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.paymentDate ?? t('common.na')}</TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatType(payload?.type)}</TableCell>
-                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                      {payload ? money.format(payload.amount) : t('common.na')}
-                    </TableCell>
-                    {props.readOnly ? null : (
-                      <TableCell align="right" padding="checkbox">
-                        <MoreActionsMenu
-                          onEdit={() =>
-                            navigate(`/workspaces/${props.workspaceId}/state-payments/${record.eventDate}/${record.recordId}/edit`)
-                          }
-                          onDelete={() =>
-                            setDeleteTarget({
-                              record,
-                              label: `${t('recordTypes.STATE_PAYMENT')} ${payload?.type ?? record.recordId}`,
-                            })
-                          }
-                        />
-                      </TableCell>
-                    )}
+      <ResponsiveDataView
+        tableLabel={t('statePayments.title')}
+        cardsLabel={t('statePayments.title')}
+        table={
+          <Paper variant="outlined">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t('records.eventDate')}</TableCell>
+                    <TableCell>{t('records.paymentDate')}</TableCell>
+                    <TableCell>{t('records.type')}</TableCell>
+                    <TableCell align="right">{t('records.amount')}</TableCell>
+                    {props.readOnly ? null : <TableCell align="right">{t('records.actions')}</TableCell>}
                   </TableRow>
-                ))
-              ) : currentPageItems ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('statePayments.empty', { year })}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : isPending ? (
-                <TableRow>
-                  <TableCell colSpan={colSpan}>
-                    <Typography color="text.secondary">{t('common.loading')}</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {tableRows?.length ? (
+                    tableRows.map(({ record, payload }) => (
+                      <TableRow key={record.recordKey} hover>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{record.eventDate}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{payload?.paymentDate ?? t('common.na')}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatType(payload?.type)}</TableCell>
+                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                          {payload ? money.format(payload.amount) : t('common.na')}
+                        </TableCell>
+                        {props.readOnly ? null : (
+                          <TableCell align="right" padding="checkbox">
+                            <MoreActionsMenu
+                              onEdit={() =>
+                                navigate(`/workspaces/${props.workspaceId}/state-payments/${record.eventDate}/${record.recordId}/edit`)
+                              }
+                              onDelete={() =>
+                                setDeleteTarget({
+                                  record,
+                                  label: `${t('recordTypes.STATE_PAYMENT')} ${payload?.type ?? record.recordId}`,
+                                })
+                              }
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  ) : currentPageItems ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('statePayments.empty', { year })}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : isPending ? (
+                    <TableRow>
+                      <TableCell colSpan={colSpan}>
+                        <Typography color="text.secondary">{t('common.loading')}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        }
+        cards={
+          <Stack spacing={1}>
+            {tableRows?.length ? (
+              tableRows.map(({ record, payload }) => (
+                <MobileRecordCard
+                  key={record.recordKey}
+                  title={record.eventDate}
+                  subtitle={formatType(payload?.type)}
+                  amount={payload ? money.format(payload.amount) : t('common.na')}
+                  facts={[{ label: t('records.paymentDate'), value: payload?.paymentDate ?? t('common.na') }]}
+                  details={[{ label: t('records.type'), value: formatType(payload?.type) }]}
+                  actions={
+                    props.readOnly ? null : (
+                      <MoreActionsMenu
+                        onEdit={() =>
+                          navigate(`/workspaces/${props.workspaceId}/state-payments/${record.eventDate}/${record.recordId}/edit`)
+                        }
+                        onDelete={() =>
+                          setDeleteTarget({
+                            record,
+                            label: `${t('recordTypes.STATE_PAYMENT')} ${payload?.type ?? record.recordId}`,
+                          })
+                        }
+                      />
+                    )
+                  }
+                  expanded={expandedRecordKey === record.recordKey}
+                  onToggleExpanded={() => setExpandedRecordKey((current) => (current === record.recordKey ? null : record.recordKey))}
+                  expandLabel={t('common.more')}
+                />
+              ))
+            ) : currentPageItems ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('statePayments.empty', { year })}</Typography>
+              </Paper>
+            ) : isPending ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography color="text.secondary">{t('common.loading')}</Typography>
+              </Paper>
+            ) : null}
+          </Stack>
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

@@ -29,6 +29,7 @@ import { queryKeys } from '../queries/queryKeys'
 import { useTranslation } from 'react-i18next'
 import { defaultExpenseCategories } from '../../domain/expenseCategories'
 import { decimalFormatter } from '../lib/intl'
+import { ResponsiveActionRow } from '../components/ResponsiveActionRow'
 
 const todayIso = (): string => {
   const d = new Date()
@@ -486,14 +487,14 @@ export function WorkspaceExpensesCreatePage(props: {
             </Paper>
           ) : null}
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <ResponsiveActionRow>
             <Button component={RouterLink} to={backToExpensesPath} variant="outlined" disabled={submitting}>
               {t('common.back')}
             </Button>
             <Button variant="contained" onClick={submit} disabled={inputsDisabled}>
               {editing ? (submitting ? t('common.saving') : t('common.save')) : submitting ? t('common.creating') : t('expensesCreate.create')}
             </Button>
-          </Stack>
+          </ResponsiveActionRow>
         </Stack>
       </Paper>
     </Stack>

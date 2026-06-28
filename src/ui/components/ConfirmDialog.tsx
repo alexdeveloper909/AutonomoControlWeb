@@ -22,7 +22,7 @@ export function ConfirmDialog(props: {
           <DialogContentText>{props.description}</DialogContentText>
         </DialogContent>
       ) : null}
-      <DialogActions>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: 1, '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 100%', sm: '0 0 auto' } } }}>
         <Button onClick={props.onClose} disabled={props.loading}>
           {props.cancelText ?? t('common.cancel')}
         </Button>
@@ -33,4 +33,3 @@ export function ConfirmDialog(props: {
     </Dialog>
   )
 }
-
