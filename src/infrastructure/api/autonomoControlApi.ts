@@ -12,6 +12,7 @@ import type { BalanceResponse } from '../../domain/balance'
 import type { UserMe } from '../../domain/user'
 import type { AppLanguage } from '../../domain/language'
 import { isAppLanguage } from '../../domain/language'
+import { cleanRetaEstimate, type RetaEstimate, type RetaScenarioSettings } from '../../domain/reta'
 import { env, requireEnv } from '../config/env'
 import { jsonFetch } from '../http/jsonFetch'
 
@@ -450,6 +451,22 @@ export class AutonomoControlApi {
       headers: this.authHeaders(),
       body: settings,
     })
+  }
+
+  async retaSummary(
+    workspaceId: string,
+    settings: WorkspaceSettings,
+    scenario: RetaScenarioSettings,
+  ): Promise<{ settings: WorkspaceSettings; reta: RetaEstimate | null }> {
+    const res = await jsonFetch<{ settings: WorkspaceSettings; reta: unknown }>(
+      new URL(`/workspaces/${workspaceId}/summaries/reta`, this.baseUrl).toString(),
+      {
+        method: 'POST',
+        headers: this.authHeaders(),
+        body: { settings: cleanWorkspaceSettings(settings), scenario },
+      },
+    )
+    return { settings: cleanWorkspaceSettings(res.settings), reta: cleanRetaEstimate(res.reta) }
   }
 
   async ivaSummary(

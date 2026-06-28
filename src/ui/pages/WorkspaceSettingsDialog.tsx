@@ -28,6 +28,7 @@ import {
   type VatDeductionRight,
   type WorkspaceSettings,
 } from '../../domain/settings'
+import { defaultRetaPlanningSettings, type RetaBaseSelectionPolicy, type RetaEstimationDirectaMode } from '../../domain/reta'
 import type { Workspace } from '../../domain/workspace'
 import type { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { ErrorAlert } from '../components/ErrorAlert'
@@ -69,6 +70,7 @@ export function WorkspaceSettingsDialog(props: {
       obligacion130: s.obligacion130,
       ivaProfile: s.ivaProfile,
       rentaPlanning: s.rentaPlanning,
+      retaPlanning: s.retaPlanning,
     })
 
   const dirty = useMemo(() => {
@@ -141,6 +143,7 @@ export function WorkspaceSettingsDialog(props: {
         openingBalance: settings.openingBalance ?? null,
         balanceAccounts: settings.balanceAccounts ?? null,
         rentaPlanning: draft.rentaPlanning,
+        retaPlanning: draft.retaPlanning ?? defaultRetaPlanningSettings(),
         ivaProfile: draft.ivaProfile ?? defaultIvaDeductionProfile(),
         entities: settings.entities ?? null,
       })
@@ -756,6 +759,242 @@ export function WorkspaceSettingsDialog(props: {
                         {t('workspaceCreate.rentaHelp.inicioPriorEmployerOver50')}
                       </Typography>
                     </>
+                  ) : null}
+                </Stack>
+              ) : null}
+
+              <Divider />
+              <Typography variant="subtitle2">{t('workspaceCreate.retaPlanningTitle', { defaultValue: 'Seguridad Social / RETA defaults' })}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('workspaceCreate.retaPlanningDisclaimer', {
+                  defaultValue: 'Defaults for the RETA planner. Page scenario inputs are not saved automatically.',
+                })}
+              </Typography>
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={(draft.retaPlanning ?? defaultRetaPlanningSettings()).enabled}
+                    onChange={(e) =>
+                      setDraft((s) =>
+                        s
+                          ? {
+                              ...s,
+                              retaPlanning: { ...(s.retaPlanning ?? defaultRetaPlanningSettings()), enabled: e.target.checked },
+                            }
+                          : s,
+                      )
+                    }
+                    disabled={readOnly || saving}
+                  />
+                }
+                label={t('workspaceCreate.retaPlanningEnabled', { defaultValue: 'Enable RETA planner' })}
+              />
+
+              {(draft.retaPlanning ?? defaultRetaPlanningSettings()).enabled ? (
+                <Stack spacing={2}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                      select
+                      label={t('workspaceCreate.retaEstimationDirectaMode', { defaultValue: 'Estimacion directa mode' })}
+                      value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).estimationDirectaMode}
+                      onChange={(e) =>
+                        setDraft((s) =>
+                          s
+                            ? {
+                                ...s,
+                                retaPlanning: {
+                                  ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                  estimationDirectaMode: e.target.value as RetaEstimationDirectaMode,
+                                },
+                              }
+                            : s,
+                        )
+                      }
+                      fullWidth
+                      disabled={readOnly || saving}
+                      helperText={t('workspaceCreate.retaEstimationDirectaModeHelp', {
+                        defaultValue: 'Simplificada applies the 5% difficult-expenses deduction up to the annual cap.',
+                      })}
+                    >
+                      <MenuItem value="SIMPLIFICADA">{t('workspaceCreate.retaModeSimplificada', { defaultValue: 'Simplificada' })}</MenuItem>
+                      <MenuItem value="NORMAL">{t('workspaceCreate.retaModeNormal', { defaultValue: 'Normal' })}</MenuItem>
+                    </TextField>
+                    <TextField
+                      select
+                      label={t('workspaceCreate.retaBaseSelectionPolicy', { defaultValue: 'Default contribution base' })}
+                      value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).defaultBaseSelectionPolicy}
+                      onChange={(e) =>
+                        setDraft((s) =>
+                          s
+                            ? {
+                                ...s,
+                                retaPlanning: {
+                                  ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                  defaultBaseSelectionPolicy: e.target.value as RetaBaseSelectionPolicy,
+                                },
+                              }
+                            : s,
+                        )
+                      }
+                      fullWidth
+                      disabled={readOnly || saving}
+                      helperText={t('workspaceCreate.retaBaseSelectionPolicyHelp', {
+                        defaultValue: 'Minimum is the MVP default. Custom can be overridden locally on the RETA page.',
+                      })}
+                    >
+                      <MenuItem value="MINIMUM">{t('workspaceCreate.retaBaseMinimum', { defaultValue: 'Minimum allowed base' })}</MenuItem>
+                      <MenuItem value="CUSTOM">{t('workspaceCreate.retaBaseCustom', { defaultValue: 'Custom default base' })}</MenuItem>
+                    </TextField>
+                  </Stack>
+
+                  {(draft.retaPlanning ?? defaultRetaPlanningSettings()).defaultBaseSelectionPolicy === 'CUSTOM' ? (
+                    <TextField
+                      label={t('workspaceCreate.retaDefaultCustomContributionBase', { defaultValue: 'Default custom contribution base' })}
+                      type="number"
+                      inputProps={{ step: '0.01' }}
+                      value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).defaultCustomContributionBase ?? ''}
+                      onChange={(e) =>
+                        setDraft((s) =>
+                          s
+                            ? {
+                                ...s,
+                                retaPlanning: {
+                                  ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                  defaultCustomContributionBase: e.target.value === '' ? null : Number(e.target.value),
+                                },
+                              }
+                            : s,
+                        )
+                      }
+                      fullWidth
+                      disabled={readOnly || saving}
+                    />
+                  ) : null}
+
+                  <Alert severity="info">
+                    {t('workspaceCreate.retaGenericDeductionHidden', {
+                      defaultValue: 'MVP uses the normal autonomo 7% RETA generic deduction. Special 3% socio cases are not exposed yet.',
+                    })}
+                  </Alert>
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={(draft.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana?.enabled ?? false}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  retaPlanning: {
+                                    ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                    tarifaPlana: e.target.checked
+                                      ? {
+                                          enabled: true,
+                                          startDate: null,
+                                          endDate: null,
+                                          fixedMonthlyCuota: 88.64,
+                                        }
+                                      : null,
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        disabled={readOnly || saving}
+                      />
+                    }
+                    label={t('workspaceCreate.retaTarifaPlanaEnabled', { defaultValue: 'Use tarifa plana fixed-cuota estimate' })}
+                  />
+
+                  {(draft.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana?.enabled ? (
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <TextField
+                        label={t('workspaceCreate.retaTarifaPlanaStartDate', { defaultValue: 'Tarifa plana start date' })}
+                        type="date"
+                        value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana?.startDate ?? ''}
+                        InputLabelProps={{ shrink: true }}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  retaPlanning: {
+                                    ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                    tarifaPlana: {
+                                      ...((s.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana ?? {
+                                        enabled: true,
+                                        endDate: null,
+                                        fixedMonthlyCuota: 88.64,
+                                      }),
+                                      startDate: e.target.value || null,
+                                    },
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        fullWidth
+                        disabled={readOnly || saving}
+                      />
+                      <TextField
+                        label={t('workspaceCreate.retaTarifaPlanaEndDate', { defaultValue: 'Tarifa plana end date' })}
+                        type="date"
+                        value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana?.endDate ?? ''}
+                        InputLabelProps={{ shrink: true }}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  retaPlanning: {
+                                    ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                    tarifaPlana: {
+                                      ...((s.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana ?? {
+                                        enabled: true,
+                                        startDate: null,
+                                        fixedMonthlyCuota: 88.64,
+                                      }),
+                                      endDate: e.target.value || null,
+                                    },
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        fullWidth
+                        disabled={readOnly || saving}
+                      />
+                      <TextField
+                        label={t('workspaceCreate.retaTarifaPlanaFixedMonthlyCuota', { defaultValue: 'Fixed monthly cuota' })}
+                        type="number"
+                        inputProps={{ step: '0.01' }}
+                        value={(draft.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana?.fixedMonthlyCuota ?? 88.64}
+                        onChange={(e) =>
+                          setDraft((s) =>
+                            s
+                              ? {
+                                  ...s,
+                                  retaPlanning: {
+                                    ...(s.retaPlanning ?? defaultRetaPlanningSettings()),
+                                    tarifaPlana: {
+                                      ...((s.retaPlanning ?? defaultRetaPlanningSettings()).tarifaPlana ?? {
+                                        enabled: true,
+                                        startDate: null,
+                                        endDate: null,
+                                      }),
+                                      fixedMonthlyCuota: Number(e.target.value),
+                                    },
+                                  },
+                                }
+                              : s,
+                          )
+                        }
+                        fullWidth
+                        disabled={readOnly || saving}
+                      />
+                    </Stack>
                   ) : null}
                 </Stack>
               ) : null}

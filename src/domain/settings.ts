@@ -1,3 +1,5 @@
+import { defaultRetaPlanningSettings, type RetaBaseSelectionPolicy, type RetaEstimationDirectaMode, type RetaGenericDeductionMode, type RetaPlanningSettings } from './reta'
+
 export type IrpfTerritory =
   | 'DEFAULT'
   | 'ANDALUCIA'
@@ -98,6 +100,7 @@ export type WorkspaceSettings = {
   openingBalance: number | null
   balanceAccounts?: BalanceAccount[] | null
   rentaPlanning: RentaPlanningSettings | null
+  retaPlanning: RetaPlanningSettings | null
   ivaProfile: IvaDeductionProfile
   entities?: BusinessEntity[] | null
 }
@@ -134,6 +137,14 @@ const cleanPercentage = (v: unknown, fallback: number): number => {
   const n = typeof v === 'number' && Number.isFinite(v) ? v : fallback
   return Math.min(1, Math.max(0, n))
 }
+
+const cleanRetaEstimationDirectaMode = (v: unknown): RetaEstimationDirectaMode =>
+  v === 'NORMAL' || v === 'SIMPLIFICADA' ? v : 'SIMPLIFICADA'
+
+const cleanRetaGenericDeductionMode = (v: unknown): RetaGenericDeductionMode =>
+  v === 'GENERAL_7_PERCENT' || v === 'SOCIO_3_PERCENT' ? v : 'GENERAL_7_PERCENT'
+
+const cleanRetaBaseSelectionPolicy = (v: unknown): RetaBaseSelectionPolicy => (v === 'CUSTOM' ? 'CUSTOM' : 'MINIMUM')
 
 const cleanTaxRatesByYear = (v: unknown): Record<string, BusinessEntityTaxRates> | undefined => {
   if (!v || typeof v !== 'object') return undefined
@@ -329,6 +340,30 @@ const cleanRentaPlanning = (v: unknown, taxYear: number): RentaPlanningSettings 
   }
 }
 
+const cleanRetaPlanning = (v: unknown): RetaPlanningSettings => {
+  const defaults = defaultRetaPlanningSettings()
+  if (!v || typeof v !== 'object') return defaults
+  const o = v as Record<string, unknown>
+  const tarifaRaw = o.tarifaPlana
+  const tarifaPlana =
+    tarifaRaw && typeof tarifaRaw === 'object'
+      ? {
+          enabled: Boolean((tarifaRaw as Record<string, unknown>).enabled),
+          startDate: typeof (tarifaRaw as Record<string, unknown>).startDate === 'string' ? ((tarifaRaw as Record<string, unknown>).startDate as string) : null,
+          endDate: typeof (tarifaRaw as Record<string, unknown>).endDate === 'string' ? ((tarifaRaw as Record<string, unknown>).endDate as string) : null,
+          fixedMonthlyCuota: Math.max(0, cleanNumber((tarifaRaw as Record<string, unknown>).fixedMonthlyCuota, 88.64)),
+        }
+      : null
+  return {
+    enabled: o.enabled !== false,
+    estimationDirectaMode: cleanRetaEstimationDirectaMode(o.estimationDirectaMode),
+    genericDeductionMode: cleanRetaGenericDeductionMode(o.genericDeductionMode),
+    defaultBaseSelectionPolicy: cleanRetaBaseSelectionPolicy(o.defaultBaseSelectionPolicy),
+    defaultCustomContributionBase: cleanNumberOrNull(o.defaultCustomContributionBase),
+    tarifaPlana,
+  }
+}
+
 export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings => ({
   year: s.year,
   startDate: s.startDate,
@@ -338,6 +373,7 @@ export const cleanWorkspaceSettings = (s: WorkspaceSettings): WorkspaceSettings 
   openingBalance: s.openingBalance ?? null,
   balanceAccounts: cleanBalanceAccounts((s as unknown as Record<string, unknown>).balanceAccounts),
   rentaPlanning: cleanRentaPlanning((s as unknown as Record<string, unknown>).rentaPlanning, s.year),
+  retaPlanning: cleanRetaPlanning((s as unknown as Record<string, unknown>).retaPlanning),
   ivaProfile: cleanIvaProfile((s as unknown as Record<string, unknown>).ivaProfile),
   entities: cleanBusinessEntities((s as unknown as Record<string, unknown>).entities),
 })

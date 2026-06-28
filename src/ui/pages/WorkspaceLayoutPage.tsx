@@ -28,6 +28,7 @@ import { WorkspaceTransfersRoutes } from './WorkspaceTransfersRoutes'
 import { WorkspaceBudgetRoutes } from './WorkspaceBudgetRoutes'
 import { WorkspaceRegularSpendingsRoutes } from './WorkspaceRegularSpendingsRoutes'
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog'
+import { WorkspaceRetaPage } from './WorkspaceRetaPage'
 import { useTranslation } from 'react-i18next'
 import type { Workspace } from '../../domain/workspace'
 import type { BusinessEntity } from '../../domain/settings'
@@ -194,6 +195,7 @@ export function WorkspaceLayoutPage() {
             { label: t('workspace.income'), to: `${basePath}/income`, icon: <ReceiptLongOutlinedIcon /> },
             { label: t('workspace.expenses'), to: `${basePath}/expenses`, icon: <RequestQuoteOutlinedIcon /> },
             { label: t('workspace.statePayments'), to: `${basePath}/state-payments`, icon: <PaymentsOutlinedIcon /> },
+            { label: t('workspace.seguridadSocial', { defaultValue: 'Seguridad Social' }), to: `${basePath}/reta`, selected: section === 'reta', icon: <PaymentsOutlinedIcon /> },
             { label: t('workspace.summaries'), to: `${basePath}/summaries`, icon: <AssessmentOutlinedIcon /> },
           ],
         },
@@ -205,6 +207,7 @@ export function WorkspaceLayoutPage() {
             { label: t('workspace.income'), to: `${basePath}/income`, selected: section === 'income', icon: <ReceiptLongOutlinedIcon /> },
             { label: t('workspace.expenses'), to: `${basePath}/expenses`, selected: section === 'expenses', icon: <RequestQuoteOutlinedIcon /> },
             { label: t('workspace.statePayments'), to: `${basePath}/state-payments`, selected: section === 'state-payments', icon: <PaymentsOutlinedIcon /> },
+            { label: t('workspace.seguridadSocial', { defaultValue: 'Seguridad Social' }), to: `${basePath}/reta`, selected: section === 'reta', icon: <PaymentsOutlinedIcon /> },
             { label: t('workspace.summaries'), to: `${basePath}/summaries`, selected: section === 'summaries', icon: <AssessmentOutlinedIcon /> },
           ],
         },
@@ -381,6 +384,9 @@ export function WorkspaceLayoutPage() {
             <ListItemButton component={RouterLink} to={`${basePath}/state-payments`} selected={section === 'state-payments'}>
               <ListItemText primary={t('workspace.statePayments')} />
             </ListItemButton>
+            <ListItemButton component={RouterLink} to={`${basePath}/reta`} selected={section === 'reta'}>
+              <ListItemText primary={t('workspace.seguridadSocial', { defaultValue: 'Seguridad Social' })} />
+            </ListItemButton>
             <ListItemButton component={RouterLink} to={`${basePath}/summaries`} selected={section === 'summaries'}>
               <ListItemText primary={t('workspace.summaries')} />
             </ListItemButton>
@@ -422,6 +428,7 @@ export function WorkspaceLayoutPage() {
         <Route path="income/*" element={<WorkspaceIncomeRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="expenses/*" element={<WorkspaceExpensesRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="state-payments/*" element={<WorkspaceStatePaymentsRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
+        <Route path="reta" element={<WorkspaceRetaPage workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="balance/*" element={<WorkspaceTransfersRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
         <Route path="transfers/*" element={<LegacyTransfersRedirect basePath={basePath} />} />
         <Route path="budget/*" element={<WorkspaceBudgetRoutes workspaceId={workspaceId} api={api} readOnly={readOnly} />} />
