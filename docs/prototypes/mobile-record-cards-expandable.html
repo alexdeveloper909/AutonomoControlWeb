@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Record Cards Prototype - Expand Secondary Details</title>
+    <style>
+      :root {
+        --bg: #edf2f7;
+        --panel: #ffffff;
+        --panel-soft: #f7f9fc;
+        --ink: #16202b;
+        --muted: #64748b;
+        --line: #d7dfeb;
+        --brand: #0f6b8c;
+        --brand-soft: #deeff6;
+        --good: #065f46;
+        --shadow: 0 18px 48px rgba(22, 32, 43, 0.12);
+        --phone-w: 390px;
+        --phone-h: 844px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(15, 107, 140, 0.12), transparent 28%),
+          linear-gradient(180deg, #f6f9fc 0%, #e6edf5 100%);
+        color: var(--ink);
+      }
+
+      .stage {
+        width: min(100%, 980px);
+        display: grid;
+        gap: 24px;
+        grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .notes {
+        padding: 28px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(215, 223, 235, 0.95);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .notes h1 {
+        margin: 0 0 12px;
+        font-size: 30px;
+        line-height: 1.05;
+      }
+
+      .notes p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .notes ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .notes li + li {
+        margin-top: 10px;
+      }
+
+      .phone {
+        width: min(100%, 390px);
+        height: min(82vh, 844px);
+        margin: 0 auto;
+        border-radius: 38px;
+        padding: 12px;
+        background: #0f172a;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+      }
+
+      .screen {
+        height: 100%;
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--bg);
+      }
+
+      .statusbar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--panel);
+        box-shadow: 0 8px 20px rgba(22, 32, 43, 0.08);
+        color: var(--ink);
+      }
+
+      .toolbar-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .selector {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font-size: 14px;
+      }
+
+      .content {
+        height: calc(100% - 96px);
+        overflow: auto;
+        padding: 0 14px 18px;
+      }
+
+      .header-card,
+      .record-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(22, 32, 43, 0.06);
+      }
+
+      .header-card {
+        padding: 16px;
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .header-title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .ghost-btn {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel-soft);
+        color: var(--ink);
+        font: inherit;
+        font-weight: 600;
+      }
+
+      .header-sub {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .list {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .record-card {
+        overflow: hidden;
+      }
+
+      .card-head {
+        padding: 14px;
+      }
+
+      .card-top {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .date {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title-row {
+        margin-top: 6px;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .amount {
+        text-align: right;
+        white-space: nowrap;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .summary-grid {
+        margin-top: 12px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-cell {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: var(--panel-soft);
+        border: 1px solid rgba(215, 223, 235, 0.88);
+      }
+
+      .summary-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .summary-value {
+        margin-top: 5px;
+        font-size: 14px;
+      }
+
+      .card-actions {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #def7ec;
+        color: var(--good);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .expand {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: transparent;
+        color: var(--brand);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .details {
+        display: none;
+        padding: 0 14px 14px;
+      }
+
+      .record-card.expanded .details {
+        display: block;
+      }
+
+      .details-grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .detail {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: var(--panel-soft);
+        border: 1px solid rgba(215, 223, 235, 0.88);
+      }
+
+      .detail-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .detail-value {
+        margin-top: 5px;
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      @media (max-width: 900px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 460px) {
+        body {
+          padding: 0;
+        }
+
+        .phone {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          padding: 0;
+        }
+
+        .screen,
+        .notes {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="notes">
+        <h1>Collapsed secondary details</h1>
+        <p>This pattern treats each record as a scanning unit first. Users see the date, title, amount, and a small set of summary facts, then expand only when they need the longer note or secondary fields.</p>
+        <ul>
+          <li>Best for long lists and repeated daily scanning.</li>
+          <li>Keeps rows short while still allowing full detail access.</li>
+          <li>Adds one more interaction and hides some information by default.</li>
+        </ul>
+      </section>
+
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span>5G 92%</span>
+          </div>
+
+          <div class="toolbar">
+            <button class="icon-btn" aria-label="Back">←</button>
+            <div class="toolbar-main">
+              <div class="eyebrow">Autonomo</div>
+              <div class="title">Income records</div>
+              <div class="selector">2026 · 20 rows ▾</div>
+            </div>
+            <button class="icon-btn" aria-label="Actions">⋯</button>
+          </div>
+
+          <main class="content">
+            <section class="header-card">
+              <div class="header-top">
+                <div class="header-title">Income</div>
+                <button class="ghost-btn">Refresh</button>
+              </div>
+              <div class="header-sub">Primary facts stay visible. Secondary fields live behind a deliberate expand action so the list stays tight.</div>
+            </section>
+
+            <div class="list">
+              <article class="record-card expanded">
+                <div class="card-head">
+                  <div class="card-top">
+                    <div>
+                      <div class="date">2026-06-27</div>
+                      <div class="title-row">Invoice 2026-118 · Acme Studio</div>
+                    </div>
+                    <div class="amount">€1,420</div>
+                  </div>
+                  <div class="summary-grid">
+                    <div class="summary-cell">
+                      <div class="summary-label">Invoice date</div>
+                      <div class="summary-value">2026-06-25</div>
+                    </div>
+                    <div class="summary-cell">
+                      <div class="summary-label">Payment date</div>
+                      <div class="summary-value">2026-06-27</div>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <span class="status">Paid</span>
+                    <button class="expand" type="button" aria-expanded="true">Hide details</button>
+                  </div>
+                </div>
+                <div class="details">
+                  <div class="details-grid">
+                    <div class="detail">
+                      <div class="detail-label">Client</div>
+                      <div class="detail-value">Acme Studio Barcelona</div>
+                    </div>
+                    <div class="detail">
+                      <div class="detail-label">Note</div>
+                      <div class="detail-value">Brand strategy workshop and final deck delivery.</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="record-card">
+                <div class="card-head">
+                  <div class="card-top">
+                    <div>
+                      <div class="date">2026-06-21</div>
+                      <div class="title-row">Invoice 2026-114 · Delta Advisory</div>
+                    </div>
+                    <div class="amount">€860</div>
+                  </div>
+                  <div class="summary-grid">
+                    <div class="summary-cell">
+                      <div class="summary-label">Invoice date</div>
+                      <div class="summary-value">2026-06-18</div>
+                    </div>
+                    <div class="summary-cell">
+                      <div class="summary-label">Payment date</div>
+                      <div class="summary-value">2026-06-21</div>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <span class="status">Paid</span>
+                    <button class="expand" type="button" aria-expanded="false">Show details</button>
+                  </div>
+                </div>
+                <div class="details">
+                  <div class="details-grid">
+                    <div class="detail">
+                      <div class="detail-label">Client</div>
+                      <div class="detail-value">Delta Advisory Madrid</div>
+                    </div>
+                    <div class="detail">
+                      <div class="detail-label">Note</div>
+                      <div class="detail-value">Better for long lists because the second row stays compact until the note is actually needed.</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const toggles = Array.from(document.querySelectorAll('.expand'));
+
+      toggles.forEach((button) => {
+        button.addEventListener('click', () => {
+          const card = button.closest('.record-card');
+          const expanded = card.classList.toggle('expanded');
+          button.setAttribute('aria-expanded', String(expanded));
+          button.textContent = expanded ? 'Hide details' : 'Show details';
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile Record Card Comparison</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 32px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #17212b;
+        background:
+          radial-gradient(circle at top, rgba(15, 118, 110, 0.12), transparent 28%),
+          linear-gradient(180deg, #f7f5ef 0%, #ece8de 100%);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(34px, 5vw, 56px);
+        line-height: 0.98;
+      }
+
+      p {
+        max-width: 740px;
+        margin: 0 0 24px;
+        color: #5b6672;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        padding: 22px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(212, 206, 194, 0.9);
+        box-shadow: 0 20px 50px rgba(23, 33, 43, 0.08);
+      }
+
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+
+      .card p {
+        margin-bottom: 18px;
+      }
+
+      .link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: #0f766e;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Mobile record cards</h1>
+      <p>Use these two prototypes to compare whether mobile record cards should expose every field immediately or keep secondary details behind a per-row expand action.</p>
+
+      <div class="grid">
+        <section class="card">
+          <h2>All fields visible</h2>
+          <p>Every record card exposes the full payload on first view. Stronger for trust and direct inspection, heavier for long lists.</p>
+          <a class="link" href="./mobile-record-cards-all-fields.html">Open full-card prototype</a>
+        </section>
+
+        <section class="card">
+          <h2>Expandable details</h2>
+          <p>The primary facts stay visible while the longer note and secondary fields expand only when the user asks for them.</p>
+          <a class="link" href="./mobile-record-cards-expandable.html">Open expandable prototype</a>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

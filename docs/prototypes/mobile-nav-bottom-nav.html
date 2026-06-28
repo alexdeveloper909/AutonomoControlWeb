@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile Nav Prototype - Bottom Navigation</title>
+    <style>
+      :root {
+        --bg: #eef3f1;
+        --panel: #ffffff;
+        --panel-2: #f6faf8;
+        --ink: #14212b;
+        --muted: #64748b;
+        --line: #d8e1dd;
+        --brand: #006c67;
+        --brand-soft: #d9f1ee;
+        --accent: #b91c1c;
+        --shadow: 0 18px 50px rgba(20, 33, 43, 0.12);
+        --radius: 18px;
+        --phone-w: 390px;
+        --phone-h: 844px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(0, 108, 103, 0.14), transparent 30%),
+          linear-gradient(180deg, #f7faf8 0%, #e8efeb 100%);
+        color: var(--ink);
+      }
+
+      .stage {
+        width: min(100%, 980px);
+        display: grid;
+        gap: 24px;
+        grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .notes {
+        padding: 28px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(216, 225, 221, 0.95);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .notes h1 {
+        margin: 0 0 12px;
+        font-size: 32px;
+        line-height: 1.05;
+      }
+
+      .notes p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .notes ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .notes li + li {
+        margin-top: 10px;
+      }
+
+      .phone {
+        position: relative;
+        width: min(100%, var(--phone-w));
+        height: min(82vh, var(--phone-h));
+        margin: 0 auto;
+        border-radius: 38px;
+        padding: 12px;
+        background: #0f172a;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+      }
+
+      .screen {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--bg);
+      }
+
+      .statusbar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+      }
+
+      .toolbar.clean {
+        padding-left: 16px;
+      }
+
+      .icon-btn,
+      .ghost-btn,
+      .primary-btn,
+      .chip {
+        border: 0;
+        border-radius: 14px;
+        font: inherit;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        background: var(--panel);
+        box-shadow: 0 8px 20px rgba(20, 33, 43, 0.08);
+        cursor: pointer;
+      }
+
+      .toolbar-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .title {
+        font-size: 19px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .selector {
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font-size: 14px;
+        color: var(--ink);
+      }
+
+      .chip {
+        padding: 6px 10px;
+        background: #fee2e2;
+        color: #991b1b;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .content {
+        height: calc(100% - 170px);
+        overflow: auto;
+        padding: 0 14px 18px;
+      }
+
+      .hero-card,
+      .section,
+      .table-card,
+      .nav-sheet {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: 0 10px 24px rgba(20, 33, 43, 0.06);
+      }
+
+      .hero-card,
+      .section {
+        padding: 16px;
+      }
+
+      .hero-head,
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .hero-title,
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .hero-amount {
+        margin-top: 14px;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-sub {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .primary-btn,
+      .ghost-btn {
+        padding: 11px 14px;
+        cursor: pointer;
+      }
+
+      .primary-btn {
+        background: var(--brand);
+        color: white;
+        font-weight: 700;
+      }
+
+      .ghost-btn {
+        background: var(--panel-2);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-weight: 600;
+      }
+
+      .section {
+        margin-top: 14px;
+      }
+
+      .subtle {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .table-card {
+        margin-top: 12px;
+        overflow: hidden;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 82px 1fr auto;
+        gap: 10px;
+        padding: 14px 16px;
+        align-items: start;
+      }
+
+      .row + .row {
+        border-top: 1px solid var(--line);
+      }
+
+      .row-date {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .row-title {
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .row-note {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .row-amount {
+        text-align: right;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        inset: auto 12px 12px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 0 16px 32px rgba(20, 33, 43, 0.12);
+        backdrop-filter: blur(14px);
+      }
+
+      .tab-btn {
+        display: grid;
+        gap: 4px;
+        justify-items: center;
+        padding: 10px 6px;
+        background: transparent;
+        border: 0;
+        border-radius: 16px;
+        color: var(--muted);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .tab-btn.active {
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-weight: 700;
+      }
+
+      .tab-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .tab-label {
+        font-size: 11px;
+      }
+
+      .sheet-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: flex-end;
+        pointer-events: none;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.3);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease;
+      }
+
+      .overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .nav-sheet {
+        width: 100%;
+        margin: 0 12px 92px;
+        padding: 16px;
+        transform: translateY(110%);
+        transition: transform 180ms ease;
+        pointer-events: auto;
+      }
+
+      .nav-sheet.open {
+        transform: translateY(0);
+      }
+
+      .sheet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .sheet-title {
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .sheet-group + .sheet-group {
+        margin-top: 16px;
+      }
+
+      .sheet-label {
+        margin: 0 2px 8px;
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .sheet-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .sheet-item {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        text-align: left;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel-2);
+        color: var(--ink);
+        font: inherit;
+      }
+
+      .sheet-icon {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: #e5f3ef;
+        color: var(--brand);
+        font-weight: 800;
+      }
+
+      .sheet-copy {
+        min-width: 0;
+      }
+
+      .sheet-copy strong {
+        display: block;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sheet-copy span {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 900px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 460px) {
+        body {
+          padding: 0;
+        }
+
+        .phone {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          padding: 0;
+        }
+
+        .screen {
+          border-radius: 0;
+        }
+
+        .notes {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="notes">
+        <h1>Bottom nav hybrid</h1>
+        <p>This version promotes Income, Balance, and Summaries to the bottom bar. More opens a grouped sheet so the remaining destinations still explain what is taxes, what is personal tracking, and what is workspace-level.</p>
+        <ul>
+          <li>Best when Income, Balance, and Summaries dominate daily mobile usage.</li>
+          <li>Makes tab-to-tab hopping faster, especially for repeated finance review.</li>
+          <li>Uses grouped More sections instead of a redundant top-left drawer button.</li>
+        </ul>
+      </section>
+
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span>5G 92%</span>
+          </div>
+
+          <div class="toolbar clean">
+            <div class="toolbar-main">
+              <div class="eyebrow">Workspace</div>
+              <div class="title-row">
+                <div class="title">Alex 2026 Finance Workspace</div>
+                <span class="chip">Read only</span>
+              </div>
+              <div class="selector">Autonomo · Summaries ▾</div>
+            </div>
+            <button class="icon-btn" aria-label="Settings">⋯</button>
+          </div>
+
+          <main class="content">
+            <section class="hero-card">
+              <div class="hero-head">
+                <div class="hero-title">Summaries</div>
+                <button class="ghost-btn">2026 ▾</button>
+              </div>
+              <div class="hero-amount">€7,940</div>
+              <div class="hero-sub">Bottom navigation makes frequent switching faster, but the bar is always present.</div>
+              <div class="hero-actions">
+                <button class="primary-btn">Refresh</button>
+                <button class="ghost-btn">Month view</button>
+              </div>
+            </section>
+
+            <section class="section">
+              <div class="section-head">
+                <div class="section-title">Month highlights</div>
+                <div class="subtle">Pinned above the bottom bar</div>
+              </div>
+              <div class="table-card">
+                <div class="row">
+                  <div class="row-date">2026-06</div>
+                  <div>
+                    <div class="row-title">Can spend after planned taxes</div>
+                    <div class="row-note">Fast jump to Balance or Income from the bottom nav if the user compares screens repeatedly.</div>
+                  </div>
+                  <div class="row-amount">€3,180</div>
+                </div>
+                <div class="row">
+                  <div class="row-date">2026-Q2</div>
+                  <div>
+                    <div class="row-title">Recommended tax reserve</div>
+                    <div class="row-note">The tradeoff is less vertical room for long tables and filters.</div>
+                  </div>
+                  <div class="row-amount">€2,340</div>
+                </div>
+                <div class="row">
+                  <div class="row-date">Renta</div>
+                  <div>
+                    <div class="row-title">Estimated settlement</div>
+                    <div class="row-note">The More tab can carry lower-frequency screens and workspace actions.</div>
+                  </div>
+                  <div class="row-amount">€820</div>
+                </div>
+              </div>
+            </section>
+          </main>
+
+          <div class="overlay" id="overlay"></div>
+          <div class="sheet-wrap">
+            <section class="nav-sheet" id="sheet">
+              <div class="sheet-head">
+                <div class="sheet-title">More destinations</div>
+                <button class="ghost-btn" id="closeSheet">Close</button>
+              </div>
+              <div class="sheet-group">
+                <div class="sheet-label">Autonomo & taxes</div>
+                <div class="sheet-list">
+                  <button class="sheet-item">
+                    <span class="sheet-icon">E</span>
+                    <span class="sheet-copy"><strong>Expenses</strong><span>Deductible costs and vendors</span></span>
+                  </button>
+                  <button class="sheet-item">
+                    <span class="sheet-icon">T</span>
+                    <span class="sheet-copy"><strong>State payments</strong><span>Modelo payments and settlements</span></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="sheet-group">
+                <div class="sheet-label">Personal finance tracking</div>
+                <div class="sheet-list">
+                  <button class="sheet-item">
+                    <span class="sheet-icon">B</span>
+                    <span class="sheet-copy"><strong>Budget</strong><span>Monthly earning, spending, and saving</span></span>
+                  </button>
+                  <button class="sheet-item">
+                    <span class="sheet-icon">R</span>
+                    <span class="sheet-copy"><strong>Regular spendings</strong><span>Subscriptions and recurring payouts</span></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="sheet-group">
+                <div class="sheet-label">Workspace</div>
+                <div class="sheet-list">
+                  <button class="sheet-item">
+                    <span class="sheet-icon">F</span>
+                    <span class="sheet-copy"><strong>Business entities</strong><span>Autonomo and Ukrainian FOP selector</span></span>
+                  </button>
+                  <button class="sheet-item">
+                    <span class="sheet-icon">S</span>
+                    <span class="sheet-copy"><strong>Workspace settings</strong><span>Configuration, sharing, and entities</span></span>
+                  </button>
+                  <button class="sheet-item">
+                    <span class="sheet-icon">U</span>
+                    <span class="sheet-copy"><strong>User settings</strong><span>Language and account preferences</span></span>
+                  </button>
+                  <button class="sheet-item">
+                    <span class="sheet-icon">←</span>
+                    <span class="sheet-copy"><strong>Back to workspaces</strong><span>Workspace switcher</span></span>
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <nav class="bottom-nav" aria-label="Primary mobile navigation">
+            <button class="tab-btn" data-tab="income">
+              <span class="tab-icon">€</span>
+              <span class="tab-label">Income</span>
+            </button>
+            <button class="tab-btn" data-tab="balance">
+              <span class="tab-icon">◫</span>
+              <span class="tab-label">Balance</span>
+            </button>
+            <button class="tab-btn active" data-tab="summaries">
+              <span class="tab-icon">◔</span>
+              <span class="tab-label">Summaries</span>
+            </button>
+            <button class="tab-btn" data-tab="more" id="openSheetBottom">
+              <span class="tab-icon">⋯</span>
+              <span class="tab-label">More</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const overlay = document.getElementById('overlay');
+      const sheet = document.getElementById('sheet');
+      const openSheetBottom = document.getElementById('openSheetBottom');
+      const closeSheet = document.getElementById('closeSheet');
+      const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+
+      function setSheetOpen(next) {
+        sheet.classList.toggle('open', next);
+        overlay.classList.toggle('open', next);
+      }
+
+      openSheetBottom.addEventListener('click', () => setSheetOpen(true));
+      closeSheet.addEventListener('click', () => setSheetOpen(false));
+      overlay.addEventListener('click', () => setSheetOpen(false));
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          if (tab.dataset.tab === 'more') {
+            setSheetOpen(true);
+            return;
+          }
+          tabs.forEach((entry) => entry.classList.remove('active'));
+          tab.classList.add('active');
+          setSheetOpen(false);
+        });
+      });
+    </script>
+  </body>
+</html>

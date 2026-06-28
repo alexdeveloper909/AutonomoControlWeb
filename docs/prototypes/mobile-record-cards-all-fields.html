@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Record Cards Prototype - All Fields Visible</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --panel: #fffdf8;
+        --panel-soft: #faf6ee;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #ddd3c5;
+        --brand: #0f766e;
+        --brand-soft: #ddf3ee;
+        --warn: #92400e;
+        --shadow: 0 18px 48px rgba(31, 41, 55, 0.12);
+        --phone-w: 390px;
+        --phone-h: 844px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(15, 118, 110, 0.1), transparent 28%),
+          linear-gradient(180deg, #f8f5ef 0%, #ebe4d8 100%);
+        color: var(--ink);
+      }
+
+      .stage {
+        width: min(100%, 980px);
+        display: grid;
+        gap: 24px;
+        grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .notes {
+        padding: 28px;
+        border-radius: 24px;
+        background: rgba(255, 253, 248, 0.88);
+        border: 1px solid rgba(221, 211, 197, 0.92);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .notes h1 {
+        margin: 0 0 12px;
+        font-size: 30px;
+        line-height: 1.05;
+      }
+
+      .notes p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .notes ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .notes li + li {
+        margin-top: 10px;
+      }
+
+      .phone {
+        width: min(100%, var(--phone-w));
+        height: min(82vh, var(--phone-h));
+        margin: 0 auto;
+        border-radius: 38px;
+        padding: 12px;
+        background: #111827;
+        box-shadow: 0 24px 60px rgba(17, 24, 39, 0.28);
+      }
+
+      .screen {
+        height: 100%;
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--bg);
+      }
+
+      .statusbar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--panel);
+        box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+        color: var(--ink);
+      }
+
+      .toolbar-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .selector {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font-size: 14px;
+      }
+
+      .content {
+        height: calc(100% - 96px);
+        overflow: auto;
+        padding: 0 14px 18px;
+      }
+
+      .header-card,
+      .record-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(31, 41, 55, 0.06);
+      }
+
+      .header-card {
+        padding: 16px;
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .header-title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .ghost-btn {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--panel-soft);
+        color: var(--ink);
+        font: inherit;
+        font-weight: 600;
+      }
+
+      .header-sub {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .list {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .record-card {
+        padding: 14px;
+      }
+
+      .card-top {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .date {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title-row {
+        margin-top: 6px;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .amount {
+        text-align: right;
+        white-space: nowrap;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .fields {
+        margin-top: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .field {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: var(--panel-soft);
+        border: 1px solid rgba(221, 211, 197, 0.88);
+      }
+
+      .field-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .field-value {
+        margin-top: 5px;
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .warning {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: #fff3e3;
+        color: var(--warn);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 460px) {
+        body {
+          padding: 0;
+        }
+
+        .phone {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          padding: 0;
+        }
+
+        .screen,
+        .notes {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="notes">
+        <h1>All fields visible</h1>
+        <p>This pattern turns each record into a fully readable card without any extra taps. It is strongest when records are infrequent, fields are short, and immediate inspection matters more than scan speed.</p>
+        <ul>
+          <li>Best for correctness-first review and read-only confirmation.</li>
+          <li>No hidden information and no stateful expand/collapse behavior.</li>
+          <li>Cards grow tall quickly once records carry many fields or long notes.</li>
+        </ul>
+      </section>
+
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span>5G 92%</span>
+          </div>
+
+          <div class="toolbar">
+            <button class="icon-btn" aria-label="Back">←</button>
+            <div class="toolbar-main">
+              <div class="eyebrow">Autonomo</div>
+              <div class="title">Income records</div>
+              <div class="selector">2026 · 20 rows ▾</div>
+            </div>
+            <button class="icon-btn" aria-label="Actions">⋯</button>
+          </div>
+
+          <main class="content">
+            <section class="header-card">
+              <div class="header-top">
+                <div class="header-title">Income</div>
+                <button class="ghost-btn">Refresh</button>
+              </div>
+              <div class="header-sub">Every record field is visible on the first pass. Good for trust and detail, heavier for repeated scanning.</div>
+            </section>
+
+            <div class="list">
+              <article class="record-card">
+                <div class="card-top">
+                  <div>
+                    <div class="date">2026-06-27</div>
+                    <div class="title-row">Invoice 2026-118 · Acme Studio</div>
+                  </div>
+                  <div class="amount">€1,420</div>
+                </div>
+                <div class="chip-row">
+                  <span class="chip">Paid</span>
+                  <span class="chip">Bank transfer</span>
+                </div>
+                <div class="fields">
+                  <div class="field">
+                    <div class="field-label">Invoice date</div>
+                    <div class="field-value">2026-06-25</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Payment date</div>
+                    <div class="field-value">2026-06-27</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Client</div>
+                    <div class="field-value">Acme Studio Barcelona</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Note</div>
+                    <div class="field-value">Brand strategy workshop and final deck delivery.</div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="record-card">
+                <div class="card-top">
+                  <div>
+                    <div class="date">2026-06-21</div>
+                    <div class="title-row">Invoice 2026-114 · Delta Advisory</div>
+                  </div>
+                  <div class="amount">€860</div>
+                </div>
+                <div class="chip-row">
+                  <span class="chip">Paid</span>
+                </div>
+                <div class="fields">
+                  <div class="field">
+                    <div class="field-label">Invoice date</div>
+                    <div class="field-value">2026-06-18</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Payment date</div>
+                    <div class="field-value">2026-06-21</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Client</div>
+                    <div class="field-value">Delta Advisory Madrid</div>
+                  </div>
+                  <div class="field">
+                    <div class="field-label">Note</div>
+                    <div class="field-value">Quick to verify, but each row consumes enough height that long lists become slower to scan.</div>
+                  </div>
+                </div>
+                <div class="warning">Good when the user needs immediate full context without opening each row.</div>
+              </article>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile Nav Prototype - Drawer</title>
+    <style>
+      :root {
+        --bg: #f2f0ea;
+        --panel: #fffdf8;
+        --panel-2: #f8f5ee;
+        --ink: #1f2933;
+        --muted: #6b7280;
+        --line: #d7d0c4;
+        --brand: #0f766e;
+        --brand-soft: #d7f0eb;
+        --accent: #b45309;
+        --danger: #991b1b;
+        --shadow: 0 18px 50px rgba(31, 41, 51, 0.14);
+        --radius: 18px;
+        --phone-w: 390px;
+        --phone-h: 844px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(15, 118, 110, 0.16), transparent 28%),
+          linear-gradient(180deg, #f8f5ee 0%, #ece7dd 100%);
+        color: var(--ink);
+      }
+
+      .stage {
+        width: min(100%, 980px);
+        display: grid;
+        gap: 24px;
+        grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .notes {
+        padding: 28px;
+        background: rgba(255, 253, 248, 0.86);
+        border: 1px solid rgba(215, 208, 196, 0.9);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .notes h1 {
+        margin: 0 0 12px;
+        font-size: 32px;
+        line-height: 1.05;
+      }
+
+      .notes p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .notes ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--ink);
+      }
+
+      .notes li + li {
+        margin-top: 10px;
+      }
+
+      .phone {
+        position: relative;
+        width: min(100%, var(--phone-w));
+        height: min(82vh, var(--phone-h));
+        margin: 0 auto;
+        border-radius: 38px;
+        padding: 12px;
+        background: #111827;
+        box-shadow: 0 24px 60px rgba(17, 24, 39, 0.28);
+      }
+
+      .screen {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--bg);
+      }
+
+      .statusbar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+      }
+
+      .icon-btn,
+      .ghost-btn,
+      .primary-btn,
+      .chip {
+        border: 0;
+        border-radius: 14px;
+        font: inherit;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        background: var(--panel);
+        box-shadow: 0 8px 20px rgba(31, 41, 51, 0.08);
+        cursor: pointer;
+      }
+
+      .toolbar-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .title {
+        font-size: 19px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .selector {
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        font-size: 14px;
+        color: var(--ink);
+      }
+
+      .chip {
+        padding: 6px 10px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .content {
+        height: calc(100% - 96px);
+        overflow: auto;
+        padding: 0 14px 20px;
+      }
+
+      .hero-card,
+      .section,
+      .table-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: 0 10px 24px rgba(31, 41, 51, 0.06);
+      }
+
+      .hero-card {
+        padding: 16px;
+      }
+
+      .hero-head,
+      .section-head,
+      .ledger-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .hero-title,
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .hero-amount {
+        margin-top: 14px;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-sub {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .primary-btn,
+      .ghost-btn {
+        padding: 11px 14px;
+        cursor: pointer;
+      }
+
+      .primary-btn {
+        background: var(--brand);
+        color: white;
+        font-weight: 700;
+      }
+
+      .ghost-btn {
+        background: var(--panel-2);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-weight: 600;
+      }
+
+      .grid {
+        margin-top: 14px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric {
+        padding: 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .metric-value {
+        margin-top: 8px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .section {
+        margin-top: 14px;
+        padding: 16px;
+      }
+
+      .subtle {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .table-card {
+        margin-top: 12px;
+        overflow: hidden;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 82px 1fr auto;
+        gap: 10px;
+        padding: 14px 16px;
+        align-items: start;
+      }
+
+      .row + .row {
+        border-top: 1px solid var(--line);
+      }
+
+      .row-date {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .row-title {
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .row-note {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .row-amount {
+        text-align: right;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms ease;
+      }
+
+      .drawer {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: min(82%, 302px);
+        background: #fffefb;
+        border-right: 1px solid var(--line);
+        box-shadow: 16px 0 40px rgba(17, 24, 39, 0.15);
+        transform: translateX(-100%);
+        transition: transform 180ms ease;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .drawer.open {
+        transform: translateX(0);
+      }
+
+      .overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .drawer-head {
+        padding: 22px 18px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .drawer-title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .drawer-sub {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .drawer-body {
+        padding: 14px;
+        overflow: auto;
+      }
+
+      .nav-group + .nav-group {
+        margin-top: 18px;
+      }
+
+      .nav-label {
+        margin: 0 8px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .nav-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 12px;
+        margin-top: 6px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        color: var(--ink);
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .nav-item.active {
+        background: var(--brand-soft);
+        border-color: rgba(15, 118, 110, 0.15);
+        color: #0f5f58;
+        font-weight: 700;
+      }
+
+      .nav-item.secondary {
+        color: var(--muted);
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      @media (max-width: 900px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 460px) {
+        body {
+          padding: 0;
+        }
+
+        .phone {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          padding: 0;
+        }
+
+        .screen {
+          border-radius: 0;
+        }
+
+        .notes {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="notes">
+        <h1>Drawer only</h1>
+        <p>This version keeps the mobile shell close to the current desktop mental model: one menu opens everything, and the content area gets the full screen height.</p>
+        <ul>
+          <li>Best when the app has many sibling sections and equal navigation weight.</li>
+          <li>Maximizes content space for summaries, tables, and forms.</li>
+          <li>Costs one extra tap to jump between frequently used sections.</li>
+        </ul>
+      </section>
+
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span>5G 92%</span>
+          </div>
+
+          <div class="toolbar">
+            <button class="icon-btn" id="openDrawer" aria-label="Open navigation">☰</button>
+            <div class="toolbar-main">
+              <div class="eyebrow">Workspace</div>
+              <div class="title-row">
+                <div class="title">Alex 2026 Finance Workspace</div>
+                <span class="chip">Read only</span>
+              </div>
+              <div class="selector">Autonomo · Income ▾</div>
+            </div>
+            <button class="icon-btn" aria-label="Settings">⋯</button>
+          </div>
+
+          <main class="content">
+            <section class="hero-card">
+              <div class="hero-head">
+                <div class="hero-title">Income</div>
+                <button class="ghost-btn">2026 ▾</button>
+              </div>
+              <div class="hero-amount">€12,480</div>
+              <div class="hero-sub">20 records this year. Drawer keeps all finance sections behind one entry point.</div>
+              <div class="hero-actions">
+                <button class="primary-btn">Add income</button>
+                <button class="ghost-btn">Refresh</button>
+              </div>
+            </section>
+
+            <div class="grid">
+              <div class="metric">
+                <div class="metric-label">Pending reserve</div>
+                <div class="metric-value">€2,340</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Can spend</div>
+                <div class="metric-value">€7,940</div>
+              </div>
+            </div>
+
+            <section class="section">
+              <div class="section-head">
+                <div class="section-title">Recent records</div>
+                <div class="subtle">Card rows on mobile</div>
+              </div>
+              <div class="table-card">
+                <div class="row">
+                  <div class="row-date">Jun 27</div>
+                  <div>
+                    <div class="row-title">Invoice 2026-118 · Acme Studio</div>
+                    <div class="row-note">Client payment received. In drawer mode, the content keeps maximum vertical room.</div>
+                  </div>
+                  <div class="row-amount">€1,420</div>
+                </div>
+                <div class="row">
+                  <div class="row-date">Jun 21</div>
+                  <div>
+                    <div class="row-title">Invoice 2026-114 · Delta Advisory</div>
+                    <div class="row-note">A frequent section switch requires reopening the drawer.</div>
+                  </div>
+                  <div class="row-amount">€860</div>
+                </div>
+                <div class="row">
+                  <div class="row-date">Jun 18</div>
+                  <div>
+                    <div class="row-title">Invoice 2026-112 · Northwind</div>
+                    <div class="row-note">Better when the user often scans one screen deeply before moving elsewhere.</div>
+                  </div>
+                  <div class="row-amount">€2,080</div>
+                </div>
+              </div>
+            </section>
+          </main>
+
+          <div class="overlay" id="overlay"></div>
+          <aside class="drawer" id="drawer">
+            <div class="drawer-head">
+              <div class="drawer-title">Alex 2026</div>
+              <div class="drawer-sub">All workspace destinations live in one drawer.</div>
+            </div>
+            <div class="drawer-body">
+              <div class="nav-group">
+                <div class="nav-label">Finance</div>
+                <button class="nav-item active"><span>Income</span><span class="dot"></span></button>
+                <button class="nav-item"><span>Expenses</span></button>
+                <button class="nav-item"><span>State payments</span></button>
+                <button class="nav-item"><span>Summaries</span></button>
+              </div>
+
+              <div class="nav-group">
+                <div class="nav-label">Planning</div>
+                <button class="nav-item"><span>Balance</span></button>
+                <button class="nav-item"><span>Budget</span></button>
+                <button class="nav-item"><span>Regular spendings</span></button>
+              </div>
+
+              <div class="nav-group">
+                <div class="nav-label">Workspace</div>
+                <button class="nav-item secondary"><span>Business entity selector</span></button>
+                <button class="nav-item secondary"><span>Workspace settings</span></button>
+                <button class="nav-item secondary"><span>User settings</span></button>
+                <button class="nav-item secondary"><span>Back to workspaces</span></button>
+                <button class="nav-item secondary"><span>Sign out</span></button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const drawer = document.getElementById('drawer');
+      const overlay = document.getElementById('overlay');
+      const openDrawer = document.getElementById('openDrawer');
+      const navItems = Array.from(document.querySelectorAll('.nav-item'));
+
+      function setOpen(next) {
+        drawer.classList.toggle('open', next);
+        overlay.classList.toggle('open', next);
+      }
+
+      openDrawer.addEventListener('click', () => setOpen(true));
+      overlay.addEventListener('click', () => setOpen(false));
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          navItems.forEach((entry) => entry.classList.remove('active'));
+          if (!item.classList.contains('secondary')) item.classList.add('active');
+          setOpen(false);
+        });
+      });
+    </script>
+  </body>
+</html>
