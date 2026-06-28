@@ -45,6 +45,7 @@ Use the phase task lists below as the source of truth while implementing this sp
 
 - One primary action per screen should be reachable without horizontal scrolling.
 - Mobile navigation should expose the same workspace services as desktop.
+- Mobile and desktop must keep feature parity. Mobile may change layout, density, or interaction patterns, but it must not drop data fields, actions, filters, tabs, or detail access that exist on desktop.
 - Desktop density stays intact; mobile can switch dense tables into cards or controlled horizontal scrollers.
 - Read-only workspace behavior must remain unchanged: create/edit/delete actions hidden or blocked.
 - Touch targets should be at least 44px high for tappable buttons, nav rows, and menu triggers.
@@ -227,6 +228,7 @@ Audit create/edit pages and dialogs so:
 - Renta form-like estimate panels already stack; verify long translated labels.
 - Month, quarter, and IVA tables may keep horizontal table scrolling because they are analytic comparison grids.
 - The scroll must be local to the table container, not the whole page.
+- Horizontal scrolling in `Summaries` is a presentation choice only. Mobile must preserve the same columns, calculations, row interactions, dialogs, and detail reachability as desktop.
 - Details dialogs should be `fullScreen` or otherwise fit phones.
 
 ### Business Entity Invoices
@@ -376,6 +378,7 @@ Acceptance:
 ## Risks and Design Decisions
 
 - Dense financial tables are not all equally suited to mobile cards. Transaction lists should become cards; analytic comparison tables can keep local scrollers.
+- Local horizontal scrolling is acceptable for analytic tables only when it preserves full desktop feature parity. Mobile must not lose columns, actions, or detail access just to avoid scroll.
 - Mobile record cards should keep primary facts visible and hide secondary details behind a per-row expand action. This preserves scan speed on long lists without removing access to full row detail.
 - The app bar currently mixes title, entity selector, workspace name, settings, back link, user settings, and sign out. On phones, these low-priority account/workspace actions should collapse into one overflow menu rather than compete for inline space.
 - First-release mobile navigation uses a bottom-nav hybrid instead of a drawer-only model. `Income`, `Balance`, and `Summaries` are pinned because they are high-frequency destinations; `More` carries grouped secondary destinations and workspace actions.
