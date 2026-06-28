@@ -93,9 +93,14 @@ Use the phase task lists below as the source of truth while implementing this sp
 Update `src/ui/components/AppShell.tsx` and callers so:
 
 - Desktop keeps the current left nav.
-- Mobile hides the persistent left nav and uses a temporary MUI `Drawer` opened from an icon button in the top bar.
-- The drawer contains the same `nav` content currently passed to `AppShell`.
-- The drawer closes after a nav item is selected.
+- Mobile hides the persistent left nav and uses a bottom navigation hybrid for the first release.
+- The mobile bottom bar pins `Income`, `Balance`, `Summaries`, and `More`.
+- `More` opens a grouped sheet for the remaining workspace destinations.
+- The mobile top bar must not show a separate drawer button while the bottom bar has `More`.
+- The grouped `More` sheet should preserve the current drawer's information architecture:
+  - `Tax & Accounting`: Income, Expenses, State payments, summaries, and tax-oriented destinations not pinned in the bottom bar.
+  - `Personal Finance`: Balance, Budget and Regular spendings.
+  - `Workspace`: business entity selector/settings, workspace settings, user settings, back to workspaces, and sign out.
 - Main content uses `Container` padding like `px: { xs: 2, sm: 3 }`, `py: { xs: 2, sm: 3 }`.
 - The top bar supports wrapping or collapsing right-side controls so it does not overflow at 360px.
 - The app title truncates with ellipsis when needed.
@@ -170,7 +175,8 @@ Audit create/edit pages and dialogs so:
 
 ### Workspace Shell
 
-- Mobile must provide access to Income, Expenses, State payments, Summaries, Balance, Budget, Regular spendings.
+- Mobile must provide direct bottom-bar access to Income, Balance, and Summaries.
+- Mobile must provide access to Expenses, State payments, Budget, and Regular spendings through the grouped `More` sheet.
 - When a business entity is selected, mobile nav must switch to Invoices and Summary like desktop.
 - Entity selector changes must route exactly as desktop does.
 - Back to workspace list, workspace settings, user settings, and sign out remain reachable.
@@ -246,7 +252,9 @@ Audit create/edit pages and dialogs so:
 
 Tasks:
 
-- [ ] Add responsive `AppShell` drawer behavior.
+- [ ] Add responsive `AppShell` bottom navigation behavior.
+- [ ] Add a grouped `More` sheet for non-pinned workspace destinations.
+- [ ] Remove the mobile top-left drawer button when bottom navigation is active.
 - [ ] Make `PageHeader` responsive.
 - [ ] Add reusable mobile action wrapping helpers if needed.
 - [ ] Add the shared table/card strategy component or equivalent documented pattern.
@@ -257,7 +265,8 @@ Acceptance:
 
 - [ ] `/workspaces` fits at 360px without page-level horizontal scrolling.
 - [ ] A workspace route fits at 360px without page-level horizontal scrolling.
-- [ ] All workspace nav destinations are reachable from mobile.
+- [ ] Income, Balance, and Summaries are reachable directly from the mobile bottom bar.
+- [ ] Expenses, State payments, Budget, Regular spendings, and workspace actions are reachable through grouped `More` sections.
 - [ ] Desktop left nav still renders at `md` and above.
 
 ### Phase 2 - Core Record Lists and Forms
@@ -363,12 +372,12 @@ Acceptance:
 
 - Dense financial tables are not all equally suited to mobile cards. Transaction lists should become cards; analytic comparison tables can keep local scrollers.
 - The app bar currently mixes title, entity selector, workspace name, settings, back link, user settings, and sign out. On phones, these low-priority account/workspace actions should collapse into one overflow menu rather than compete for inline space.
+- First-release mobile navigation uses a bottom-nav hybrid instead of a drawer-only model. `Income`, `Balance`, and `Summaries` are pinned because they are high-frequency destinations; `More` carries grouped secondary destinations and workspace actions.
 - MUI `Dialog` defaults may be cramped on phones; use responsive `fullScreen` selectively for settings-heavy dialogs.
-- RTL plus drawer anchoring must be tested, not assumed.
+- RTL plus bottom-bar and sheet behavior must be tested, not assumed.
 - Existing pages use many local table implementations. A reusable mobile view pattern should be introduced early to avoid drift.
 
 ## Open Questions
 
-- Should mobile show a bottom navigation for the most-used workspace services, or is a drawer enough for the first release?
 - Should mobile record cards show all row fields by default, or hide secondary details behind an expand action?
 - Do we want screenshots committed as QA artifacts, or only a written smoke-test note?
