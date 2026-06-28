@@ -219,6 +219,7 @@ export function WorkspaceLayoutPage() {
       ]
   mobileMoreSections.push({
     title: t('workspace.title'),
+    emphasizedLabel: true,
     items: [
       { label: t('businessEntities.title'), onClick: () => setSettingsOpen(true), icon: <BusinessOutlinedIcon /> },
       { label: t('common.settings'), onClick: () => setSettingsOpen(true), icon: <SettingsOutlinedIcon /> },
