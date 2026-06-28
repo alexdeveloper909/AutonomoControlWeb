@@ -259,14 +259,14 @@ Audit create/edit pages and dialogs so:
 
 Tasks:
 
-- [ ] Add responsive `AppShell` bottom navigation behavior.
-- [ ] Add a grouped `More` sheet for non-pinned workspace destinations.
-- [ ] Remove the mobile top-left drawer button when bottom navigation is active.
-- [ ] Make `PageHeader` responsive.
-- [ ] Add reusable mobile action wrapping helpers if needed.
-- [ ] Add the shared table/card strategy component or equivalent documented pattern.
-- [ ] Update `WorkspaceLayoutPage` mobile header behavior for entity selector, workspace actions, and read-only visibility.
-- [ ] Run `npm run typecheck`.
+- [x] Add responsive `AppShell` bottom navigation behavior.
+- [x] Add a grouped `More` sheet for non-pinned workspace destinations.
+- [x] Remove the mobile top-left drawer button when bottom navigation is active.
+- [x] Make `PageHeader` responsive.
+- [x] Add reusable mobile action wrapping helpers if needed.
+- [x] Add the shared table/card strategy component or equivalent documented pattern.
+- [x] Update `WorkspaceLayoutPage` mobile header behavior for entity selector, workspace actions, and read-only visibility.
+- [x] Run `npm run typecheck`.
 
 Acceptance:
 

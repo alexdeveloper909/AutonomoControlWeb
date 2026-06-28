@@ -1,8 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Button, Chip, Divider, FormControl, IconButton, InputLabel, Link as MuiLink, List, ListItemButton, ListItemText, ListSubheader, MenuItem, Select, Stack, Typography } from '@mui/material'
+import { Button, Chip, Divider, FormControl, IconButton, InputLabel, Link as MuiLink, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, Menu, MenuItem, Select, Stack, Typography } from '@mui/material'
+import type { MouseEvent } from 'react'
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
+import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined'
+import EventRepeatOutlinedIcon from '@mui/icons-material/EventRepeatOutlined'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined'
+import MoreVertOutlinedIcon from '@mui/icons-material/MoreVertOutlined'
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined'
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined'
+import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { AppShell } from '../components/AppShell'
+import type { AppShellMobileNavItem, AppShellMoreSection } from '../components/AppShell'
 import { useAuth } from '../auth/useAuth'
 import { AutonomoControlApi } from '../../infrastructure/api/autonomoControlApi'
 import { WorkspaceSummariesPage } from './WorkspaceSummariesPage'
@@ -20,6 +35,7 @@ import { isUkrainianFopEntity } from '../../domain/settings'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { LoadingScreen } from '../components/LoadingScreen'
 import { WorkspaceBusinessEntityRoutes } from './WorkspaceBusinessEntityRoutes'
+import { useUserSettings } from '../user/userSettingsContext'
 
 function LegacyTransfersRedirect(props: { basePath: string }) {
   const location = useLocation()
@@ -32,11 +48,13 @@ function LegacyTransfersRedirect(props: { basePath: string }) {
 export function WorkspaceLayoutPage() {
   const params = useParams()
   const workspaceId = params.workspaceId
-  const { session } = useAuth()
+  const { logout, session } = useAuth()
+  const { openSettings: openUserSettings } = useUserSettings()
   const api = useMemo(() => new AutonomoControlApi(() => session?.tokens.idToken ?? null), [session?.tokens])
   const location = useLocation()
   const navigate = useNavigate()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null)
   const [workspace, setWorkspace] = useState<Workspace | null | undefined>(undefined)
   const [businessEntities, setBusinessEntities] = useState<BusinessEntity[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -123,14 +141,110 @@ export function WorkspaceLayoutPage() {
     : [{ entityId: 'autonomo', type: 'AUTONOMO', name: 'Autonomo', builtIn: true } as BusinessEntity]
   const entityMode = selectedEntityId !== 'autonomo'
   const entityBasePath = `${basePath}/business-entities/${selectedEntityId}`
+  const closeAccountMenu = () => setAccountAnchor(null)
+  const openAccountMenu = (event: MouseEvent<HTMLElement>) => setAccountAnchor(event.currentTarget)
+
+  const mobileNavItems: AppShellMobileNavItem[] = entityMode
+    ? [
+        {
+          label: t('businessEntities.invoices'),
+          to: `${entityBasePath}/invoices`,
+          selected: section === 'invoices',
+          icon: <ReceiptLongOutlinedIcon />,
+        },
+        {
+          label: t('businessEntities.summary'),
+          to: `${entityBasePath}/summary`,
+          selected: section === 'summary',
+          icon: <AssessmentOutlinedIcon />,
+        },
+      ]
+    : [
+        {
+          label: t('workspace.income'),
+          to: `${basePath}/income`,
+          selected: section === 'income',
+          icon: <ReceiptLongOutlinedIcon />,
+        },
+        {
+          label: t('workspace.transfers'),
+          to: `${basePath}/balance`,
+          selected: section === 'balance',
+          icon: <AccountBalanceWalletOutlinedIcon />,
+        },
+        {
+          label: t('workspace.summaries'),
+          to: `${basePath}/summaries`,
+          selected: section === 'summaries',
+          icon: <AssessmentOutlinedIcon />,
+        },
+      ]
+  const mobileMoreSections: AppShellMoreSection[] = entityMode
+    ? [
+        {
+          title: selectedEntity?.name ?? t('businessEntities.title'),
+          items: [
+            { label: t('businessEntities.invoices'), to: `${entityBasePath}/invoices`, selected: section === 'invoices', icon: <ReceiptLongOutlinedIcon /> },
+            { label: t('businessEntities.summary'), to: `${entityBasePath}/summary`, selected: section === 'summary', icon: <AssessmentOutlinedIcon /> },
+          ],
+        },
+        {
+          title: t('workspace.finance'),
+          items: [
+            { label: t('workspace.income'), to: `${basePath}/income`, icon: <ReceiptLongOutlinedIcon /> },
+            { label: t('workspace.expenses'), to: `${basePath}/expenses`, icon: <RequestQuoteOutlinedIcon /> },
+            { label: t('workspace.statePayments'), to: `${basePath}/state-payments`, icon: <PaymentsOutlinedIcon /> },
+            { label: t('workspace.summaries'), to: `${basePath}/summaries`, icon: <AssessmentOutlinedIcon /> },
+          ],
+        },
+      ]
+    : [
+        {
+          title: t('workspace.finance'),
+          items: [
+            { label: t('workspace.income'), to: `${basePath}/income`, selected: section === 'income', icon: <ReceiptLongOutlinedIcon /> },
+            { label: t('workspace.expenses'), to: `${basePath}/expenses`, selected: section === 'expenses', icon: <RequestQuoteOutlinedIcon /> },
+            { label: t('workspace.statePayments'), to: `${basePath}/state-payments`, selected: section === 'state-payments', icon: <PaymentsOutlinedIcon /> },
+            { label: t('workspace.summaries'), to: `${basePath}/summaries`, selected: section === 'summaries', icon: <AssessmentOutlinedIcon /> },
+          ],
+        },
+        {
+          title: t('workspace.planning'),
+          items: [
+            { label: t('workspace.transfers'), to: `${basePath}/balance`, selected: section === 'balance', icon: <AccountBalanceWalletOutlinedIcon /> },
+            { label: t('workspace.budget'), to: `${basePath}/budget`, selected: section === 'budget', icon: <SavingsOutlinedIcon /> },
+            { label: t('workspace.regularSpendings'), to: `${basePath}/regular-spendings`, selected: section === 'regular-spendings', icon: <EventRepeatOutlinedIcon /> },
+          ],
+        },
+      ]
+  mobileMoreSections.push({
+    title: t('workspace.title'),
+    items: [
+      { label: t('businessEntities.title'), onClick: () => setSettingsOpen(true), icon: <BusinessOutlinedIcon /> },
+      { label: t('common.settings'), onClick: () => setSettingsOpen(true), icon: <SettingsOutlinedIcon /> },
+      { label: t('common.userSettings'), onClick: openUserSettings, icon: <ManageAccountsOutlinedIcon /> },
+      { label: t('workspace.back'), to: '/workspaces', icon: <HomeOutlinedIcon /> },
+      { label: t('appShell.signOut'), onClick: logout, icon: <LogoutOutlinedIcon /> },
+    ],
+  })
 
   return (
     <AppShell
       title={workspace.name || t('workspace.title')}
+      hideDefaultAccountActions
+      mobileNavItems={mobileNavItems}
+      mobileMoreSections={mobileMoreSections}
       right={
-        <Stack direction="row" spacing={2} alignItems="center">
-          {readOnly ? <Chip size="small" color="default" label={t('workspaceDetails.readOnly')} /> : null}
-          <FormControl size="small" sx={{ minWidth: 190 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+          {readOnly ? (
+            <Chip
+              size="small"
+              color="default"
+              label={t('workspaceDetails.readOnly')}
+              sx={{ flexShrink: 0, maxWidth: { xs: 88, sm: 'none' } }}
+            />
+          ) : null}
+          <FormControl size="small" sx={{ minWidth: { xs: 128, sm: 190 }, maxWidth: { xs: 160, sm: 240 } }}>
             <InputLabel id="workspace-entity-selector-label">{t('businessEntities.selector')}</InputLabel>
             <Select
               labelId="workspace-entity-selector-label"
@@ -149,15 +263,79 @@ export function WorkspaceLayoutPage() {
               ))}
             </Select>
           </FormControl>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+          <Typography variant="body2" noWrap sx={{ opacity: 0.9, maxWidth: 220, display: { xs: 'none', lg: 'block' } }}>
             {workspace.name}
           </Typography>
-          <IconButton color="inherit" onClick={() => setSettingsOpen(true)} aria-label={t('common.settings')}>
+          <IconButton
+            color="inherit"
+            onClick={() => setSettingsOpen(true)}
+            aria-label={t('common.settings')}
+            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+          >
             <SettingsOutlinedIcon />
           </IconButton>
-          <MuiLink component={RouterLink} to="/workspaces" color="inherit" underline="hover">
+          <MuiLink
+            component={RouterLink}
+            to="/workspaces"
+            color="inherit"
+            underline="hover"
+            sx={{ display: { xs: 'none', md: 'inline-flex' }, whiteSpace: 'nowrap' }}
+          >
             {t('workspace.back')}
           </MuiLink>
+          <IconButton
+            color="inherit"
+            onClick={openAccountMenu}
+            aria-label={t('common.more')}
+            sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+          >
+            <MoreVertOutlinedIcon />
+          </IconButton>
+          <Menu anchorEl={accountAnchor} open={Boolean(accountAnchor)} onClose={closeAccountMenu}>
+            <MenuItem
+              onClick={() => {
+                closeAccountMenu()
+                openUserSettings()
+              }}
+            >
+              <ListItemIcon>
+                <AccountCircleOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('common.userSettings')}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                closeAccountMenu()
+                setSettingsOpen(true)
+              }}
+            >
+              <ListItemIcon>
+                <SettingsOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('common.settings')}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={RouterLink}
+              to="/workspaces"
+              onClick={closeAccountMenu}
+            >
+              <ListItemIcon>
+                <HomeOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('workspace.back')}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                closeAccountMenu()
+                logout()
+              }}
+            >
+              <ListItemIcon>
+                <LogoutOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('appShell.signOut')}</ListItemText>
+            </MenuItem>
+          </Menu>
         </Stack>
       }
       nav={
