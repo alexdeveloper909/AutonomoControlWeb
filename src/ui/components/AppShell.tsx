@@ -13,10 +13,12 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
   Toolbar,
   Typography,
   useTheme,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import type { PropsWithChildren, ReactNode } from 'react'
 import { useState } from 'react'
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined'
@@ -66,11 +68,25 @@ export function AppShell(
   const mobileMoreSections = props.mobileMoreSections ?? []
   const hasMobileNavigation = mobileNavItems.length > 0 || mobileMoreSections.length > 0
 
+  const mobileNavHeight = 82
+
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="sticky">
-        <Toolbar sx={{ gap: 1, minWidth: 0 }}>
-          <Typography variant="h6" noWrap sx={{ flex: 1, minWidth: 0 }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      <AppBar
+        position="sticky"
+        sx={{
+          boxShadow: { xs: `0 10px 30px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.22 : 0.08)}`, md: 'none' },
+        }}
+      >
+        <Toolbar
+          sx={{
+            gap: { xs: 0.75, sm: 1 },
+            minWidth: 0,
+            minHeight: { xs: 58, sm: 64 },
+            px: { xs: 1.5, sm: 2 },
+          }}
+        >
+          <Typography variant="h6" noWrap sx={{ flex: 1, minWidth: 0, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
             {props.title}
           </Typography>
           {props.right}
@@ -111,67 +127,139 @@ export function AppShell(
             minWidth: 0,
             overflow: 'auto',
             background: appGradient(theme.palette.mode),
-            pb: hasMobileNavigation ? { xs: 7, md: 0 } : 0,
+            pb: hasMobileNavigation ? { xs: `${mobileNavHeight + 18}px`, md: 0 } : 0,
           }}
         >
-          <Container sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>{props.children}</Container>
+          <Container
+            sx={{
+              px: { xs: 1.5, sm: 3 },
+              py: { xs: 1.5, sm: 3 },
+              maxWidth: { xs: '100%', lg: 1200 },
+            }}
+          >
+            {props.children}
+          </Container>
         </Box>
       </Box>
       {hasMobileNavigation ? (
         <>
-          <BottomNavigation
-            showLabels
+          <Paper
+            elevation={0}
             sx={{
               display: { xs: 'flex', md: 'none' },
               position: 'fixed',
-              right: 0,
-              bottom: 0,
-              left: 0,
+              right: 12,
+              bottom: 10,
+              left: 12,
               zIndex: theme.zIndex.appBar,
               borderTop: 1,
               borderColor: 'divider',
-              bgcolor: 'background.paper',
+              borderRadius: 3,
+              bgcolor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.86 : 0.92),
+              boxShadow: `0 16px 36px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.4 : 0.14)}`,
+              backdropFilter: 'blur(16px)',
+              overflow: 'hidden',
             }}
           >
-            {mobileNavItems.map((item) => (
-              <BottomNavigationAction
-                key={item.to}
-                label={item.label}
-                icon={item.icon}
-                component={RouterLink}
-                to={item.to}
-                value={item.to}
-                sx={{ color: item.selected ? 'primary.main' : 'text.secondary' }}
-              />
-            ))}
-            {mobileMoreSections.length ? (
-              <BottomNavigationAction
-                label={t('common.more')}
-                icon={<MoreHorizOutlinedIcon />}
-                onClick={() => setMoreOpen(true)}
-              />
-            ) : null}
-          </BottomNavigation>
+            <BottomNavigation
+              showLabels
+              value={mobileNavItems.find((item) => item.selected)?.to ?? (moreOpen ? '__more' : false)}
+              sx={{
+                width: '100%',
+                height: mobileNavHeight - 20,
+                bgcolor: 'transparent',
+                p: 1,
+                gap: 0.5,
+                '& .MuiBottomNavigationAction-root': {
+                  minWidth: 0,
+                  borderRadius: 2,
+                  color: 'text.secondary',
+                  px: 0.5,
+                  transition: theme.transitions.create(['background-color', 'color'], { duration: theme.transitions.duration.shorter }),
+                },
+                '& .MuiBottomNavigationAction-label': {
+                  fontSize: 11,
+                  whiteSpace: 'nowrap',
+                },
+                '& .Mui-selected': {
+                  color: 'primary.main',
+                  bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.11),
+                  fontWeight: 700,
+                },
+              }}
+            >
+              {mobileNavItems.map((item) => (
+                <BottomNavigationAction
+                  key={item.to}
+                  label={item.label}
+                  icon={item.icon}
+                  component={RouterLink}
+                  to={item.to}
+                  value={item.to}
+                />
+              ))}
+              {mobileMoreSections.length ? (
+                <BottomNavigationAction
+                  label={t('common.more')}
+                  icon={<MoreHorizOutlinedIcon />}
+                  value="__more"
+                  onClick={() => setMoreOpen(true)}
+                />
+              ) : null}
+            </BottomNavigation>
+          </Paper>
           <Drawer
             anchor="bottom"
             open={moreOpen}
             onClose={() => setMoreOpen(false)}
+            ModalProps={{
+              slotProps: {
+                backdrop: {
+                  sx: {
+                    bgcolor: alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.56 : 0.28),
+                    backdropFilter: 'blur(2px)',
+                  },
+                },
+              },
+            }}
             PaperProps={{
               sx: {
                 display: { xs: 'block', md: 'none' },
-                maxHeight: '82dvh',
-                borderTopLeftRadius: 8,
-                borderTopRightRadius: 8,
+                maxHeight: '76dvh',
+                mx: 1.5,
+                mb: `${mobileNavHeight + 18}px`,
+                borderRadius: 3,
+                border: 1,
+                borderColor: 'divider',
+                boxShadow: `0 22px 54px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.46 : 0.18)}`,
+                overflow: 'hidden',
               },
             }}
           >
-            <Box sx={{ py: 1 }}>
+            <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                {t('common.more')}
+              </Typography>
+            </Box>
+            <Box sx={{ px: 1, pb: 1.5, overflow: 'auto' }}>
               {mobileMoreSections.map((section, sectionIndex) => (
                 <Box key={section.title}>
-                  {sectionIndex > 0 ? <Divider /> : null}
+                  {sectionIndex > 0 ? <Divider sx={{ my: 1 }} /> : null}
                   <List
+                    dense
                     subheader={
-                      <ListSubheader component="div" sx={{ bgcolor: 'background.paper' }}>
+                      <ListSubheader
+                        component="div"
+                        sx={{
+                          bgcolor: 'background.paper',
+                          color: 'text.secondary',
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: '0.08em',
+                          lineHeight: '32px',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         {section.title}
                       </ListSubheader>
                     }
@@ -186,8 +274,15 @@ export function AppShell(
                           setMoreOpen(false)
                           item.onClick?.()
                         }}
+                        sx={{
+                          minHeight: 48,
+                          borderRadius: 2,
+                          '&.Mui-selected': {
+                            bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.1),
+                          },
+                        }}
                       >
-                        {item.icon ? <ListItemIcon>{item.icon}</ListItemIcon> : null}
+                        {item.icon ? <ListItemIcon sx={{ minWidth: 38 }}>{item.icon}</ListItemIcon> : null}
                         <ListItemText primary={item.label} />
                       </ListItemButton>
                     ))}

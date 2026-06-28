@@ -1,4 +1,5 @@
 import { Button, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import type { ReactNode } from 'react'
 
 export function RecordListControls(props: {
@@ -19,7 +20,15 @@ export function RecordListControls(props: {
   onNext: () => void
 }) {
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        p: { xs: 1.5, sm: 2 },
+        borderRadius: 2.25,
+        borderColor: (theme) => alpha(theme.palette.divider, 0.72),
+        boxShadow: { xs: (theme) => `0 10px 24px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.2 : 0.05)}`, sm: 'none' },
+      }}
+    >
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
         <FormControl sx={{ minWidth: { xs: 0, sm: 160 } }}>
           <InputLabel id={props.labelId}>{props.yearLabel}</InputLabel>
@@ -50,7 +59,11 @@ export function RecordListControls(props: {
             '& > .MuiButton-root': { minHeight: 44, flex: { xs: '1 1 calc(33.33% - 8px)', sm: '0 0 auto' } },
           }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ flex: { xs: '1 1 100%', sm: '0 0 auto' }, fontWeight: { xs: 600, sm: 400 } }}
+          >
             {props.pageSummary}
           </Typography>
           <Button variant="text" onClick={props.onRefresh} disabled={props.isFetching}>
