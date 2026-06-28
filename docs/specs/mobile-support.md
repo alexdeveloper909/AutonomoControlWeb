@@ -186,7 +186,8 @@ Audit create/edit pages and dialogs so:
 - Year filter and pagination controls should stack or wrap on phones.
 - Record list should use mobile cards on phones:
   - primary line: event date plus amount/base value.
-  - secondary lines: invoice/payment/state payment identifiers and party/category.
+  - secondary facts stay behind a per-row expand action by default.
+  - expanded content contains invoice/payment/state payment identifiers and party/category.
   - action menu on the right when writable.
 - Desktop table behavior stays unchanged.
 
@@ -196,8 +197,8 @@ Audit create/edit pages and dialogs so:
 - Account filter and year selector already stack; verify no overflow.
 - Account summary cards should remain one per row on phones.
 - Ledger should use mobile cards on phones:
-  - date, account, operation, amount, impact, running balance.
-  - note shown after the financial summary.
+  - date, account, operation, amount, impact, and running balance stay visible by default.
+  - note and any longer secondary context stay behind a per-row expand action.
   - action menu retained when writable.
 - Account create/rename dialog must be comfortable on phones.
 
@@ -206,7 +207,8 @@ Audit create/edit pages and dialogs so:
 - Summary metric grid should be 1 column on phones.
 - Trend chart already has an internal scroller; verify the page itself does not scroll horizontally.
 - Monthly budget table should become cards or a constrained table scroller:
-  - month, status, spent, target, saved, savings rate, notes.
+  - month, status, spent, target, and saved stay visible by default.
+  - savings rate, notes, and duplicate/exceptional detail can live in expanded secondary content.
   - duplicate and exceptional-spend chips remain visible.
 
 ### Regular Spendings
@@ -215,7 +217,9 @@ Audit create/edit pages and dialogs so:
 - Totals already stack; verify chart range toggle fits or wraps.
 - Chart can keep internal horizontal scrolling.
 - Upcoming list remains readable with amount chips.
-- Definitions list should use cards on phones with name, schedule, start date, amount, and actions.
+- Definitions list should use cards on phones with name, schedule, and amount visible by default.
+- Start date and longer secondary detail can live behind a per-row expand action.
+- Actions remain reachable without forcing expansion.
 
 ### Summaries
 
@@ -229,7 +233,8 @@ Audit create/edit pages and dialogs so:
 
 - Year filter and pagination controls wrap.
 - Invoice list should use mobile cards:
-  - received date, invoice date, invoice number, client, amount, tax base.
+  - received date, invoice number, amount, and tax base stay visible by default.
+  - invoice date and client sit in expanded secondary content.
   - actions retained for writable active entities.
 - Archived/read-only states remain visible.
 
@@ -371,6 +376,7 @@ Acceptance:
 ## Risks and Design Decisions
 
 - Dense financial tables are not all equally suited to mobile cards. Transaction lists should become cards; analytic comparison tables can keep local scrollers.
+- Mobile record cards should keep primary facts visible and hide secondary details behind a per-row expand action. This preserves scan speed on long lists without removing access to full row detail.
 - The app bar currently mixes title, entity selector, workspace name, settings, back link, user settings, and sign out. On phones, these low-priority account/workspace actions should collapse into one overflow menu rather than compete for inline space.
 - First-release mobile navigation uses a bottom-nav hybrid instead of a drawer-only model. `Income`, `Balance`, and `Summaries` are pinned because they are high-frequency destinations; `More` carries grouped secondary destinations and workspace actions.
 - MUI `Dialog` defaults may be cramped on phones; use responsive `fullScreen` selectively for settings-heavy dialogs.
@@ -379,5 +385,4 @@ Acceptance:
 
 ## Open Questions
 
-- Should mobile record cards show all row fields by default, or hide secondary details behind an expand action?
 - Do we want screenshots committed as QA artifacts, or only a written smoke-test note?
