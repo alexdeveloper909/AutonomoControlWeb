@@ -177,14 +177,14 @@ export function AppShell(
                   px: 0.5,
                   transition: theme.transitions.create(['background-color', 'color'], { duration: theme.transitions.duration.shorter }),
                 },
-                '& .MuiBottomNavigationAction-label': {
-                  fontSize: 11,
-                  whiteSpace: 'nowrap',
-                },
-                '& .Mui-selected': {
+                '& .MuiBottomNavigationAction-root.Mui-selected': {
                   color: 'primary.main',
                   bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.11),
                   fontWeight: 700,
+                },
+                '& .MuiBottomNavigationAction-label': {
+                  fontSize: 11,
+                  whiteSpace: 'nowrap',
                 },
               }}
             >
