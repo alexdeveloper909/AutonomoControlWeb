@@ -1037,6 +1037,11 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                 { key: 'seguridadSocialPaid', label: summaryLabel('seguridadSocialPaid'), value: money.format(selectedMonth.seguridadSocialPaid) },
                 { key: 'profitForIrpf', label: summaryLabel('profitForIrpf'), value: money.format(selectedMonth.profitForIrpf) },
                 { key: 'irpfReserve', label: summaryLabel('irpfReserve'), value: money.format(selectedMonth.irpfReserve) },
+                {
+                  key: 'incomeAfterIrpfReserve',
+                  label: summaryLabel('incomeAfterIrpfReserve'),
+                  value: money.format(selectedMonth.incomeBase - selectedMonth.irpfReserve),
+                },
                 { key: 'ivaSettlementEstimate', label: summaryLabel('ivaSettlementEstimate'), value: money.format(selectedMonth.ivaSettlementEstimate) },
                 { key: 'recommendedTaxReserve', label: summaryLabel('recommendedTaxReserve'), value: money.format(selectedMonth.recommendedTaxReserve) },
                 { key: 'cashIn', label: summaryLabel('cashIn'), value: money.format(selectedMonth.cashIn) },

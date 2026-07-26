@@ -915,6 +915,7 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Social security paid (quarter)',
           profitForIrpf: 'Profit for IRPF',
           irpfReserve: 'IRPF reserve',
+          incomeAfterIrpfReserve: 'Income after IRPF reserve',
           ivaSettlementEstimate: 'IVA settlement estimate',
           recommendedTaxReserve: 'Recommended tax reserve',
           cashIn: 'Cash in',
@@ -925,7 +926,7 @@ export const resources = {
           netCashFlow: 'Net cash flow',
           canSpendAfterPlannedTaxes: 'Can spend after planned taxes',
           canSpendThisMonth: 'Can spend (with expenses)',
-          canSpendIgnoringExpenses: 'Can spend',
+          canSpendIgnoringExpenses: 'Cash available after recorded payments',
           canSpendWithRentaSave: 'Can spend with save for Renta',
           modelo130PaidForQuarter: 'Modelo 130 paid for this quarter',
           modelo130DueThisQuarter: 'Modelo 130 due this quarter',
@@ -943,6 +944,8 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Sum of “Seguridad Social” payments in the quarter.',
           profitForIrpf: 'Income base − deductible expenses − social security (paid).',
           irpfReserve: 'If Modelo 130 applies: max(0, IRPF rate × profit − IRPF withheld).',
+          incomeAfterIrpfReserve:
+            'Income before expenses and Social Security, less only the IRPF reserve. This is a planning view, not cash available to spend.',
           ivaSettlementEstimate: 'VAT output − VAT recoverable (can be negative).',
           recommendedTaxReserve: 'max(0, IVA settlement) + IRPF reserve.',
           cashIn: 'Cash received from invoices (uses payment date if present).',
@@ -954,7 +957,8 @@ export const resources = {
           canSpendAfterPlannedTaxes:
             'Primary spendable-money metric after planned taxes. Tax settlement payments do not reduce this a second time.',
           canSpendThisMonth: 'Compatibility alias for “Can spend after planned taxes”.',
-          canSpendIgnoringExpenses: 'Can spend + cash out (expenses). Useful if expenses are paid from another account.',
+          canSpendIgnoringExpenses:
+            'Income less planned tax reserves and cash already paid to the state, including Social Security; business expenses are not subtracted.',
           modelo130PaidForQuarter: 'Modelo 130 payments attributed to this filing quarter, even if the cash payment date is in the next quarter.',
           modelo130DueThisQuarter: 'Cumulative Modelo 130 filing estimate for this quarter, after previous payments and withholdings.',
           canSpendWithRentaSave:
@@ -1886,13 +1890,14 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Seguridad Social pagada (trimestre)',
           profitForIrpf: 'Beneficio para IRPF',
           irpfReserve: 'Reserva IRPF',
+          incomeAfterIrpfReserve: 'Ingresos tras la reserva IRPF',
           ivaSettlementEstimate: 'Estimación liquidación IVA',
           recommendedTaxReserve: 'Reserva fiscal recomendada',
           cashIn: 'Entradas de caja',
           cashOutExpenses: 'Salidas (gastos)',
           cashOutState: 'Salidas (Estado)',
           canSpendThisMonth: 'Puede gastar (con gastos)',
-          canSpendIgnoringExpenses: 'Puede gastar',
+          canSpendIgnoringExpenses: 'Efectivo disponible tras pagos registrados',
           canSpendWithRentaSave: 'Puede gastar guardando para Renta',
           start: 'Inicio',
           end: 'Fin',
@@ -1908,6 +1913,8 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Suma de pagos de “Seguridad Social” en el trimestre.',
           profitForIrpf: 'Ingresos base − gastos deducibles − Seguridad Social (pagada).',
           irpfReserve: 'Si aplica Modelo 130: max(0, tipo IRPF × beneficio − IRPF retenido).',
+          incomeAfterIrpfReserve:
+            'Ingresos antes de gastos y Seguridad Social, menos solo la reserva IRPF. Es una vista de planificación, no efectivo disponible para gastar.',
           ivaSettlementEstimate: 'IVA repercutido − IVA deducible (puede ser negativo).',
           recommendedTaxReserve: 'max(0, liquidación IVA) + reserva IRPF.',
           cashIn: 'Efectivo recibido de ingresos (usa fecha de pago si existe).',
@@ -1916,7 +1923,7 @@ export const resources = {
           canSpendThisMonth:
             'max(0, caja entrada − caja salida (gastos) − caja salida (Estado) − reserva IRPF − liquidación IVA).',
           canSpendIgnoringExpenses:
-            'Puede gastar + salidas (gastos). Útil si los gastos se pagan desde otra cuenta.',
+            'Ingresos menos reservas fiscales planificadas y efectivo ya pagado al Estado, incluida la Seguridad Social; no se restan los gastos de negocio.',
           canSpendWithRentaSave:
             'Si la planificación de Renta espera un pago adicional: max(0, Puede gastar − ahorro mensual sugerido). Es un ahorro incremental además de la reserva trimestral/Modelo 130 que ya está incluida en “Puede gastar”. Se muestra como “-” en meses inactivos. Si no, “-”.',
         },
@@ -2824,13 +2831,14 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Соцстраховка (квартал)',
           profitForIrpf: 'Прибуток для IRPF',
           irpfReserve: 'Резерв IRPF',
+          incomeAfterIrpfReserve: 'Дохід після резерву IRPF',
           ivaSettlementEstimate: 'Оцінка IVA до сплати',
           recommendedTaxReserve: 'Рекомендований податковий резерв',
           cashIn: 'Надходження',
           cashOutExpenses: 'Витрати (гроші)',
           cashOutState: 'Платежі державі (гроші)',
           canSpendThisMonth: 'Можна витратити (з витратами)',
-          canSpendIgnoringExpenses: 'Можна витратити',
+          canSpendIgnoringExpenses: 'Кошти після врахованих платежів',
           canSpendWithRentaSave: 'Можна витратити з резервом на Renta',
           start: 'Початок',
           end: 'Кінець',
@@ -2846,6 +2854,8 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Сума платежів “Seguridad Social” за квартал.',
           profitForIrpf: 'База доходу − відраховувані витрати − соцстрахування (сплачено).',
           irpfReserve: 'Якщо Modelo 130 застосовується: max(0, ставка IRPF × прибуток − утриманий IRPF).',
+          incomeAfterIrpfReserve:
+            'Дохід до витрат і соцстрахування, за вирахуванням лише резерву IRPF. Це плановий показник, а не доступні для витрат кошти.',
           ivaSettlementEstimate: 'Вихідний ПДВ − відшкодовуваний ПДВ (може бути від’ємним).',
           recommendedTaxReserve: 'max(0, IVA settlement) + резерв IRPF.',
           cashIn: 'Отримані кошти за рахунками (використовує дату оплати, якщо є).',
@@ -2854,7 +2864,7 @@ export const resources = {
           canSpendThisMonth:
             'max(0, надходження − витрати (гроші) − платежі державі − резерв IRPF − IVA settlement).',
           canSpendIgnoringExpenses:
-            'Можна витратити + витрати (гроші). Корисно, якщо витрати оплачуються з іншого рахунку.',
+            'Дохід мінус заплановані податкові резерви та вже сплачені державі кошти, включно із соцстрахуванням; витрати бізнесу не віднімаються.',
           canSpendWithRentaSave:
             'Якщо планування Renta очікує додаткову сплату: max(0, Можна витратити − рекомендований місячний резерв). Це додаткове заощадження понад квартальний/Modelo 130 резерв, який уже враховано в “Можна витратити”. Для неактивних місяців показує “-”. Інакше “-”.',
         },
@@ -3758,13 +3768,14 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'الضمان الاجتماعي (ربع)',
           profitForIrpf: 'الربح لـ IRPF',
           irpfReserve: 'احتياطي IRPF',
+          incomeAfterIrpfReserve: 'الدخل بعد احتياطي IRPF',
           ivaSettlementEstimate: 'تقدير تسوية IVA',
           recommendedTaxReserve: 'احتياطي ضريبي موصى به',
           cashIn: 'تدفقات داخلة',
           cashOutExpenses: 'تدفقات خارجة (مصروفات)',
           cashOutState: 'تدفقات خارجة (دولة)',
           canSpendThisMonth: 'يمكن الإنفاق (مع المصروفات)',
-          canSpendIgnoringExpenses: 'يمكن الإنفاق',
+          canSpendIgnoringExpenses: 'النقد المتاح بعد المدفوعات المسجلة',
           canSpendWithRentaSave: 'يمكن الإنفاق مع ادخار لـ Renta',
           start: 'البداية',
           end: 'النهاية',
@@ -3780,6 +3791,8 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'مجموع مدفوعات “Seguridad Social” في الربع.',
           profitForIrpf: 'أساس الدخل − المصروفات القابلة للخصم − الضمان الاجتماعي (المدفوع).',
           irpfReserve: 'إذا كان Modelo 130 ينطبق: max(0, معدل IRPF × الربح − IRPF المحتجز).',
+          incomeAfterIrpfReserve:
+            'الدخل قبل المصروفات والضمان الاجتماعي، مطروحًا منه احتياطي IRPF فقط. هذا منظور للتخطيط وليس نقدًا متاحًا للإنفاق.',
           ivaSettlementEstimate: 'VAT output − VAT recoverable (قد تكون سالبة).',
           recommendedTaxReserve: 'max(0, تسوية IVA) + احتياطي IRPF.',
           cashIn: 'النقد المستلم من الدخل (يستخدم تاريخ الدفع إن وُجد).',
@@ -3788,7 +3801,7 @@ export const resources = {
           canSpendThisMonth:
             'max(0, cash in − cash out (expenses) − cash out (state) − احتياطي IRPF − تسوية IVA).',
           canSpendIgnoringExpenses:
-            'يمكن الإنفاق + cash out (expenses). مفيد إذا كانت المصروفات تُدفع من حساب آخر.',
+            'الدخل مطروحًا منه الاحتياطيات الضريبية المخططة والنقد المدفوع بالفعل للدولة، بما في ذلك الضمان الاجتماعي؛ لا تُخصم مصروفات العمل.',
           canSpendWithRentaSave:
             'إذا كان تخطيط Renta يتوقع دفعة إضافية: max(0, يمكن الإنفاق − الاحتياطي الشهري المقترح). هذا ادخار إضافي فوق احتياطي الربع/Modelo 130 الموجود بالفعل ضمن “يمكن الإنفاق”. تُعرض كـ “-” للأشهر غير النشطة. وإلا “-”.',
         },
@@ -4696,13 +4709,14 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Asigurări sociale (trimestru)',
           profitForIrpf: 'Profit pentru IRPF',
           irpfReserve: 'Rezervă IRPF',
+          incomeAfterIrpfReserve: 'Venit după rezerva IRPF',
           ivaSettlementEstimate: 'Estimare decont IVA',
           recommendedTaxReserve: 'Rezervă fiscală recomandată',
           cashIn: 'Intrări numerar',
           cashOutExpenses: 'Ieșiri (cheltuieli)',
           cashOutState: 'Ieșiri (stat)',
           canSpendThisMonth: 'Poți cheltui (cu cheltuieli)',
-          canSpendIgnoringExpenses: 'Poți cheltui',
+          canSpendIgnoringExpenses: 'Numerar disponibil după plățile înregistrate',
           canSpendWithRentaSave: 'Poți cheltui cu rezervă pentru Renta',
           start: 'Start',
           end: 'Sfârșit',
@@ -4718,6 +4732,8 @@ export const resources = {
           seguridadSocialPaidInQuarter: 'Suma plăților “Seguridad Social” în trimestru.',
           profitForIrpf: 'Baza venit − cheltuieli deductibile − asigurări sociale (plătite).',
           irpfReserve: 'Dacă se aplică Modelo 130: max(0, rata IRPF × profit − IRPF reținut).',
+          incomeAfterIrpfReserve:
+            'Venitul înainte de cheltuieli și asigurări sociale, minus doar rezerva IRPF. Este o vedere de planificare, nu numerar disponibil de cheltuit.',
           ivaSettlementEstimate: 'TVA colectat − TVA recuperabil (poate fi negativ).',
           recommendedTaxReserve: 'max(0, decont IVA) + rezervă IRPF.',
           cashIn: 'Numerar încasat din venituri (folosește data plății dacă există).',
@@ -4726,7 +4742,7 @@ export const resources = {
           canSpendThisMonth:
             'max(0, cash in − cash out (cheltuieli) − cash out (stat) − rezervă IRPF − decont IVA).',
           canSpendIgnoringExpenses:
-            'Poți cheltui + cash out (cheltuieli). Util dacă cheltuielile sunt plătite din alt cont.',
+            'Venitul minus rezervele fiscale planificate și numerarul deja plătit statului, inclusiv asigurările sociale; cheltuielile de afaceri nu sunt scăzute.',
           canSpendWithRentaSave:
             'Dacă planificarea Renta prevede o plată suplimentară: max(0, Poți cheltui − rezerva lunară sugerată). Este economisire incrementală peste rezerva trimestrială/Modelo 130 deja inclusă în “Poți cheltui”. Pentru luni inactive: “-”. Altfel “-”.',
         },
