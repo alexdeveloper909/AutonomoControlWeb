@@ -926,8 +926,11 @@ export function WorkspaceSummariesPage(props: { workspaceId: string; api: Autono
                             if (!m.isActiveFromStart) return '-'
                             const monthYear = Number(m.monthKey.slice(0, 4))
                             if (!Number.isFinite(monthYear) || monthYear !== rentaSelected.taxYear) return '-'
-                            if (rentaSelected.estimatedSettlement <= 0) return '-'
-                            if (rentaSelected.suggestedMonthlyReserve <= 0) return '-'
+                            // A zero/negative settlement means the planned Modelo 130 payments already
+                            // cover the estimated Renta amount. Show a concrete zero rather than an
+                            // ambiguous unavailable marker.
+                            if (rentaSelected.estimatedSettlement <= 0) return money.format(0)
+                            if (rentaSelected.suggestedMonthlyReserve <= 0) return money.format(0)
 
                             const v = m.canSpendIgnoringExpenses - rentaSelected.suggestedMonthlyReserve
                             return money.format(Math.max(0, v))
